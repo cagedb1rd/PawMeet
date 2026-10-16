@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Edit3, MapPin, PawPrint, Heart, Trash2 } from "lucide-react";
 import { useDemo } from "@/features/demo/provider";
-import { Dialog, Empty, PetImage, Unavailable } from "@/components/ui";
+import { Dialog, Empty, PetImage } from "@/components/ui";
 import { sizeLabels } from "@/domain/schemas";
 
 export function PetDetail({ id }: { id: string }) {
@@ -80,7 +80,25 @@ export function PetDetail({ id }: { id: string }) {
           <p className="pre-wrap muted">
             {p.socialNotes || "主人尚未补充，请在互动前确认。"}
           </p>
-          <Unavailable>社交名片与偏好比较将在 Phase 2 开放</Unavailable>
+          <div className="button-row">
+            <Link className="button secondary" href={`/pets/${p.id}/card`}>
+              查看社交名片
+            </Link>
+            <Link
+              className="button secondary"
+              href={`/discover/compare?petId=${p.id}`}
+            >
+              比较社交偏好
+            </Link>
+            {!mine && (
+              <Link
+                className="button"
+                href={`/activities/new?recommendedPetId=${p.id}`}
+              >
+                发起约伴
+              </Link>
+            )}
+          </div>
           {mine && (
             <div className="button-row">
               <Link href={`/me/pets/${p.id}/edit`} className="button">

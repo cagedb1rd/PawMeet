@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="demo-banner">
         <Leaf size={12} />
         <span>本地演示 · 虚构宠友 · 数据仅存当前浏览器</span>
-        <span className="demo-version">PHASE 01</span>
+        <span className="demo-version">PHASE 02</span>
       </div>
       <div className="app-layout">
         <aside className="sidebar">
@@ -259,7 +259,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {resetting && (
         <Dialog title="重置演示数据？" close={() => setResetting(false)}>
           <p>
-            当前浏览器新增的档案、动态、活动、点赞和报名，以及上传照片都将清除。恢复
+            当前浏览器新增的档案、名片、互助及清单、动态、活动、点赞和报名，以及上传照片都将清除。恢复
             25 个宠物档案和默认模拟身份。此操作无法撤销。
           </p>
           <div className="button-row">

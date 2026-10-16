@@ -149,39 +149,47 @@ export function Unavailable({ children }: { children: React.ReactNode }) {
 }
 export function PetCard({ pet }: { pet: Pet }) {
   return (
-    <Link href={`/pets/${pet.id}`} className="pet-card card">
-      <div className="pet-photo">
-        <PetImage image={pet.photo} alt={pet.name} />
-        <span className="photo-label">虚构宠友</span>
-        <span className="round-arrow">
-          <ArrowUpRight size={18} />
-        </span>
-      </div>
-      <div className="pet-info">
-        <div className="row-between">
-          <h3>{pet.name}</h3>
-          <span className="muted">
-            {pet.ageMonths === null
-              ? "年龄未知"
-              : pet.ageMonths < 12
-                ? `${pet.ageMonths}个月`
-                : `${Math.floor(pet.ageMonths / 12)}岁`}
+    <article className="pet-card card">
+      <Link href={`/pets/${pet.id}`} className="pet-card-main">
+        <div className="pet-photo">
+          <PetImage image={pet.photo} alt={pet.name} />
+          <span className="photo-label">虚构宠友</span>
+          <span className="round-arrow">
+            <ArrowUpRight size={18} />
           </span>
         </div>
-        <p>
-          {pet.breed} · {sizeLabels[pet.size]}
-        </p>
-        <div className="tags">
-          {pet.temperamentTags.map((t) => (
-            <span key={t}>{t}</span>
-          ))}
+        <div className="pet-info">
+          <div className="row-between">
+            <h3>{pet.name}</h3>
+            <span className="muted">
+              {pet.ageMonths === null
+                ? "年龄未知"
+                : pet.ageMonths < 12
+                  ? `${pet.ageMonths}个月`
+                  : `${Math.floor(pet.ageMonths / 12)}岁`}
+            </span>
+          </div>
+          <p>
+            {pet.breed} · {sizeLabels[pet.size]}
+          </p>
+          <div className="tags">
+            {pet.temperamentTags.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
+          <div className="location">
+            <MapPin size={13} />
+            {pet.city} · {pet.district}
+          </div>
         </div>
-        <div className="location">
-          <MapPin size={13} />
-          {pet.city} · {pet.district}
-        </div>
-      </div>
-    </Link>
+      </Link>
+      <Link
+        className="pet-compare-link"
+        href={`/discover/compare?petId=${pet.id}`}
+      >
+        比较社交偏好 ↗
+      </Link>
+    </article>
   );
 }
 export function usePhotoDraft(initial: ImageRef[] = []) {

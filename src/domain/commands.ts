@@ -5,8 +5,10 @@ import {
   postInputSchema,
   stateSchema,
 } from "./schemas";
+import { mutatePhase2, Phase2Command } from "./phase2";
 
 export type Command =
+  | Phase2Command
   | { type: "switch-user"; userId: string }
   | { type: "save-pet"; input: unknown; petId?: string }
   | { type: "delete-pet"; petId: string }
@@ -81,8 +83,8 @@ export function execute(
         s.helpRequests.some(
           (h) =>
             h.petId === p.id &&
-            h.status === "open" &&
-            Date.parse(h.endAt) > now.getTime(),
+            (["assigned", "helper_done"].includes(h.status) ||
+              (h.status === "open" && Date.parse(h.startAt) > now.getTime())),
         )
       )
         throw new Error("该宠物仍有关联的互助需求，暂不能删除");
@@ -185,6 +187,8 @@ export function execute(
       touch(a);
       break;
     }
+    default:
+      mutatePhase2(s, command, now);
   }
   s.revision++;
   return stateSchema.parse(s);

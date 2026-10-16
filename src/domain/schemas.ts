@@ -108,21 +108,99 @@ const signupSchema = z.strictObject({
   petId: id,
   status: z.enum(["joined", "cancelled"]),
 });
-const helpSchema = z.strictObject({
+export const socialCardInputSchema = z.strictObject({
+  traits: z.array(text(60)).max(6),
+  likes: z.array(text(60)).max(6),
+  dislikes: z.array(text(60)).max(6),
+  cautions: z.array(text(60)).max(6),
+  meetingAdvice: z.string().trim().max(300),
+});
+export const socialCardSchema = socialCardInputSchema.extend({
+  ...base,
+  petId: id,
+  petRevision: z.number().int().positive(),
+  source: z.literal("manual"),
+  confirmedAt: iso,
+  confirmedBy: id,
+});
+export const helpStatusSchema = z.enum([
+  "open",
+  "assigned",
+  "helper_done",
+  "completed",
+  "cancelled",
+]);
+export const helpInputSchema = z
+  .strictObject({
+    petId: id,
+    type: z.enum(["walk", "feed"]),
+    title: text(40),
+    details: text(1000),
+    startAt: iso,
+    endAt: iso,
+    place: placeSchema,
+  })
+  .refine((v) => Date.parse(v.endAt) > Date.parse(v.startAt), {
+    message: "结束时间必须晚于开始时间",
+    path: ["endAt"],
+  });
+export const helpSchema = helpInputSchema.safeExtend({
   ...base,
   requesterId: id,
-  petId: id,
-  type: z.enum(["walk", "feed"]),
-  title: text(40),
-  details: text(1000),
-  startAt: iso,
-  endAt: iso,
-  place: placeSchema,
-  status: z.literal("open"),
+  status: helpStatusSchema,
+  contentRevision: z.number().int().positive(),
+  helperId: id.nullable(),
+  acceptedApplicationId: id.nullable(),
+});
+export const applicationSchema = z.strictObject({
+  ...base,
+  helpId: id,
+  applicantId: id,
+  message: z.string().trim().max(200),
+  status: z.enum(["pending", "accepted", "rejected", "withdrawn"]),
+});
+export const helpEventSchema = z.strictObject({
+  ...base,
+  helpId: id,
+  actorId: id,
+  action: z.enum([
+    "publish",
+    "edit",
+    "apply",
+    "withdraw",
+    "assign",
+    "helper-done",
+    "complete",
+    "cancel",
+    "checklist",
+  ]),
+  fromState: helpStatusSchema,
+  toState: helpStatusSchema,
+});
+export const checklistInputSchema = z.strictObject({
+  items: z
+    .array(
+      z.strictObject({
+        title: text(60),
+        detail: z.string().trim().max(300),
+        needsConfirmation: z.boolean(),
+      }),
+    )
+    .min(1)
+    .max(12),
+});
+export const checklistSchema = checklistInputSchema.extend({
+  ...base,
+  helpId: id,
+  petRevision: z.number().int().positive(),
+  requestRevision: z.number().int().positive(),
+  source: z.literal("manual"),
+  confirmedBy: id,
+  confirmedAt: iso,
 });
 export const stateSchema = z
   .strictObject({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     seedVersion: z.literal(1),
     revision: z.number().int().nonnegative(),
     seededAt: iso,
@@ -133,10 +211,10 @@ export const stateSchema = z
     activities: z.array(activitySchema).max(100),
     activitySignups: z.array(signupSchema).max(1200),
     helpRequests: z.array(helpSchema).max(100),
-    socialCards: z.array(z.never()).max(0),
-    helpApplications: z.array(z.never()).max(0),
-    helpEvents: z.array(z.never()).max(0),
-    careChecklists: z.array(z.never()).max(0),
+    socialCards: z.array(socialCardSchema).max(150),
+    helpApplications: z.array(applicationSchema).max(500),
+    helpEvents: z.array(helpEventSchema).max(3000),
+    careChecklists: z.array(checklistSchema).max(100),
     settings: z.strictObject({ timezone: z.literal("Asia/Shanghai") }),
   })
   .superRefine((s, ctx) => {
@@ -149,6 +227,10 @@ export const stateSchema = z
       s.activities,
       s.activitySignups,
       s.helpRequests,
+      s.socialCards,
+      s.helpApplications,
+      s.helpEvents,
+      s.careChecklists,
     ])
       if (!unique(list.map((v) => v.id))) fail("实体 ID 重复");
     const user = (uid: string) => s.users.some((u) => u.id === uid);
@@ -197,12 +279,66 @@ export const stateSchema = z
       )
         fail("报名引用无效");
     }
-    for (const h of s.helpRequests)
+    if (
+      !unique(s.socialCards.map((c) => c.petId)) ||
+      !unique(s.careChecklists.map((c) => c.helpId))
+    )
+      fail("名片或清单重复");
+    for (const c of s.socialCards)
       if (
-        pet(h.petId)?.ownerId !== h.requesterId ||
-        Date.parse(h.endAt) <= Date.parse(h.startAt)
+        pet(c.petId)?.ownerId !== c.confirmedBy ||
+        c.petRevision > (pet(c.petId)?.revision ?? 0)
       )
-        fail("互助引用无效");
+        fail("名片引用无效");
+    for (const h of s.helpRequests) {
+      if (pet(h.petId)?.ownerId !== h.requesterId) fail("互助引用无效");
+      const apps = s.helpApplications.filter((a) => a.helpId === h.id);
+      const active = apps.filter((a) =>
+        ["pending", "accepted"].includes(a.status),
+      );
+      if (!unique(active.map((a) => a.applicantId))) fail("申请重复");
+      const accepted = apps.filter((a) => a.status === "accepted");
+      if (h.helperId !== null) {
+        if (
+          !user(h.helperId) ||
+          h.helperId === h.requesterId ||
+          accepted.length !== 1 ||
+          accepted[0].id !== h.acceptedApplicationId ||
+          accepted[0].applicantId !== h.helperId ||
+          h.status === "open"
+        )
+          fail("帮助者引用无效");
+      } else if (
+        h.acceptedApplicationId !== null ||
+        accepted.length ||
+        ["assigned", "helper_done", "completed"].includes(h.status)
+      )
+        fail("缺少帮助者");
+      if (h.status !== "open" && apps.some((a) => a.status === "pending"))
+        fail("关闭需求仍有待选申请");
+    }
+    for (const a of s.helpApplications) {
+      const h = s.helpRequests.find((h) => h.id === a.helpId);
+      if (
+        !h ||
+        !s.users.some((u) => u.id === a.applicantId && u.isSwitchable) ||
+        h.requesterId === a.applicantId
+      )
+        fail("申请引用无效");
+    }
+    for (const e of s.helpEvents)
+      if (!user(e.actorId) || !s.helpRequests.some((h) => h.id === e.helpId))
+        fail("事件引用无效");
+    for (const c of s.careChecklists) {
+      const h = s.helpRequests.find((h) => h.id === c.helpId);
+      if (
+        !h ||
+        c.confirmedBy !== h.requesterId ||
+        c.requestRevision > h.contentRevision ||
+        c.petRevision > (pet(h.petId)?.revision ?? 0)
+      )
+        fail("清单引用无效");
+    }
   });
 
 export type ImageRef = z.infer<typeof imageSchema>;
@@ -218,3 +354,9 @@ export const sizeLabels = {
   large: "大型犬",
   unknown: "体型未知",
 };
+
+export type SocialCardInput = z.infer<typeof socialCardInputSchema>;
+export type SocialCard = z.infer<typeof socialCardSchema>;
+export type HelpInput = z.infer<typeof helpInputSchema>;
+export type HelpRequest = z.infer<typeof helpSchema>;
+export type ChecklistInput = z.infer<typeof checklistInputSchema>;

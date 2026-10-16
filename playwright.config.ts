@@ -1,9 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
+const port = Number(process.env.PAWMEET_E2E_PORT ?? 3000);
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
   workers: 1,
-  use: { baseURL: "http://localhost:3000", trace: "retain-on-failure" },
+  use: { baseURL: `http://localhost:${port}`, trace: "retain-on-failure" },
   projects: [
     {
       name: "desktop",
@@ -18,9 +19,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run start",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    command: `npm run start -- --port ${port}`,
+    url: `http://localhost:${port}`,
+    reuseExistingServer: false,
     timeout: 120000,
   },
 });

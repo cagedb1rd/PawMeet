@@ -1,6 +1,6 @@
 # PawMeet 技术架构
 
-状态：2026-10-17。Phase 1 基础应用已实现，自动检查结果见 [PROGRESS](PROGRESS.md)，待人工验收。第 5–7 节的完整距离 / 匹配、GLM、高德及部署保护均为后续阶段设计，尚未接入；不要当作现有能力。产品范围见 [PRD](PRD.md)，执行顺序见 [PLAN](PLAN.md)。
+状态：2026-10-17。Phase 2 社交名片、确定性比较与完整互助业务已实现，自动检查结果见 [PROGRESS](PROGRESS.md)，待人工验收。第 5–7 节的完整距离 / 排序、GLM、高德及部署保护均为后续阶段设计，尚未接入；不要当作现有能力。产品范围见 [PRD](PRD.md)，执行顺序见 [PLAN](PLAN.md)。
 
 ## 1. 选型与边界
 
@@ -40,14 +40,15 @@ SSR 只输出公共页面壳与稳定骨架。浏览器 `DemoProvider` 挂载后
 
 ## 2. 实现目录与扩展边界
 
-Phase 1 当前核心路径：
+当前核心路径：
 
 ```text
 src/app/                         # 五栏、动态 / 活动 / 宠物详情及创建编辑路由
 src/components/{shell,ui}.tsx     # 响应式壳、Dialog、图片及公共 UI
 src/features/demo/provider.tsx   # 挂载读取、单标签锁、快照发布、恢复 / 重置
-src/features/{pets,community,activities,discover,help,me,forms}/
-src/domain/{schemas,commands}.ts # Zod / 引用完整性、纯状态迁移与角色校验
+src/features/{pets,community,activities,discover,help,cards,me,forms}/
+src/domain/{schemas,commands,phase2,social}.ts # Zod、状态机、角色与确定性偏好规则
+src/domain/legacy-schema.ts      # 冻结的 Phase 1 v1 校验器，仅用于迁移
 src/data/seed.ts                 # 固定种子 ID、相对时间与公共演示地点
 src/lib/storage/                # repository 与 IndexedDB 图片适配器
 src/lib/{ai,maps}/contracts.ts   # 后续草稿和地图类型边界，无网络调用
@@ -61,7 +62,6 @@ tests/{unit,e2e}/               # 规则 / 存储 / 图片故障与 Chromium 流
 src/app/api/ai/[task]/route.ts     # 固定任务白名单，无通用聊天透传
 src/app/%5FAMapService/[...path]/route.ts # URL 为 /_AMapService，转义私有目录前缀
 src/app/api/demo/session/route.ts  # 签名演示会话，仅作限流辅助
-src/features/cards/               # 主人确认名片和图片分享
 src/domain/{queries,matching,geo}/ # 共享规则与地理口径
 src/lib/maps/                     # 扩展 loader、adapter、poi、navigation
 src/lib/ai/                       # 扩展客户端任务调用
@@ -71,37 +71,47 @@ tests/integration/                # 外部 API mock 合约测试
 evals/{cases,runner,reports}/      # Phase 4 建立；真实结果摘要可提交
 ```
 
-当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。SocialCard、FilterDrawer、PlacePicker、AiDraftReview 等复用组件在相应后续阶段建立。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
+当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。名片、两宠比较和 PNG 导出位于 `features/cards`；FilterDrawer、PlacePicker、AiDraftReview 在后续阶段建立。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
 
 ## 3. 数据契约
 
-通用：ID 为带前缀稳定种子 ID 或 `crypto.randomUUID()`；时间以 UTC ISO 字符串保存、按 Asia/Shanghai 展示；月龄为非负整数而非浮点岁数。每个实体有 id、createdAt、updatedAt、revision；种子角色均虚构。Zod 使用 strict 对象、有限数组与文本长度，拒绝额外字段。下表包含完整首版设计；Phase 1 已落实 DemoUser、Pet、Post、Activity、ActivitySignup、只读 HelpRequest 预览、PlaceRef 与 ImageRef。名片 / 互助申请 / 清单等信封槽位目前只接受空数组，后续扩展必须显式迁移，不能将尚未支持的数据解释为有效记录。
+通用：ID 为带前缀稳定种子 ID 或 `crypto.randomUUID()`；时间以 UTC ISO 字符串保存、按 Asia/Shanghai 展示；月龄为非负整数而非浮点岁数。每个实体有 id、createdAt、updatedAt、revision；种子角色均虚构。Zod 使用 strict 对象、有限数组与文本长度，拒绝额外字段。下表包含当前实体与后续扩展设计；Phase 2 已落实 SocialCard、HelpRequest、HelpApplication、HelpEvent 和 CareChecklist。AI 来源值 `glm`、真实地图地点来源和 ReferenceLocation 仍属后续设计；当前名片和清单只接受 `manual`，当前地点只接受 `demo`。
 
 | 实体 | 核心字段与约束 |
 | --- | --- |
 | DemoUser | displayName、avatar ImageRef、isSwitchable；共 25 条，5 条可切换 |
 | Pet | ownerId、species=`dog`、name(1–20)、breed(1–30，可“未知”)、ageMonths(null 或 0–360)、size=`small/medium/large/unknown`、city、district、photo ImageRef、temperamentTags、activityTags、socialNotes(≤500)、demoLocation、isFictional=true |
-| SocialCard | petId、petRevision、traits / likes / dislikes / cautions（各 ≤6 项、单项 ≤60 字）、source=`manual/glm`、confirmedAt、confirmedBy；注意事项允许自由文字，未知不等于没有风险 |
+| SocialCard | petId、petRevision、traits / likes / dislikes / cautions（各 ≤6 项、单项 ≤60 字）、meetingAdvice(≤300 字)、source=`manual`、confirmedAt、confirmedBy；空数组表示未知，不能当作没有风险 |
 | Post | authorId、petIds(≤3)、text(1–1000)、images(≤3)、likedByUserIds（去重 ID） |
 | Activity | organizerId、organizerPetId、recommendedPetIds(≤5，仅推荐)、title(1–40)、description(≤500)、place PlaceRef、startAt、endAt、capacity(2–12)、status=`scheduled/cancelled` |
 | ActivitySignup | activityId、userId、petId、status=`joined/cancelled`；每活动每身份最多一个 joined；组织者自动 joined |
-| HelpRequest | requesterId、petId、type=`walk/feed`、title、details(≤1000)、startAt、endAt、place、status=`open/assigned/helper_done/completed/cancelled`、helperId?、acceptedApplicationId? |
+| HelpRequest | requesterId、petId、type=`walk/feed`、title、details(≤1000)、startAt、endAt、place、status=`open/assigned/helper_done/completed/cancelled`、helperId?、acceptedApplicationId?、contentRevision（仅核心内容修改递增） |
 | HelpApplication | helpId、applicantId、message(≤200)、status=`pending/accepted/rejected/withdrawn`；同人同需求最多一个有效申请 |
-| HelpEvent | helpId、actorId、action、fromState、toState、at；状态变化与记录一次写入 |
-| CareChecklist | helpId、petRevision、requestRevision、items（≤12 个 title/detail/needsConfirmation）、source、confirmedBy、confirmedAt；引用变更则要求重新确认 |
+| HelpEvent | helpId、actorId、action、fromState、toState、createdAt；状态变化与记录一次写入 |
+| CareChecklist | helpId、petRevision、requestRevision、items（≤12 个 title/detail/needsConfirmation）、source=`manual`、confirmedBy、confirmedAt；requestRevision 引用需求 contentRevision，档案或需求内容变更要求重新确认 |
 | ReferenceLocation | lng、lat、crs=`GCJ02`、source=`default/manual/geolocation`、label；与宠物展示位置独立 |
 | PlaceRef | source=`amap/manual/demo`、poiId?、name、district、location GCJ02、petAccess=`unknown/owner_reported`、accessNote?；owner_reported 仅代表用户描述，非平台认证 |
 | ImageRef | 判别联合：`{kind:static,path}` 或 `{kind:upload,imageId}`；不存 base64 或任意远程 URL |
 
 正式 Pet 至少名称、照片（可选项目占位图）、品种 / 未知、体型 / 未知、城市区域和公共演示位置有效。年龄未知可 null，不阻碍保存。性格 / 活动数组各 ≤8 个，受控标签加说明字段；常用标签词典在 Phase 1 定稿并供 Prompt 引用。活动 / 互助发布须有确定的未来起止时间、地点、本人宠物；`endAt > startAt`，时间边界按同一 clock 计算，不能把未知值自动补成事实。
 
-统一状态信封 `pawmeet:state:v1`：schemaVersion、seedVersion、revision、seededAt、activeUserId、users、pets、socialCards、posts、activities、activitySignups、helpRequests、helpApplications、helpEvents、careChecklists、settings。草稿与 UI 状态默认内存保存；用户确认后的业务对象才进入信封。可保存明确“手工草稿”，但不得当作发布记录。
+当前存储 key 保留 `pawmeet:state:v1`，信封 `schemaVersion=2`：schemaVersion、seedVersion、revision、seededAt、activeUserId、users、pets、socialCards、posts、activities、activitySignups、helpRequests、helpApplications、helpEvents、careChecklists、settings。草稿与 UI 状态默认内存保存；用户确认后的业务对象才进入信封。可保存明确“手工草稿”，但不得当作发布记录。
 
-引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动或开放互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。未来申请、名片、清单的角色 / revision 约束按对应阶段实现，不能只依赖字段类型。
+引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动、未来开放互助或 assigned / helper_done 互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。名片仅主人可确认且 petRevision 必须当前；清单仅求助人可编辑，引用当前宠物版本与需求 contentRevision。实体引用、有效申请唯一性、已选帮助者 / acceptedApplicationId 一致性由 Schema 校验；具体操作的角色与状态在命令层校验。
+
+### Phase 2 命令、查询与分享
+
+- [phase2.ts](../src/domain/phase2.ts) 统一处理 `save-card`、`save-help`、`apply-help`、`withdraw-help`、`assign-help`、`helper-done`、`complete-help`、`cancel-help`、`save-checklist`；Provider 仍只发布持久化成功的新快照。
+- 互助状态与权限遵循 [PRD](PRD.md#互助状态机与权限)。选择帮助者前必须有主人确认的当前版本清单；清单可显式保留细节待确认，不补全未知事实。帮助者标记完成时也复核清单版本。选择与双方完成重试不重复产生事件；重复申请明确拒绝。
+- 申请 / 撤回 / 清单保存只修改独立实体和事件；状态迁移更新任务 revision。需求编辑另递增 contentRevision，因此选帮助者等状态变化不会误使交接内容失效。仅 open、未来且无有效申请可编辑核心字段；清单只允许 open / assigned 编辑。所有写入受整个信封上限和 2MiB 预算约束。
+- [social.ts](../src/domain/social.ts) 仅对有效名片 likes / dislikes 的六个完整词条，以及档案“喜欢追逐 / 怕追逐”做双向冲突判断。自由文字保留展示，不做否定句、同义词或隐含风险推断。未识别冲突不等于适合互动；不输出行为诊断、安全结论或评分。名片引用失效时不参与规则并禁止导出。
+- [export.ts](../src/features/cards/export.ts) 用本地 canvas 排版生成 PNG，按内容行数决定高度；照片来源仅本地静态图或 IndexedDB。支持 `canShare` 时分享 PNG 文件，否则下载；不生成跨设备本地 ID 分享链接。
+- 档案 / 宠友卡进入名片比较；档案或比较页进入 `/activities/new?recommendedPetId=…`，保存推荐宠物引用，公共地点为待主人确认的默认演示建议，绝不表示邀请已发送 / 对方已同意。
+- [AI contracts](../src/lib/ai/contracts.ts) 预留名片、部分需求草稿与带双来源版本的清单草稿类型；正式保存仍经过共享 Schema 和命令。当前没有模型调用或 API 成功 mock。
 
 ## 4. 浏览器存储与恢复
 
-1. 首次挂载：读取信封 → 版本检查与 Zod / 引用校验 → 无数据才初始化种子。迁移按 vN→vN+1 顺序，未知高版本只读提示，不能覆盖。
+1. 首次挂载：读取信封 → 版本检查与 Zod / 引用校验 → 无数据才初始化种子。v1 先由冻结的旧 Schema 严格校验，纯迁移到 v2，给互助补 null 帮助者引用及 contentRevision=1；只读加载不写原文，下次持有写锁的命令才原子保存 v2。旧版种子预览文案仅在完整匹配时更新为演示说明，用户内容保持。未知版本 / 旧数据损坏不覆盖。
 2. 命令执行：从最新 revision 校验身份 / 状态 → 生成整个新快照 → 序列化与大小预检 → 单 key `setItem` 成功后更新内存并显示成功。QuotaExceeded / SecurityError 则保留原状态和表单，提示清理图片或重试。
 3. 结构化数据保守预算 2MiB（按 UTF-16 估算，不承诺浏览器统一配额）；帖子上限 100、活动 / 互助各 100，达到上限提示重置 / 清理，不静默删除历史。读取损坏时保留原始数据，提供导出原文 / 确认重置，不自动重建覆盖。
 4. 上传仅 JPEG / PNG / WebP，单原图 ≤8MiB，解码检查且拒绝超过 5000 万像素；最长边 ≤1280，Canvas 输出 WebP（不支持时浏览器可能返回 PNG），通过质量梯度控制为 ≤250KiB，超出则拒绝。每帖 ≤3 张、全局 ≤30 张且 ≤10MiB；全局检查和插入在同一个 IndexedDB readwrite 事务完成。先写 Blob 再提交 ImageRef；图片失败不产生引用。业务提交失败保留表单与已上传照片以便重试，取消 / 离开表单时清理本次临时图；异常退出的孤儿可在“我的”清理。缺图显示占位，宠物主人可编辑替换。图片不入 localStorage、不送模型；刷新重新生成并回收 object URL。
@@ -127,7 +137,7 @@ evals/{cases,runner,reports}/      # Phase 4 建立；真实结果摘要可提�
 | task | 浏览器发送的最小数据 | 响应 data |
 | --- | --- | --- |
 | pet-profile | text | name、breed、ageMonths、size、city、district、tags、notes 的可空草稿 |
-| social-card | text + 当前宠物已确认性格 / 偏好 / 注意事项与 revision | traits、likes、dislikes、cautions |
+| social-card | text + 当前宠物已确认性格 / 偏好 / 注意事项与 revision | traits、likes、dislikes、cautions、meetingAdvice |
 | match-intent | text + 本人宠物偏好摘要；**不发送整个宠友表** | radiusKm、breeds、sizes、temperaments、activities、sort、unmappedTerms；不返回宠友 ID 或距离 |
 | help-intent | text + ≤3 个本人宠物 id/name + now + timezone | type、petId?、title、details、startAt?、endAt?、locationQuery?；不能直接创建 PlaceRef |
 | care-checklist | 已确认宠物习惯 / 注意事项 + 当前互助类型 / 时间与 revision | items；缺失喂食量等返回 needsConfirmation |

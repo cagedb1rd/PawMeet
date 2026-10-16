@@ -13,3 +13,13 @@ export type Draft<T> = {
   actorId: string;
   confirmed: false;
 };
+
+// Phase 4 adapters must validate these drafts, then ask the owner to confirm.
+// They cannot write storage; saving goes through the same business commands.
+export type SocialCardDraft = Draft<import("@/domain/schemas").SocialCardInput>;
+export type HelpIntentDraft = Draft<
+  Partial<import("@/domain/schemas").HelpInput>
+> & { missingFields: string[] };
+export type CareChecklistDraft = Draft<
+  import("@/domain/schemas").ChecklistInput
+> & { petRevision: number; requestRevision: number };

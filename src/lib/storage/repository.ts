@@ -1,6 +1,7 @@
 import { createSeed } from "@/data/seed";
 import { Command, execute } from "@/domain/commands";
 import { DemoState, stateSchema } from "@/domain/schemas";
+import { stateSchema as legacySchema } from "@/domain/legacy-schema";
 
 export const STATE_KEY = "pawmeet:state:v1";
 export const MAX_STATE_BYTES = 2 * 1024 * 1024;
@@ -31,7 +32,26 @@ export function readState(store: KeyValueStore): DemoState {
     return state;
   }
   try {
-    return stateSchema.parse(JSON.parse(raw));
+    const value = JSON.parse(raw);
+    if (value?.schemaVersion === 1) {
+      const old = legacySchema.parse(value);
+      // Pure migration: persist only on the next successful, locked command.
+      return stateSchema.parse({
+        ...old,
+        schemaVersion: 2,
+        helpRequests: old.helpRequests.map((h) => ({
+          ...h,
+          helperId: null,
+          acceptedApplicationId: null,
+          contentRevision: 1,
+          details:
+            h.details === "虚构需求预览，互助申请与交接流程将在 Phase 2 开放。"
+              ? "虚构演示需求，请与主人核对照看习惯与交接清单。"
+              : h.details,
+        })),
+      });
+    }
+    return stateSchema.parse(value);
   } catch {
     throw new StorageProblem(
       "本地数据损坏或版本不受支持，原始内容已保留。请先导出备份，或明确重置。",

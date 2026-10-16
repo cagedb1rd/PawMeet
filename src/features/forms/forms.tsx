@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 import { useDemo } from "@/features/demo/provider";
@@ -335,6 +335,8 @@ export function ActivityForm() {
   return state ? <ActivityEditor key={state.activeUserId} /> : null;
 }
 function ActivityEditor() {
+  const params = useSearchParams();
+  const recommendedId = params.get("recommendedPetId");
   const { state, run, writable, notify } = useDemo(),
     router = useRouter(),
     [error, setError] = useState(""),
@@ -364,7 +366,7 @@ function ActivityEditor() {
               title: f.get("title"),
               description: f.get("description"),
               organizerPetId: f.get("pet"),
-              recommendedPetIds: [],
+              recommendedPetIds: recommendedId ? [recommendedId] : [],
               startAt: shanghaiTime(f.get("startAt")),
               endAt: shanghaiTime(f.get("endAt")),
               capacity: Number(f.get("capacity")),
@@ -381,6 +383,14 @@ function ActivityEditor() {
         }}
       >
         <fieldset disabled={!writable}>
+          {recommendedId && (
+            <p className="meeting-note">
+              推荐约伴对象：
+              {state!.pets.find((p) => p.id === recommendedId && !p.archivedAt)
+                ?.name ?? "对象不存在，请重新选择"}
+              。仅带入推荐，不代表对方同意，也不会发送邀请。地点暂建议下方演示公共点，请确认。
+            </p>
+          )}
           <Field label="活动名称 *">
             <input
               name="title"
