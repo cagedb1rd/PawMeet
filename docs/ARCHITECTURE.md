@@ -1,6 +1,6 @@
 # PawMeet 技术架构
 
-状态：Phase 0 设计，未实现。2026-10-17。产品范围见 [PRD](PRD.md)，执行顺序见 [PLAN](PLAN.md)。
+状态：2026-10-17。Phase 1 基础应用已实现，自动检查结果见 [PROGRESS](PROGRESS.md)，待人工验收。第 5–7 节的完整距离 / 匹配、GLM、高德及部署保护均为后续阶段设计，尚未接入；不要当作现有能力。产品范围见 [PRD](PRD.md)，执行顺序见 [PLAN](PLAN.md)。
 
 ## 1. 选型与边界
 
@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 应用 | Next.js App Router + React + TypeScript strict | 单应用承担页面与受保护服务端接口，无独立后端工程 |
 | UI | Tailwind CSS、按需 shadcn/ui / Radix、Lucide | 快速形成可访问的移动端抽屉与桌面布局，不整套引入重型组件库 |
-| 状态 | React Context + useReducer，纯业务命令 + Repository | 当前数据规模小，不先引入 Redux、Zustand、React Query |
+| 状态 | React Context 发布已持久化快照，纯业务命令 + Repository | 写入成功才更新状态；不在 reducer 中执行存储副作用，不先引入全局状态库 |
 | 校验 | Zod 4，表单、持久化、API 契约共享定义 | 类型来源统一；AI 草稿 Schema 与正式业务 Schema 分离 |
 | 数据 | localStorage JSON + 图片 IndexedDB + 项目静态资源 | 不使用云数据库；每浏览器独立 |
 | 地图 | 高德 JS API 2.0 + 官方 loader | SDK 隔离在客户端适配器，懒加载 |
@@ -16,7 +16,7 @@
 | 测试 | Vitest、Testing Library（必要组件）、Playwright | 规则 / 存储 / 接口 / 关键用户路径分层验证 |
 | 工具 | npm + package-lock、ESLint CLI、Git | 不混用包管理器；build 不替代 lint |
 
-Phase 0 只检查环境：Node 24.15.0、npm 11.12.1、pnpm 11.19.0、Git 2.54.0；npm registry 可读。查询时 next=16.4.2（Node >=20.9）、react=19.3.1、zod=4.6.7。它们是注册表观测值，**不是已安装或已验证的兼容组合**。Phase 1 复核当前安全稳定版本并锁入 lockfile，禁止依赖 canary。
+当前运行环境 Node 24.15.0 / npm 11.12.1；Next 16.4.2、React 19.3.1、Zod 4.6.7、Tailwind 4.3.3 已安装并锁定，其他精确版本见 [package.json](../package.json) 和 lockfile。已通过生产构建与 Chromium 流程测试，不代表其他设备和国内网络均通过。没有使用 canary 或外部字体 CDN。
 
 ```mermaid
 flowchart LR
@@ -38,35 +38,44 @@ flowchart LR
 
 SSR 只输出公共页面壳与稳定骨架。浏览器 `DemoProvider` 挂载后读取 / 校验状态再显示个人数据，避免 hydration mismatch；服务端组件、API Route 无法读取 localStorage。业务新增 / 修改不发送服务端持久化接口。状态中的身份仅用于演示逻辑，不作为服务端鉴权或额度依据。
 
-## 2. 计划目录与组件
+## 2. 实现目录与扩展边界
 
-以下为未来核心路径，不表示文件已经存在。
+Phase 1 当前核心路径：
 
 ```text
-src/app/(main)/                    # 五栏页面与详情，路由见 PRD
+src/app/                         # 五栏、动态 / 活动 / 宠物详情及创建编辑路由
+src/components/{shell,ui}.tsx     # 响应式壳、Dialog、图片及公共 UI
+src/features/demo/provider.tsx   # 挂载读取、单标签锁、快照发布、恢复 / 重置
+src/features/{pets,community,activities,discover,help,me,forms}/
+src/domain/{schemas,commands}.ts # Zod / 引用完整性、纯状态迁移与角色校验
+src/data/seed.ts                 # 固定种子 ID、相对时间与公共演示地点
+src/lib/storage/                # repository 与 IndexedDB 图片适配器
+src/lib/{ai,maps}/contracts.ts   # 后续草稿和地图类型边界，无网络调用
+public/images/                  # 本地照片、占位图、来源许可
+tests/{unit,e2e}/               # 规则 / 存储 / 图片故障与 Chromium 流程
+```
+
+以下路径为后续规划，不表示已经存在：
+
+```text
 src/app/api/ai/[task]/route.ts     # 固定任务白名单，无通用聊天透传
 src/app/%5FAMapService/[...path]/route.ts # URL 为 /_AMapService，转义私有目录前缀
 src/app/api/demo/session/route.ts  # 签名演示会话，仅作限流辅助
-src/components/layout/            # AppShell、BottomNav、DesktopSidebar
-src/components/ui/                # 按需 UI 原语
-src/features/{pets,cards,discover,help,community,activities}/
-src/domain/{schemas,commands,queries,matching,geo}/
-src/lib/storage/                  # repository、migration、image-store
-src/lib/maps/                     # loader、adapter、poi、navigation
-src/lib/ai/                       # 客户端任务调用与草稿类型
+src/features/cards/               # 主人确认名片和图片分享
+src/domain/{queries,matching,geo}/ # 共享规则与地理口径
+src/lib/maps/                     # 扩展 loader、adapter、poi、navigation
+src/lib/ai/                       # 扩展客户端任务调用
 src/server/ai/                    # server-only GLM client、prompts、validators
 src/server/guards/                # 环境校验、session、quota、日志脱敏
-src/data/seed/                    # 固定 ID、虚构内容、相对时间种子
-public/images/                    # 有来源记录的本地照片
-tests/{unit,integration,e2e}/
+tests/integration/                # 外部 API mock 合约测试
 evals/{cases,runner,reports}/      # Phase 4 建立；真实结果摘要可提交
 ```
 
-业务容器调用纯命令，复用 PetCard、SocialCard、FilterDrawer、PlacePicker、LocationCard、AiDraftReview、DemoBanner、IdentitySwitcher、StorageRecovery。地图适配器不含业务排序逻辑；AI 组件不直接写 Repository。仅需客户端交互的树使用 `use client`；地图动态加载且不参与 SSR。
+当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。SocialCard、FilterDrawer、PlacePicker、AiDraftReview 等复用组件在相应后续阶段建立。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
 
 ## 3. 数据契约
 
-通用：ID 为带前缀稳定种子 ID 或 `crypto.randomUUID()`；时间以 UTC ISO 字符串保存、按 Asia/Shanghai 展示；月龄为非负整数而非浮点岁数。每个实体有 id、createdAt、updatedAt、revision；种子角色均虚构。Zod 使用 strict 对象、有限数组与文本长度，拒绝额外字段。
+通用：ID 为带前缀稳定种子 ID 或 `crypto.randomUUID()`；时间以 UTC ISO 字符串保存、按 Asia/Shanghai 展示；月龄为非负整数而非浮点岁数。每个实体有 id、createdAt、updatedAt、revision；种子角色均虚构。Zod 使用 strict 对象、有限数组与文本长度，拒绝额外字段。下表包含完整首版设计；Phase 1 已落实 DemoUser、Pet、Post、Activity、ActivitySignup、只读 HelpRequest 预览、PlaceRef 与 ImageRef。名片 / 互助申请 / 清单等信封槽位目前只接受空数组，后续扩展必须显式迁移，不能将尚未支持的数据解释为有效记录。
 
 | 实体 | 核心字段与约束 |
 | --- | --- |
@@ -88,16 +97,16 @@ evals/{cases,runner,reports}/      # Phase 4 建立；真实结果摘要可提�
 
 统一状态信封 `pawmeet:state:v1`：schemaVersion、seedVersion、revision、seededAt、activeUserId、users、pets、socialCards、posts、activities、activitySignups、helpRequests、helpApplications、helpEvents、careChecklists、settings。草稿与 UI 状态默认内存保存；用户确认后的业务对象才进入信封。可保存明确“手工草稿”，但不得当作发布记录。
 
-引用完整性：宠物必须引用存在主人；报名 / 申请引用存在实体且身份合法；helperId 与被接受申请一致；不能只靠 Zod 字段类型校验。首版不做实体硬删除，避免历史悬空；帖子可不提供删除入口。更新档案不改旧互助事件，但让相关名片 / 清单变为待重新确认。
+引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动或开放互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。未来申请、名片、清单的角色 / revision 约束按对应阶段实现，不能只依赖字段类型。
 
 ## 4. 浏览器存储与恢复
 
 1. 首次挂载：读取信封 → 版本检查与 Zod / 引用校验 → 无数据才初始化种子。迁移按 vN→vN+1 顺序，未知高版本只读提示，不能覆盖。
 2. 命令执行：从最新 revision 校验身份 / 状态 → 生成整个新快照 → 序列化与大小预检 → 单 key `setItem` 成功后更新内存并显示成功。QuotaExceeded / SecurityError 则保留原状态和表单，提示清理图片或重试。
 3. 结构化数据保守预算 2MiB（按 UTF-16 估算，不承诺浏览器统一配额）；帖子上限 100、活动 / 互助各 100，达到上限提示重置 / 清理，不静默删除历史。读取损坏时保留原始数据，提供导出原文 / 确认重置，不自动重建覆盖。
-4. 上传仅 JPEG / PNG / WebP，单原图 ≤8MiB，解码检查；最长边 ≤1280，输出 WebP / JPEG 目标 ≤250KiB，每帖 ≤3 张、全局 ≤30 张且 ≤10MiB。先把 Blob 写入 IndexedDB 再提交 ImageRef；失败不保存实体。提交失败清理新孤儿图片；读取不存在 imageId 显示占位与修复入口。图片不入 localStorage、不送模型；刷新重新生成并回收 object URL。
+4. 上传仅 JPEG / PNG / WebP，单原图 ≤8MiB，解码检查且拒绝超过 5000 万像素；最长边 ≤1280，Canvas 输出 WebP（不支持时浏览器可能返回 PNG），通过质量梯度控制为 ≤250KiB，超出则拒绝。每帖 ≤3 张、全局 ≤30 张且 ≤10MiB；全局检查和插入在同一个 IndexedDB readwrite 事务完成。先写 Blob 再提交 ImageRef；图片失败不产生引用。业务提交失败保留表单与已上传照片以便重试，取消 / 离开表单时清理本次临时图；异常退出的孤儿可在“我的”清理。缺图显示占位，宠物主人可编辑替换。图片不入 localStorage、不送模型；刷新重新生成并回收 object URL。
 5. reset：确认 → 准备新种子 → 写入新信封 → 清理旧上传图。清理失败报告可重试，但不得继续引用已删图。种子静态图无需删除。
-6. 首版同一浏览器只支持一个可写标签页；第二标签页显示提示并只读，使用 Web Locks 持有写锁；无 Web Locks 时通过标签页心跳 / revision 检测禁用并发编辑。storage 事件只用于发现外部变更、提示刷新，不宣称实时同步。不能保证恶意直接改 localStorage 不破坏演示。
+6. 同一源只支持一个可写标签页，Web Locks 持有写锁；第二标签页显示提示并只读。无 Web Locks 或获锁失败时同样关闭写入，不使用不能提供原子互斥的心跳抢锁。关闭原编辑页后刷新可接管。Repository 每次提交复读并比较完整快照 / revision，拒绝被外部更改的旧状态。storage 事件发现外部变更后禁用当前页写入并提示刷新，不做实时同步。浏览器必须在可信上下文使用相关能力；不能保证恶意直接改 localStorage 不破坏演示。
 
 ## 5. 规则查询与匹配
 
@@ -168,7 +177,7 @@ GLM_BASE_URL 默认 `https://open.bigmodel.cn/api/paas/v4`；配置仅来自服�
 
 ## 8. 环境配置与部署
 
-Phase 1 才创建 `.env.example`，变量规划：
+已提供 [.env.example](../.env.example)，Phase 1 不读取外部 API 配置；以下为后续用途：
 
 | 变量 | 可见性 / 用途 |
 | --- | --- |
@@ -194,4 +203,4 @@ Phase 1 才创建 `.env.example`，变量规划：
 - [高德坐标基础类](https://lbs.amap.com/api/javascript-api-v2/guide/abc/basetype)、[定位](https://lbs.amap.com/api/javascript-api-v2/guide/services/geolocation)：坐标口径与定位能力。
 - [POI 搜索](https://lbs.amap.com/api/javascript-api-v2/guide/services/autocomplete)、[URI 路径规划](https://lbs.amap.com/api/uri-api/guide/travel/route)：地点与导航接口。
 
-待实测：选定 GLM 的可用性 / JSON 输出 / 思考配置 / 价格与延迟；高德 key 权限、代理路径与 SDK 签名、POI 配额、定位坐标标志；目标浏览器图片压缩 / Web Locks / 分享兼容性；部署地域和国内访问质量。上述待验证项是阶段门槛，不用文档推理替代联调证据。
+已在本机 Chromium 实测图片压缩 / IndexedDB 刷新恢复、单标签写锁与双标签只读。待实测：GLM 可用性 / JSON 输出 / 思考配置 / 价格与延迟；高德权限、代理路径 / SDK 签名、配额 / 坐标标志；Safari / Android 真机图片、Web Locks 和分享兼容性；部署地域和国内访问质量。上述待验证项是后续阶段门槛，不能用文档推理替代联调证据。
