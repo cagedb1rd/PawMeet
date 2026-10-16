@@ -1,0 +1,29 @@
+# Dependencies / build
+node_modules/
+.next/
+out/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Secrets: example files must contain placeholders only
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Local operational state / private evaluation artifacts
+.runtime/
+.local/
+artifacts/ai-eval/raw/
+*.log
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
