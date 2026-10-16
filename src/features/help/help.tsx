@@ -15,10 +15,12 @@ import {
   HelpRequest,
   helpInputSchema,
   checklistInputSchema,
+  PlaceRef,
 } from "@/domain/schemas";
 import { checklistCurrent } from "@/domain/phase2";
 import { demoPlaces } from "@/data/seed";
 import { shanghaiTime } from "@/features/forms/forms";
+import { PlaceDetails, PlacePicker } from "@/features/maps/places";
 
 const statuses = {
   open: "等待帮助",
@@ -105,7 +107,7 @@ export function Help() {
         </button>
       </div>
       <p className="form-hint">
-        当前按发布时间浏览本地需求；附近地图与距离将在 Phase 3 接入。
+        当前按发布时间浏览本地需求；发布时可在地图选择公共交接点。
       </p>
       <div className="help-grid">
         {list.map((h) => {
@@ -120,7 +122,7 @@ export function Help() {
               </div>
               <h3>{h.title}</h3>
               <p>{formatTime(h.startAt)} · 北京时间</p>
-              <p>{h.place.name} · 虚构公共点</p>
+              <p>{h.place.name} · 宠物准入未知</p>
               <div className="help-pet">
                 <PetImage image={p.photo} alt={p.name} />
                 <span>
@@ -199,7 +201,7 @@ function Detail({ id }: { id: string }) {
           <p>
             北京时间：{formatTime(h.startAt)} — {formatTime(h.endAt)}
           </p>
-          <p>{h.place.name} · 宠物准入未核实</p>
+          <PlaceDetails place={h.place} />
           <p>
             求助人：{name(h.requesterId)} · 帮助者：{name(h.helperId)}
           </p>
@@ -565,6 +567,7 @@ function HelpEditor({ id }: { id?: string }) {
   const { state, run, writable } = useDemo(),
     router = useRouter();
   const h = state!.helpRequests.find((h) => h.id === id);
+  const [place, setPlace] = useState<PlaceRef>(h?.place ?? demoPlaces[0]);
   const [error, setError] = useState("");
   const { setDirty } = useUnsaved();
   const pets = state!.pets.filter(
@@ -594,7 +597,7 @@ function HelpEditor({ id }: { id?: string }) {
               type: f.get("type"),
               startAt: shanghaiTime(f.get("startAt")),
               endAt: shanghaiTime(f.get("endAt")),
-              place: demoPlaces[Number(f.get("place"))],
+              place,
             });
             if (
               run({
@@ -661,22 +664,14 @@ function HelpEditor({ id }: { id?: string }) {
               />
             </label>
           </div>
-          <label className="field">
-            <span>公共交接地点</span>
-            <select
-              name="place"
-              defaultValue={Math.max(
-                0,
-                demoPlaces.findIndex((p) => p.name === h?.place.name),
-              )}
-            >
-              {demoPlaces.map((p, i) => (
-                <option key={p.name} value={i}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <PlacePicker
+            label="公共交接地点"
+            value={place}
+            onChange={(p) => {
+              setPlace(p);
+              setDirty(true);
+            }}
+          />
           <label className="field">
             <span>需求说明</span>
             <textarea
@@ -689,7 +684,7 @@ function HelpEditor({ id }: { id?: string }) {
             />
           </label>
           <p className="form-hint">
-            公共点均为虚构演示；宠物准入未知。发布后请确认照看交接清单；已有有效申请时需取消重建。AI
+            宠物准入未知。发布后请确认照看交接清单；已有有效申请时需取消重建。AI
             需求解析尚未开放。
           </p>
           {error && (

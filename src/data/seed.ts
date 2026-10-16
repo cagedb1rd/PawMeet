@@ -122,8 +122,23 @@ export function createSeed(now = new Date()): DemoState {
         : ["散步" as const, "草地撒欢" as const],
     socialNotes: "虚构档案。初次见面请保持牵引，由主人确认互动方式。",
     demoLocation: {
-      lng: 120.17 + i * 0.002,
-      lat: 30.18 + (i % 5) * 0.003,
+      // Fictional public-area points. Never infer or import a home address.
+      lng:
+        i < 15
+          ? 120.19 + (i % 5) * 0.006
+          : i < 19
+            ? 120.267 + (i - 15) * 0.008
+            : i < 22
+              ? 120.185 + (i - 19) * 0.009
+              : 120.115 + (i - 22) * 0.01,
+      lat:
+        i < 15
+          ? 30.202 + Math.floor(i / 5) * 0.006
+          : i < 19
+            ? 30.179 + (i - 15) * 0.005
+            : i < 22
+              ? 30.252 + (i - 19) * 0.004
+              : 30.254 + (i - 22) * 0.006,
       crs: "GCJ02" as const,
     },
     isFictional: true as const,

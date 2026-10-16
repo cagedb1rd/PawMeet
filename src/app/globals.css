@@ -1,5 +1,192 @@
 @import "tailwindcss";
 
+.reference-panel,
+.discover-filters {
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.reference-panel h3 {
+  margin: 8px 0;
+}
+.reference-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.reference-panel .button-row {
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+.discover-filter {
+  border: 0;
+  padding: 10px 0;
+  min-width: 0;
+}
+.discover-filter legend {
+  font-weight: 600;
+  padding: 0;
+}
+.discover-filters details {
+  margin: 10px 0;
+}
+.discover-filters summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+}
+.discover-filters input,
+.place-explorer > input,
+.manual-place input,
+.place-picker select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  background: white;
+}
+.map-frame {
+  position: relative;
+  margin: 16px 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--light);
+}
+.map-canvas {
+  height: 420px;
+  width: 100%;
+}
+.map-status {
+  position: absolute;
+  inset: 0 0 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: #edf2e8f0;
+  text-align: center;
+  z-index: 2;
+}
+.map-legend {
+  min-height: 36px;
+  padding: 9px 12px;
+  font-size: 12px;
+  background: white;
+}
+.map-marker {
+  white-space: nowrap;
+  border-radius: 20px;
+  padding: 10px 14px;
+  min-height: 44px;
+  background: var(--green);
+  color: white;
+  box-shadow: 0 3px 12px #243a2a33;
+  border: 2px solid white;
+}
+.map-marker.selected {
+  background: #aa613e;
+}
+.pet-selected {
+  outline: 2px solid var(--green);
+}
+.pet-distance {
+  color: var(--green);
+  font-weight: 600;
+  font-size: 12px;
+  margin-top: 9px;
+}
+.pet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 18px;
+  gap: 12px;
+  font-size: 12px;
+}
+.pet-actions a,
+.pet-actions button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.selected-pet {
+  padding: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.place-picker {
+  border: 1px solid var(--line);
+  padding: 18px;
+  border-radius: 16px;
+  margin: 20px 0;
+  min-width: 0;
+}
+.place-picker h3 {
+  margin-bottom: 12px;
+}
+.place-details {
+  display: grid;
+  gap: 8px;
+  overflow-wrap: anywhere;
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+.place-details small {
+  color: var(--muted);
+}
+.navigation-link {
+  color: var(--green);
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.place-picker .filter-tags,
+.place-explorer .filter-tags {
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+.manual-place {
+  display: grid;
+  gap: 12px;
+}
+.poi-results {
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 12px 0;
+}
+.poi-results button {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--line);
+}
+.poi-results button.selected {
+  background: var(--light);
+}
+.poi-results small {
+  color: var(--muted);
+}
+@media (max-width: 767px) {
+  .map-canvas {
+    height: 340px;
+  }
+  .reference-panel,
+  .discover-filters,
+  .place-picker {
+    padding: 16px;
+  }
+  .reference-panel .button-row > * {
+    flex: 1 1 130px;
+  }
+}
+
 @theme inline {
   --color-sage: #4e6755;
   --color-cream: #f7f8f2;

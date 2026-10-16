@@ -18,8 +18,10 @@ import {
   petInputSchema,
   postInputSchema,
   temperaments,
+  PlaceRef,
 } from "@/domain/schemas";
 import { demoPlaces } from "@/data/seed";
+import { PlacePicker } from "@/features/maps/places";
 
 function errorMessage(e: unknown) {
   return e instanceof z.ZodError
@@ -337,6 +339,7 @@ export function ActivityForm() {
 function ActivityEditor() {
   const params = useSearchParams();
   const recommendedId = params.get("recommendedPetId");
+  const [place, setPlace] = useState<PlaceRef>(demoPlaces[0]);
   const { state, run, writable, notify } = useDemo(),
     router = useRouter(),
     [error, setError] = useState(""),
@@ -370,7 +373,7 @@ function ActivityEditor() {
               startAt: shanghaiTime(f.get("startAt")),
               endAt: shanghaiTime(f.get("endAt")),
               capacity: Number(f.get("capacity")),
-              place: demoPlaces[Number(f.get("place"))],
+              place,
             });
             if (run({ type: "create-activity", input })) {
               setDirty(false);
@@ -388,7 +391,7 @@ function ActivityEditor() {
               推荐约伴对象：
               {state!.pets.find((p) => p.id === recommendedId && !p.archivedAt)
                 ?.name ?? "对象不存在，请重新选择"}
-              。仅带入推荐，不代表对方同意，也不会发送邀请。地点暂建议下方演示公共点，请确认。
+              。仅带入推荐，不代表对方同意，也不会发送邀请。请确认时间与公共地点。
             </p>
           )}
           <Field label="活动名称 *">
@@ -427,15 +430,14 @@ function ActivityEditor() {
               />
             </Field>
           </div>
-          <Field label="集合地点 *" hint="均为虚构公共演示点，宠物准入未核实。">
-            <select name="place" aria-label="集合地点">
-              {demoPlaces.map((p, i) => (
-                <option key={p.name} value={i}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <PlacePicker
+            label="集合地点"
+            value={place}
+            onChange={(p) => {
+              setPlace(p);
+              setDirty(true);
+            }}
+          />
           <Field label="主人名额（含组织者） *">
             <input
               name="capacity"
@@ -456,9 +458,7 @@ function ActivityEditor() {
               placeholder="活动安排、需要带的物品、初次见面的注意事项…"
             />
           </Field>
-          <Unavailable>
-            地图选点与 AI 草稿尚未开放 · 不会发送真实邀请
-          </Unavailable>
+          <Unavailable>AI 草稿尚未开放 · 不会发送真实邀请</Unavailable>
           {error && (
             <p role="alert" className="field-error">
               {error}

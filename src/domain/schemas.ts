@@ -17,17 +17,35 @@ export const imageSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("upload"), imageId: id }),
 ]);
 export const locationSchema = z.strictObject({
-  lng: z.number().min(119).max(121),
-  lat: z.number().min(29).max(31),
+  lng: z.number().min(-180).max(180),
+  lat: z.number().min(-90).max(90),
   crs: z.literal("GCJ02"),
 });
-export const placeSchema = z.strictObject({
-  source: z.literal("demo"),
+const placeFields = {
   name: text(60),
   district: text(30),
-  location: locationSchema,
+  address: z.string().trim().max(200).optional(),
   petAccess: z.literal("unknown"),
-});
+};
+export const placeSchema = z.discriminatedUnion("source", [
+  z.strictObject({
+    ...placeFields,
+    source: z.literal("demo"),
+    location: locationSchema,
+  }),
+  z.strictObject({
+    ...placeFields,
+    source: z.literal("amap"),
+    poiId: id.optional(),
+    location: locationSchema,
+  }),
+  z.strictObject({
+    ...placeFields,
+    source: z.literal("manual"),
+    location: locationSchema.nullable(),
+  }),
+]);
+export type PlaceRef = z.infer<typeof placeSchema>;
 export const userSchema = z.strictObject({
   ...base,
   displayName: text(30),

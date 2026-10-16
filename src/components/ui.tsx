@@ -147,10 +147,26 @@ export function Unavailable({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-export function PetCard({ pet }: { pet: Pet }) {
+export function PetCard({
+  pet,
+  distance,
+  selected,
+  onSelect,
+}: {
+  pet: Pet;
+  distance?: string;
+  selected?: boolean;
+  onSelect?: () => void;
+}) {
   return (
-    <article className="pet-card card">
-      <Link href={`/pets/${pet.id}`} className="pet-card-main">
+    <article
+      className={`pet-card card ${selected ? "pet-selected" : ""}`}
+      data-pet-id={pet.id}
+    >
+      <Link
+        href={distance ? `/pets/${pet.id}/card` : `/pets/${pet.id}`}
+        className="pet-card-main"
+      >
         <div className="pet-photo">
           <PetImage image={pet.photo} alt={pet.name} />
           <span className="photo-label">虚构宠友</span>
@@ -181,8 +197,27 @@ export function PetCard({ pet }: { pet: Pet }) {
             <MapPin size={13} />
             {pet.city} · {pet.district}
           </div>
+          {distance && (
+            <p className="pet-distance">{distance} · 大致直线距离</p>
+          )}
+          <div className="tags">
+            {pet.activityTags.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
         </div>
       </Link>
+      <div className="pet-actions">
+        <Link href={`/pets/${pet.id}`}>档案</Link>
+        <Link href={`/activities/new?recommendedPetId=${pet.id}`}>
+          发起约伴
+        </Link>
+        {onSelect && (
+          <button type="button" onClick={onSelect}>
+            {selected ? "地图已选中" : "在地图查看"}
+          </button>
+        )}
+      </div>
       <Link
         className="pet-compare-link"
         href={`/discover/compare?petId=${pet.id}`}

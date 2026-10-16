@@ -6,6 +6,7 @@ import { useDemo } from "@/features/demo/provider";
 import { Activity } from "@/domain/schemas";
 import { Dialog, Empty, PetImage, Title, formatTime } from "@/components/ui";
 import { PublishLink } from "@/components/shell";
+import { PlaceDetails } from "@/features/maps/places";
 function ActivityCard({
   activity: a,
   index,
@@ -205,9 +206,10 @@ export function ActivityDetail({ id }: { id: string }) {
               <p>
                 <MapPin />
                 {a.place.name}
-                <small>公共演示点 · 宠物准入未核实 · 地图暂未开放</small>
+                <small>公共约定点 · 宠物准入未核实</small>
               </p>
             </div>
+            <PlaceDetails place={a.place} />
             <h3>这次一起做什么</h3>
             <p className="pre-wrap">
               {a.description || "一起轻松散步，由主人确认各自宠物的互动方式。"}
