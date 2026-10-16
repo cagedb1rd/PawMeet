@@ -22,6 +22,7 @@ export default defineConfig({
     command: `npm run start -- --port ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: false,
+    env: { AI_ENABLED: "false" },
     timeout: 120000,
   },
 });

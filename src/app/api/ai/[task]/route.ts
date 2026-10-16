@@ -28,6 +28,20 @@ export async function POST(
     const { task } = await params;
     if (task !== "assistant" && !Object.hasOwn(outputSchemas, task))
       throw new AiError("AI_TASK", "未知AI任务", 400);
+    if (
+      [
+        "social-card",
+        "social-analysis",
+        "care-checklist",
+        "post-copy",
+        "match-intent",
+      ].includes(task)
+    )
+      throw new AiError(
+        "AI_TASK_RETIRED",
+        "此独立AI功能已合并或改为规则，请使用活动智能约伴或手动表单",
+        400,
+      );
     // Bound the stream itself, rather than trusting Content-Length.
     const reader = request.body?.getReader();
     if (!reader) throw new AiError("AI_INPUT", "请求不能为空", 400);

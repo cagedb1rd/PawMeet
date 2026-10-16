@@ -1,8 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { AiDraft, fillForm, petSummary } from "@/features/ai/draft";
-import { comparisonEvidence } from "@/domain/matching";
 import { useSearchParams } from "next/navigation";
 import { useDemo } from "@/features/demo/provider";
 import { Empty, PetImage, Title, useUnsaved } from "@/components/ui";
@@ -140,7 +138,6 @@ function CardView({ id }: { id: string }) {
       </div>
       {editing && mine && (
         <CardEditor
-          facts={JSON.stringify(petSummary(p))}
           key={`${p.revision}-${c?.revision}`}
           initial={
             c ?? {
@@ -173,12 +170,10 @@ function CardView({ id }: { id: string }) {
   );
 }
 function CardEditor({
-  facts,
   initial,
   save,
   writable,
 }: {
-  facts: string;
   initial: SocialCardInput;
   save: (input: SocialCardInput) => boolean;
   writable: boolean;
@@ -214,22 +209,6 @@ function CardEditor({
       }}
     >
       <fieldset disabled={!writable}>
-        <AiDraft
-          task="social-card"
-          title="AI 狗狗社交名片"
-          context={{ facts }}
-          disabled={!writable}
-          onApply={(data) => {
-            fillForm(form.current, {
-              traits: data.traits.join("\n"),
-              likes: data.likes.join("\n"),
-              dislikes: data.dislikes.join("\n"),
-              cautions: data.cautions.join("\n"),
-              meetingAdvice: data.meetingAdvice,
-            });
-            setDirty(true);
-          }}
-        />
         <h2>主人复核后确认</h2>
         <p className="form-hint">
           每行一项，未知可留空。规则比较仅识别这些完整词条：
@@ -338,15 +317,9 @@ function Comparison({ target }: { target: string }) {
             ))}
           </div>
           <section className="card form-card">
-            <AiDraft
-              key={`${a!.id}-${a!.revision}-${b!.id}-${b!.revision}-${state!.revision}`}
-              task="social-analysis"
-              title="AI 社交适配解释"
-              initialText="请整理共同活动、已识别差异和初见注意事项。"
-              context={{ evidence: comparisonEvidence(state!, a!, b!) }}
-              onApply={() => {}}
-              applyLabel="已阅读解释"
-            />
+            <p className="form-hint">
+              社交适配采用确定性偏好规则，无需模型调用。
+            </p>
             <h2>明确的偏好冲突</h2>
             {result.conflicts.length ? (
               result.conflicts.map((t) => (

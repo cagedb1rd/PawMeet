@@ -21,6 +21,7 @@ import {
   checklistInputSchema,
   PlaceRef,
 } from "@/domain/schemas";
+import { checklistTemplate } from "@/lib/ai/templates";
 import { checklistCurrent } from "@/domain/phase2";
 import { demoPlaces } from "@/data/seed";
 import { shanghaiTime } from "@/features/forms/forms";
@@ -376,9 +377,13 @@ function Detail({ id }: { id: string }) {
         )}
         {mine && ["open", "assigned"].includes(h.status) && (
           <ChecklistEditor
-            facts={[JSON.stringify(petSummary(p)), h.type, h.details].join(
-              "\n",
-            )}
+            facts={[
+              p.socialNotes,
+              ...p.temperamentTags,
+              ...p.activityTags,
+              h.type,
+              h.details,
+            ].join("\n")}
             key={`${uid}-${h.contentRevision}-${p.revision}-${checklist?.revision}`}
             initial={
               checklist ?? {
@@ -465,17 +470,16 @@ function ChecklistEditor({
       }}
     >
       <fieldset disabled={!writable}>
-        <AiDraft
-          task="care-checklist"
-          title="AI 照看交接清单"
-          initialText="请整理本次互助交接注意事项，未知事项保留待确认。"
-          context={{ facts }}
-          disabled={!writable}
-          onApply={(data) => {
-            setItems(data.items);
+        <button
+          type="button"
+          className="button secondary"
+          onClick={() => {
+            setItems(checklistTemplate(facts).items);
             setDirty(true);
           }}
-        />
+        >
+          按已有资料填入交接模板
+        </button>
         <p className="form-hint">
           只填写主人已知内容，不确定项保留“待确认”，不要填写门牌、联系方式或用药剂量。
         </p>

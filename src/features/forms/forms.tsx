@@ -9,7 +9,6 @@ import {
   Empty,
   PhotoPicker,
   Title,
-  Unavailable,
   usePhotoDraft,
   useUnsaved,
 } from "@/components/ui";
@@ -20,6 +19,7 @@ import {
   postInputSchema,
   temperaments,
   PlaceRef,
+  ActivityInput,
 } from "@/domain/schemas";
 import { demoPlaces } from "@/data/seed";
 import { PlacePicker } from "@/features/maps/places";
@@ -348,15 +348,6 @@ function PostEditor() {
           </div>
           <h3>加几张可爱照片</h3>
           <PhotoPicker draft={draft} max={3} />
-          <AiDraft
-            task="post-copy"
-            title="AI 整理分享文案"
-            disabled={!writable}
-            onApply={(data) => {
-              setText(data.text);
-              setDirty(true);
-            }}
-          />
           {error && (
             <p role="alert" className="field-error">
               {error}
@@ -380,10 +371,14 @@ export function ActivityForm() {
   const { state } = useDemo();
   return state ? <ActivityEditor key={state.activeUserId} /> : null;
 }
-function ActivityEditor() {
+export function ActivityEditor({
+  initialInput,
+}: { initialInput?: ActivityInput } = {}) {
   const params = useSearchParams();
   const recommendedId = params.get("recommendedPetId");
-  const [place, setPlace] = useState<PlaceRef>(demoPlaces[0]);
+  const [place, setPlace] = useState<PlaceRef>(
+    initialInput?.place ?? demoPlaces[0],
+  );
   const { state, run, writable, notify } = useDemo(),
     router = useRouter(),
     [error, setError] = useState(""),
@@ -413,7 +408,9 @@ function ActivityEditor() {
               title: f.get("title"),
               description: f.get("description"),
               organizerPetId: f.get("pet"),
-              recommendedPetIds: recommendedId ? [recommendedId] : [],
+              recommendedPetIds:
+                initialInput?.recommendedPetIds ??
+                (recommendedId ? [recommendedId] : []),
               startAt: shanghaiTime(f.get("startAt")),
               endAt: shanghaiTime(f.get("endAt")),
               capacity: Number(f.get("capacity")),
@@ -444,11 +441,17 @@ function ActivityEditor() {
               aria-label="活动名称"
               required
               maxLength={40}
+              defaultValue={initialInput?.title}
               placeholder="比如：周末江边慢慢走"
             />
           </Field>
           <Field label="带上哪位毛孩子？ *">
-            <select name="pet" aria-label="主办宠物" required>
+            <select
+              name="pet"
+              aria-label="主办宠物"
+              required
+              defaultValue={initialInput?.organizerPetId}
+            >
               {pets.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -461,6 +464,13 @@ function ActivityEditor() {
               <input
                 aria-label="开始时间"
                 name="startAt"
+                defaultValue={
+                  initialInput
+                    ? new Date(Date.parse(initialInput.startAt) + 8 * 3600000)
+                        .toISOString()
+                        .slice(0, 16)
+                    : undefined
+                }
                 type="datetime-local"
                 required
               />
@@ -469,6 +479,13 @@ function ActivityEditor() {
               <input
                 aria-label="结束时间"
                 name="endAt"
+                defaultValue={
+                  initialInput
+                    ? new Date(Date.parse(initialInput.endAt) + 8 * 3600000)
+                        .toISOString()
+                        .slice(0, 16)
+                    : undefined
+                }
                 type="datetime-local"
                 required
               />
@@ -490,19 +507,22 @@ function ActivityEditor() {
               min={2}
               max={12}
               step={1}
-              defaultValue={6}
+              defaultValue={initialInput?.capacity ?? 6}
               required
             />
           </Field>
           <Field label="活动说明">
             <textarea
               name="description"
+              defaultValue={initialInput?.description}
               maxLength={500}
               rows={4}
               placeholder="活动安排、需要带的物品、初次见面的注意事项…"
             />
           </Field>
-          <Unavailable>AI 草稿尚未开放 · 不会发送真实邀请</Unavailable>
+          <p className="form-hint">
+            请核实时间、名额和地点准入；确认创建后才保存，不会发送真实邀请。
+          </p>
           {error && (
             <p role="alert" className="field-error">
               {error}

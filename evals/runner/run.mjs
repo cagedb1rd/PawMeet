@@ -11,7 +11,9 @@ if (!["all", "core", "tools", "risk"].includes(suite))
   throw Error("--suite must be all, core, tools or risk");
 if (!["mock", "live"].includes(mode))
   throw Error("--mode must be mock or live");
-const max = Number(option("--max-calls", "55"));
+const max = Number(option("--max-calls", mode === "live" ? "3" : "55"));
+if (mode === "live" && max > 3)
+  throw Error("Phase 4.5 首次真实验证最多3次传输（含重试），不得扩大预算。");
 if (!Number.isInteger(max) || max < 1 || max > 100)
   throw Error("--max-calls must be 1..100");
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
@@ -39,6 +41,10 @@ if (args.includes("--dry-run")) {
   );
   process.exit(0);
 }
+if (mode === "live" && process.env.PAWMEET_ALLOW_LIVE_AI !== "approved")
+  throw Error(
+    "真实Qwen评测默认关闭；必须先获得用户明确批准，再设置PAWMEET_ALLOW_LIVE_AI=approved。",
+  );
 if (mode === "live" && !process.env.DASHSCOPE_API_KEY) {
   writeFileSync(
     report,

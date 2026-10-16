@@ -105,6 +105,22 @@ export function validateOutput<T extends AiTask>(
   now: Date,
 ) {
   const data = outputSchemas[task].parse(raw);
+  if (task === "companion-intent") {
+    const intent = outputSchemas["companion-intent"].parse(data);
+    for (const fact of [
+      ...intent.preferences,
+      ...intent.hardRequirements,
+      intent.activityType,
+      intent.placeQuery,
+      intent.timeText,
+    ].filter(Boolean))
+      if (!request.text.includes(fact!)) throw Error("约伴条件缺少原文依据");
+    intent.match = outputSchemas["match-intent"].parse(
+      validateOutput("match-intent", intent.match, request, now),
+    );
+    // Times are proposals only; explicit UI confirmation is required before tools.
+    return intent;
+  }
   const source = [
     request.text,
     request.context.facts ?? "",

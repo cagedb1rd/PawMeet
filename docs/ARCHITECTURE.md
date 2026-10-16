@@ -1,6 +1,6 @@
 # PawMeet 技术架构
 
-状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4 已实现 Qwen 服务、结构化草稿、规则推荐和原生工具调用循环。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md) 与 [PROGRESS](PROGRESS.md)。Phase 5 未授权。
+状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4.5 精简为智能约伴、档案填写、互助填表三个 AI 场景，复用原 Qwen 服务和原生工具调用循环；新版导航及人工业务保持。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md) 与 [PROGRESS](PROGRESS.md)。Phase 5 未授权。
 
 ## 1. 选型与边界
 
@@ -75,7 +75,7 @@ tests/unit/ai*.test.ts            # Qwen mock、工具协议、限额与规则
 evals/{cases,runner,reports}/      # 35核心+11对抗+8工具；分开报告live/mock
 ```
 
-当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。名片、两宠比较和 PNG 导出位于 `features/cards`；地点选择器位于 `features/maps`，嵌入表单并只更新内存草稿；筛选使用可折叠区域。AI 草稿复核位于 features/ai/draft.tsx，助手位于 /assistant。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
+当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。名片、两宠比较和 PNG 导出位于 `features/cards`；地点选择器位于 `features/maps`，嵌入表单并只更新内存草稿；筛选使用可折叠区域。AI 草稿复核位于 features/ai/draft.tsx，智能约伴位于 /activities，/assistant 重定向到活动页。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
 
 ## 3. 数据契约
 
@@ -106,7 +106,7 @@ Phase 3 对 v2 的 PlaceRef 作兼容扩展，不重写已有 demo 地点或档�
 
 Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空标题 / 空关系，保留 key 和 schemaVersion=2；读取不改写磁盘，下一次成功命令才落盘。v1 仍先通过冻结旧 Schema 再迁移。损坏字段、未知属性及无效关注引用仍拒绝读取，不靠默认值掩盖损坏。关注由 `toggle-follow` 命令和同一 Repository 提交，失败不更新视图；不新增独立存储系统。标题为空只在展示时取正文首行，不重写原正文。
 
-页面与组件边界见 [UI_REDESIGN](UI_REDESIGN.md)：`PostFeed` 将帖子交替分入两列，各列自然堆叠；`PostCard` 复用列表 / 详情点赞，`FollowButton` 在用户主页和详情复用，`NearbyTabs` 保留原业务 URL。搜索只读当前快照，不调用 AI；新关注关系不会作为额外模型上下文发送。活动距离用 `DEFAULT_REFERENCE`（杭州滨江公共演示点）和现有 GCJ02 Haversine，不冒充实时位置；无坐标显示未知。原 Qwen 工作流和 API 未改动。
+页面与组件边界见 [UI_REDESIGN](UI_REDESIGN.md)：`PostFeed` 将帖子交替分入两列，各列自然堆叠；`PostCard` 复用列表 / 详情点赞，`FollowButton` 在用户主页和详情复用，`NearbyTabs` 保留原业务 URL。搜索只读当前快照，不调用 AI；新关注关系不会作为额外模型上下文发送。活动距离用 `DEFAULT_REFERENCE`（杭州滨江公共演示点）和现有 GCJ02 Haversine，不冒充实时位置；无坐标显示未知。智能约伴在活动页复用该卡片风格，不改变首页与导航。
 
 引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动、未来开放互助或 assigned / helper_done 互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。名片仅主人可确认且 petRevision 必须当前；清单仅求助人可编辑，引用当前宠物版本与需求 contentRevision。实体引用、有效申请唯一性、已选帮助者 / acceptedApplicationId 一致性由 Schema 校验；具体操作的角色与状态在命令层校验。
 
@@ -139,7 +139,7 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 [matching.ts](../src/domain/matching.ts) 已实现推荐扩展：
 - 匹配为可解释偏好分（非安全概率）：活动标签 Jaccard ×45、已知相同性格且无已识别冲突项 ×30、体型相同项 ×15、`max(0,1-distanceM/10000)` ×10；未知项为 0 并提示信息不足，不归一化冒充完整信息。性格相容项复用明确相同标签与comparePets冲突规则，例如一方“怕追逐”而另一方“喜欢追逐”标注意事项，不推断攻击风险。
 - 按匹配排序为分降序→距离升序→ID。显示对应规则贡献与已知差异，不将“同品种”默认计为合适。数字称“偏好匹配分”，不能叫安全分。
-- 适配分析先运行 comparePets 与 comparisonEvidence；Qwen 只能选择、排序给定依据并逐行摘录，不新增事实。解释引用和句子均校验；输出不合约时解释失败可见，原规则结果仍可使用。自由社交文字不做专业行为判断。
+- 适配分析直接运行 comparePets，展示已识别冲突、共同偏好、缺失信息和初见建议，无独立模型调用。自由社交文字不做专业行为判断。
 
 ## 6. Qwen 调用与确认机制
 
@@ -147,39 +147,34 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 
 [Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)。密钥、Prompt、固定模型与额度模块使用 server-only。仅允许服务端环境 DASHSCOPE_API_KEY / AI_BASE_URL / AI_MODEL；默认 qwen3.8-flash，用户已授权该型号，拒绝其他型号且无自动回退。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
-POST /api/ai/{task} 接受 {text, context}。固定任务为 pet-profile、social-card、match-intent、help-intent、care-checklist、social-analysis、post-copy；不接受 now、system、model、URL 或业务写入字段。服务端构造可信当前时间与 Asia/Shanghai。仅本地评测可冻结时间。
+POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
 
-| 任务 | 最少上下文与结果 |
+| 场景 | 最少上下文与结果 |
 | --- | --- |
-| pet-profile | 描述文本；基本信息可空，性格 / 活动标签附原文证据，喜欢 / 不喜 / 注意事项为原文字符串 |
-| social-card | 描述 + 单只宠物必要习惯摘要；可编辑名片四块与初见建议 |
-| match-intent | 描述 + 选中本人宠物摘要；包含 / 排除条件、半径、排序与澄清，不含宠友实体 |
-| help-intent | 描述 + 最多3只本人宠物摘要；类型、宠物、起止、时长、原始时间文字、地区和地点线索；不生成坐标 |
-| care-checklist | 单只档案习惯与本次互助内容；可编辑清单，未知饮食、健康、交接细节强制保留待确认项 |
-| social-analysis | 两宠程序计算的最多20条依据；输出只能引用并摘录这些依据 |
-| post-copy | 用户自己的文字；摘录整理后由用户编辑发布 |
+| pet-profile | 描述文本；基本信息可空，性格 / 活动标签附原文证据，填入后由主人编辑并确认保存 |
+| help-intent | 描述 + 最多3只本人宠物摘要；类型、宠物、起止、时长、原始时间与公共地点线索；缺失信息及地点复核沿用原表单校验 |
+| companion-intent | 描述 + 选中本人宠物摘要；match 包含 / 排斥条件、日期时间提议、活动类型、地点关键词、软偏好、其他硬要求、澄清；不返回实体 |
 
-成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；clarifications / warnings 位于各任务 data 内。失败 {ok:false,requestId,error:{code,message,retryable}}，不返回上游原始正文或思考过程。400 输入 / 协议、413 超量、403 来源、429 本地额度、503 配置 / 账本、502 上游 / 非法输出、504 超时。
+成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；失败 {ok:false,requestId,error:{code,message,retryable}}。400 输入 / 协议、413 超量、403 来源、429 本地额度、503 配置 / 账本、502 上游 / 非法输出、504 超时。失败不返回上游原始正文或思考过程。
 
-实际流读取上限48KB，用户描述1500字；上下文、数组、字符串另由共享 strict Zod 限制。上游请求序列化上限30000字符，响应最多64000字节；统一 max_tokens=1400、temperature=0.1、enable_thinking=false、preserve_thinking=false、非流式。结构化任务使用共享Zod生成的JSON Schema strict并执行本地Zod与事实校验；原生tools请求使用JSON模式。最终回答不合约时，最多一次不带tools的真实严格Schema修复，仍受4轮和额度上限；失败不伪装成功。429 / 503及受控连接重置/连接超时最多重试一次，逐次预留额度；其余网络 / 总超时 / 结构失败不自动重试。单次传输20秒，浏览器45秒可主动取消；已发出的上游请求不会退还额度。
+请求流上限48KB，描述1500字、摘要至多3宠；上游请求30000字符、响应64000字节。固定 qwen3.8-flash、max_tokens=1400、temperature=0.1、关闭思考与流式。结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。格式错误最多一次无工具严格总结修复，计入4轮。429 / 503及受控连接重置 / 连接超时最多一次传输重试，逐次预留额度；单次20秒，浏览器45秒可取消，无无限重试。
 
-Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。服务端提供可信北京时间日历today/tomorrow/dayAfterTomorrow，辅助模型处理相对日期；最终日期仍校验。输出校验包括：来源摘录、月龄与体型依据、标签与证据的受控映射、否定范围、相对日期与模糊时段、本人宠物ID、日期先后、筛选冲突 / 不支持半径、剂量与保证禁区、解释依据。语义验证是保守防线，不能证明所有自然语言都正确；疑义与事实仍须主人复核。
+[Prompt](../src/server/ai/prompts.ts) 版本 pawmeet-6.0；业务日历由服务端提供。档案 / 互助保留摘录、否定、年龄、日期、本人ID和剂量禁区等防线。约伴自由偏好与其他硬要求必须有原文依据，match 复用原校验。模型日期只作提议：界面要求用户明确输入北京时间起止后确认，未确认不查询，模糊“周六下午”不自动猜小时。所有业务写入继续走正式 Schema、角色 / 状态和 Repository，身份 / 数据 revision 变化中止旧工作流。
 
-草稿只保存在内存，身份 / 来源 revision 改变时重建相关组件并中止在途结果。填入现有表单仍不写入；主人编辑并点击原确认按钮，经过已有业务 Schema、角色 / 状态机和 Repository 才保存。互助生成后强制重新确认公共地点；模糊时间留空。清单继续引用 petRevision / contentRevision。
+### 活动优先的原生工具工作流
 
-### 原生 Tool Calling 与 localStorage
+实现入口为 [Companion](../src/features/ai/companion.tsx) 与 [companion.ts](../src/lib/ai/companion.ts)，复用现有 Service / 签名续传、matchQuery、comparePets、高德 searchPlaces 和 ActivityEditor。状态为 idle → extracting → clarifying → searching → recommendations，用户选组局后 organizing → draft，任意失败进入 error，可取消重置或回手动表单。
 
-助手请求 /api/ai/assistant。服务端使用真实 tools + tool_choice=auto、parallel_tool_calls=true，接受官方 assistant.tool_calls；传输层允许官方 index 元数据但剥离后再进入共享严格协议；tool_calls=null按无调用处理。原生参数使用稀疏可选字段，缺失省略；radiusKm为integer数字枚举，durationMinutes为integer。浏览器先按nativeToolSchemas校验、补齐null/空数组等业务默认值，再按原toolSchemas完整校验；未知字段、非法范围/枚举仍拒绝。原始工具Schema评测采用实际发布的nativeToolSchemas，不把规范化后成功算原始正确。没有将 JSON 意图解析当作工具调用。
+1. 需求提取和复核后，search 阶段只向模型开放 search_activities。浏览器用已确认条件覆盖工具参数，检查未来 scheduled、剩余名额、时间窗口内完整活动、未舍入的距离上限、地区 / 类型、体型 / 品种及明确排斥条件。未核实的额外硬条件保守排除，不凭描述声称场地允许宠物。软偏好允许部分符合并展示差异，候选最多5条，进入详情由主人自行报名。
+2. 查询成功无结果才说明无匹配；工具错误独立展示并回传。用户可从成功查询选择“自己组局”，或在最初明确创建并确认后跳过活动查询；不会自动报名、邀请或发布。
+3. organize 阶段按任务开放 search_pets、search_places、check_compatibility、create_activity_draft，模型可以原生并行调用独立查询。search_pets 复用本地硬筛选及可解释匹配分，性格 / 活动软偏好参与排序，未知偏好提示核实；明确排斥不放宽。search_places 调用现有高德周边查询（最多5km），再按确认半径过滤，地点准入始终 unknown；无网络时只能由用户明确选择演示点恢复，不静默填演示成功结果。
+4. 宠友 ID 只能取本次真实查询候选，非空推荐名单必须经过 comparePets；仅需地点时可不查宠友，使用空推荐名单。草稿 placeIndex 只指向本次实际候选，不能接受模型坐标；未经查询 / 比较的引用被拒绝。活动标题和说明采用程序的待确认模板，避免模型借草稿编造场地规定。日期取主人确认值，名额沿用手动表单默认6，可编辑，不代表场地可用名额。
+5. 全部工具参数严格 Zod 校验，工具执行不导入写命令。结果每类最多5条摘要回传模型，不发送照片、完整 localStorage、住址或参考坐标。客户端维护原地点对象，回传仅名称、索引、来源、大致距离和准入未知等必要信息。
+6. 服务端签名上下文绑定匿名会话、workflow / stage、call IDs、历史和15分钟有效期；续传不得替换 workflow。结果必须与待执行 ID / 类型一致，按 role=tool 和 tool_call_id 回传。search 成功后严格总结；organize 的中间成功继续保留工具，草稿成功后才严格总结，错误允许受限修正。每轮最多3工具、每阶段最多4次模型轮转和9次工具，4轮用户上下文；最终回答只允许受控状态和真实引用白名单。
+7. 用户说“扩大到5公里”等单半径修改视为明确同意，确定性替换半径、保留日期及其他条件，仅重跑当前阶段，不再消耗提取调用。其他复杂修改当前需重新描述和复核，不宣称任意自然语言多轮都完善。模型重复查询使用本阶段缓存；条件 / 身份 / 参考点变更清除缓存，过时回调不展示。
+8. 草稿只在内存中传入原 ActivityEditor，不新增持久化结构；用户编辑并点击“确认创建活动”才走 create-activity 命令（含主办者自身报名这一原业务规则）。普通手动发帖、档案、地图、活动和互助不依赖 AI。
 
-1. 首轮只发送用户问题和最多3只本人宠物摘要，不发送全表、图片、完整localStorage或参考坐标。
-2. Qwen 返回原生 tool_calls；服务端签名续传令牌绑定匿名cookie会话、待执行call IDs、对话历史、轮次与15分钟有效期。客户端不能上传自定义 system 或伪造历史。
-3. 浏览器 [executeTool](../src/lib/ai/tools.ts) 校验名称 / Zod 参数，查询当前 Provider 快照。search_pets 复用 discoverQuery / matchQuery 与 GCJ02 距离；search_activities 查询现有未来 scheduled 活动；create_help_draft 只返回结构化内存草稿。
-4. 每个查询最多5个必要结果摘要返回模型。服务端校验全部待执行ID唯一且齐全、结果类型与大小，按原 tool_call_id 加入 role=tool 再调用 Qwen。签名不能证明客户端实体真实性；当前浏览器是演示数据所有者，业务确认仍在本地。
-   本轮全部工具成功时移除tools，用严格回答Schema总结；任一工具失败时保留原生tools供模型修正。工具错误未解决时，服务端拒绝“已查询/已生成/空结果”等成功状态，不把执行失败解释为无记录。
-5. 支持每轮最多3个工具、每次用户请求最多4次模型轮转、最多4轮用户对话。工具异常 / 空结果 / 参数错误 / 本地2秒检查超时显式回传；不能自动扩大范围。达到轮次或上下文上限要求新对话。
-6. 最终回答使用受控状态文字和真实结果ID白名单；互助草稿专用状态明确“尚未发布”且无实体引用；宠友 / 活动卡片由浏览器实际结果渲染，模型不能重造距离、分数、实体。互助草稿须打开已有表单并经主人确认，工具执行器不导入写命令或Repository。
-
-签名token是防篡改的上下文，不是加密保险箱；只包含该对话选择过的必要数据，不持久化业务副本。通过HTTPS传输，清理对话即可丢弃客户端内存。不要将带token的请求日志公开。
+签名令牌不是加密或认证，不能证明浏览器业务实体真实；当前浏览器是演示数据所有者。只包含本任务必要数据，不建立服务端业务数据库。
 
 ### 公开 Demo 保护
 
@@ -189,7 +184,7 @@ Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。�
 
 .runtime/ai-quota.json按mutex串行、临时写入和原子rename，在上游前持久预留；损坏或写失败fail closed，重启不清零。多进程 / serverless 不得沿用该账本；部署属于未授权Phase 5。平台配额也须独立限制。
 
-本地eval runner使用隔离的.local/ai-eval账本和虚构fixture，仍有调用与token上限、最少6.5秒间隔和连续3次上游错误熔断；不会提供公网额度绕过接口。真实结果与mock分列AI_EVAL。
+普通 Playwright 服务显式 AI_ENABLED=false；所有日常测试使用 mock。历史 live runner / 页面套件默认阻断，需用户先明确批准，再由操作者设置 PAWMEET_ALLOW_LIVE_AI=approved；本阶段首次最多3次传输（含重试），不能运行旧大批量命令。待批准方案和真实 / mock 证据见 AI_EVAL。
 
 ## 7. 高德地图接入
 

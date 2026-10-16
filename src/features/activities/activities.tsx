@@ -12,6 +12,7 @@ import {
 import { Activity } from "@/domain/schemas";
 import { Dialog, Empty, PetImage, Title, formatTime } from "@/components/ui";
 import { PublishLink } from "@/components/shell";
+import { Companion } from "@/features/ai/companion";
 import { PlaceDetails } from "@/features/maps/places";
 function ActivityCard({
   activity: a,
@@ -131,18 +132,7 @@ function ActivityList({ initialTab }: { initialTab: string }) {
         description="一段散步、一片草地，和毛孩子一起积攒新回忆。"
         action={<PublishLink href="/activities/new">发起活动</PublishLink>}
       />
-      <details className="ai-companion">
-        <summary>
-          AI 智能约伴 <span className="pill">筹备中</span>
-        </summary>
-        <p>
-          Phase 4.5
-          将支持先找已有活动，必要时寻找宠友和地点，再生成可编辑草稿。当前可手动创建活动。
-        </p>
-        <Link href="/assistant" className="text-link">
-          打开现有 AI 查询助手 →
-        </Link>
-      </details>
+      <Companion />
       <div className="tabs">
         <button
           className={tab === "all" ? "selected" : ""}

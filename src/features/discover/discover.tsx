@@ -16,9 +16,6 @@ import type { MapPoint } from "@/lib/maps/contracts";
 import { currentPosition, normalizeGps } from "@/lib/maps/client";
 import { MapCanvas } from "@/features/maps/map-canvas";
 import { PlaceExplorer } from "@/features/maps/places";
-import { AiSearch } from "@/features/ai/search";
-import { MatchIntent } from "@/lib/ai/contracts";
-import { matchQuery } from "@/domain/matching";
 export function Discover() {
   const params = useSearchParams();
   const [filters, setFilters] = useState<DiscoverFilters>({
@@ -33,11 +30,6 @@ export function Discover() {
   const [selectedId, setSelectedId] = useState("");
   const [message, setMessage] = useState("");
   const [locating, setLocating] = useState(false);
-  const [aiFilter, setAiFilter] = useState<{
-    intent: MatchIntent;
-    ownId: string;
-    actor: string;
-  } | null>(null);
   const locationRequest = useRef(0);
   useEffect(
     () => () => {
@@ -47,10 +39,7 @@ export function Discover() {
   );
   const { state } = useDemo();
   if (!state) return null;
-  const activeAi = aiFilter?.actor === state.activeUserId ? aiFilter : null;
-  const results = activeAi
-    ? matchQuery(state, reference, activeAi.intent, activeAi.ownId)
-    : discoverQuery(state, reference, filters);
+  const results = discoverQuery(state, reference, filters);
   const selected = results.find((r) => r.pet.id === selectedId);
   function toggle<K extends "breeds" | "sizes" | "temperaments" | "activities">(
     key: K,
@@ -96,43 +85,6 @@ export function Discover() {
         title="附近宠友"
         description="从一次散步开始，认识附近的毛孩子。虚构区域点 · 大致直线距离。"
       />
-      <details className="discovery-ai">
-        <summary>智能找宠友与现有 AI 助手</summary>
-        <Link href="/assistant" className="button secondary">
-          AI 助手 · 查宠友、活动与互助草稿
-        </Link>
-        <AiSearch
-          key={state.activeUserId}
-          onApply={(intent, ownId) => {
-            setAiFilter({ intent, ownId, actor: state.activeUserId });
-            setSelectedId("");
-          }}
-        />
-      </details>
-      {activeAi && (
-        <section className="card form-card">
-          <p>
-            AI 条件已应用 · {activeAi.intent.radiusKm ?? 5} 公里 ·{" "}
-            {activeAi.intent.sort === "match" ? "偏好匹配优先" : "距离优先"} ·
-            以下列表与地图共用查询。偏好分由程序计算，不是安全概率。
-          </p>
-          <p>
-            {[
-              activeAi.intent.district,
-              ...activeAi.intent.breeds,
-              ...activeAi.intent.sizes,
-              ...activeAi.intent.temperaments,
-              ...activeAi.intent.activities,
-              ...activeAi.intent.excludedSizes.map((s) => `排除${s}`),
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          <button type="button" onClick={() => setAiFilter(null)}>
-            退出 AI 筛选
-          </button>
-        </section>
-      )}
       <section className="card reference-panel">
         <span className="eyebrow">从一处公共地点，认识附近的它</span>
         <h3 data-testid="reference-label">{referenceLabel}</h3>
@@ -218,13 +170,7 @@ export function Discover() {
           />
         )}
       </section>
-      <section
-        className="card discover-filters"
-        aria-label="宠友筛选"
-        onClick={() => {
-          if (activeAi) setAiFilter(null);
-        }}
-      >
+      <section className="card discover-filters" aria-label="宠友筛选">
         <input
           aria-label="按名称品种或区域搜索"
           maxLength={100}
@@ -287,8 +233,7 @@ export function Discover() {
           宠友地图
         </button>
         <span className="tabs-right" data-testid="result-count">
-          {results.length} 位宠友 ·{" "}
-          {activeAi?.intent.sort === "match" ? "偏好匹配优先" : "距离优先"}
+          {results.length} 位宠友 · 距离优先
         </span>
       </div>
       {view === "map" && (
@@ -359,7 +304,6 @@ export function Discover() {
             className="button secondary"
             onClick={() => {
               setFilters({ ...defaultFilters });
-              setAiFilter(null);
             }}
           >
             清除筛选

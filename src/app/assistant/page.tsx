@@ -1,4 +1,4 @@
-import { AssistantPage } from "@/features/ai/assistant";
+import { redirect } from "next/navigation";
 export default function Page() {
-  return <AssistantPage />;
+  redirect("/activities#companion");
 }

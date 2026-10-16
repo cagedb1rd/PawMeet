@@ -7,6 +7,7 @@ import {
   AssistantStep,
   toolCallSchema,
   petSummarySchema,
+  companionContextSchema,
   toolResultSchema,
   assistantSummaries,
 } from "@/lib/ai/contracts";
@@ -19,6 +20,7 @@ import {
   calendarContext,
   taskOutputSchema,
   finalAnswerSchema,
+  workflowPrompt,
 } from "./prompts";
 import { AiError } from "./errors";
 import { seal, unseal } from "./session";
@@ -75,9 +77,11 @@ const messageSchema = z.strictObject({
   tool_call_id: z.string().max(100).optional(),
 });
 const stateSchema = z.strictObject({
+  workflow: companionContextSchema.optional(),
   session: z.string(),
   expires: z.number(),
   round: z.number().int().min(0).max(4),
+  toolCount: z.number().int().min(0).max(9).default(0),
   turns: z.number().int().min(1).max(4),
   messages: z.array(messageSchema).max(28),
   pets: z.array(petSummarySchema).max(3),
@@ -101,7 +105,7 @@ export async function assistantStep(
     }
     if (state.session !== session || state.expires < now.getTime())
       throw new AiError("AI_CONTINUATION", "对话已过期，请重新开始", 400);
-    if (input.pets)
+    if (input.pets || input.workflow)
       throw new AiError("AI_PROTOCOL", "对话中不能替换宠物上下文", 400);
     if (state.pending.length) {
       if (
@@ -123,6 +127,9 @@ export async function assistantStep(
           search_pets: "pets",
           search_activities: "activities",
           create_help_draft: "help-draft",
+          search_places: "places",
+          check_compatibility: "compatibility",
+          create_activity_draft: "activity-draft",
         }[c.function.name];
         if (r.kind !== "error" && r.kind !== expected)
           throw new AiError("AI_PROTOCOL", "工具结果类型不匹配", 400);
@@ -143,14 +150,17 @@ export async function assistantStep(
       state.messages.push({ role: "user", content: input.text });
       state.turns++;
       state.round = 0;
+      state.toolCount = 0;
     }
   } else {
     if (!input.text?.trim() || input.results?.length)
       throw new AiError("AI_PROTOCOL", "请输入问题后开始对话", 400);
     state = {
+      workflow: input.workflow,
       session,
       expires: now.getTime() + 15 * 60000,
       round: 0,
+      toolCount: 0,
       turns: 1,
       messages: [{ role: "user", content: input.text }],
       pets: input.pets ?? [],
@@ -167,26 +177,64 @@ export async function assistantStep(
   const messages: Message[] = [
     {
       role: "system",
-      content: `${assistantPrompt}\nsummary只允许以下值之一：${JSON.stringify(assistantSummaries)}\ncalendar=${JSON.stringify(calendarContext(now))}；now=${now.toISOString()}；本人宠物=${JSON.stringify(state.pets)}`,
+      content: `${state.workflow ? workflowPrompt(state.workflow) : ""}\n${assistantPrompt}\nsummary只允许以下值之一：${JSON.stringify(assistantSummaries)}\ncalendar=${JSON.stringify(calendarContext(now))}；now=${now.toISOString()}；本人宠物=${JSON.stringify(state.pets)}`,
     },
     ...(state.messages as Message[]),
   ];
   const finalize =
+    (!state.workflow ||
+      state.workflow.stage === "search" ||
+      input.results?.some((r) => r.result.kind === "activity-draft")) &&
     !!input.results?.length &&
     input.results.every((r) => r.result.kind !== "error");
   const result = await call(
     messages,
     session,
     requestId,
-    finalize ? undefined : nativeTools,
+    finalize
+      ? undefined
+      : nativeTools.filter((t) =>
+          !state.workflow
+            ? [
+                "search_pets",
+                "search_activities",
+                "create_help_draft",
+              ].includes(t.function.name)
+            : state.workflow.stage === "search"
+              ? t.function.name === "search_activities"
+              : [
+                  "search_pets",
+                  "search_places",
+                  "check_compatibility",
+                  "create_activity_draft",
+                ].includes(t.function.name),
+        ),
     undefined,
     finalize ? finalAnswerSchema : undefined,
   );
   const calls = result.message.tool_calls ?? [];
   if (finalize && calls.length)
     throw new AiError("AI_TOOL_PROTOCOL", "助手总结阶段返回了额外工具调用");
+  const permitted = state.workflow
+    ? state.workflow.stage === "search"
+      ? ["search_activities"]
+      : [
+          "search_pets",
+          "search_places",
+          "check_compatibility",
+          "create_activity_draft",
+        ]
+    : ["search_pets", "search_activities", "create_help_draft"];
+  if (
+    calls.length > 3 ||
+    calls.some((c) => !permitted.includes(c.function.name))
+  )
+    throw new AiError("AI_TOOL_PROTOCOL", "模型请求了当前阶段未开放的工具");
   if (new Set(calls.map((c) => c.id)).size !== calls.length)
     throw new AiError("AI_TOOL_PROTOCOL", "Qwen返回重复工具调用ID");
+  state.toolCount += calls.length;
+  if (state.toolCount > 9)
+    throw new AiError("AI_TOOL_CALL_LIMIT", "工具调用已达9次上限", 400);
   state.round++;
   state.refs = [...new Set(state.refs)].slice(-30);
   state.pending = calls;
@@ -218,6 +266,7 @@ export async function assistantStep(
       [
         "已查询，请查看实际结果卡片。",
         "已生成互助草稿，请编辑并确认，尚未发布。",
+        "已生成活动草稿，请编辑并确认，尚未创建。",
         "没有符合条件的结果，请调整条件。",
       ].includes(answer.summary)
     )

@@ -1,5 +1,4 @@
 import { test, expect, Page } from "@playwright/test";
-import { emptyMatch } from "../../src/lib/ai/contracts";
 const notes = { clarifications: [], warnings: [] };
 const success = (data: unknown) => ({
   ok: true,
@@ -67,64 +66,41 @@ test("mock AI 档案：生成与填入均不写入，编辑确认后持久化", 
   await page.reload();
   await expect(page.getByText("主人改过的名字", { exact: true })).toBeVisible();
 });
-test("mock AI 名片：丢弃不写入，确认沿用原命令", async ({ page }) => {
-  await page.route("**/api/ai/social-card", (route) =>
-    route.fulfill({
-      json: success({
-        traits: ["活泼"],
-        likes: ["并排散步"],
-        dislikes: ["不喜欢抢玩具"],
-        cautions: ["有点护食"],
-        meetingAdvice: "先保持牵引",
-        ...notes,
-      }),
-    }),
-  );
+test("名片改为手动复核：无需模型仍可编辑确认并持久化", async ({ page }) => {
   await ready(page, "/me");
   const id = await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem("pawmeet:state:v1")!);
     return s.pets.find((p: { ownerId: string }) => p.ownerId === s.activeUserId)
       .id;
   });
+  let api = 0;
+  await page.route("**/api/ai/**", (route) => {
+    api++;
+    return route.abort();
+  });
   await ready(page, `/pets/${id}/card`);
   await page.getByRole("button", { name: "编辑与确认名片" }).click();
   const before = await saved(page);
-  await generate(page, "AI 狗狗社交名片", "活泼，有点护食，不喜欢抢玩具");
-  await page.getByRole("button", { name: "丢弃草稿" }).click();
+  await page.getByLabel("需要注意的习惯").fill("有点护食");
   expect(await saved(page)).toBe(before);
-  await generate(page, "AI 狗狗社交名片", "活泼，有点护食，不喜欢抢玩具");
-  await page.getByRole("button", { name: "填入表单（尚未保存）" }).click();
-  await expect(page.getByLabel("需要注意的习惯")).toHaveValue("有点护食");
   await page.getByLabel("我已逐项复核，这是我对宠物的描述").check();
   await page.getByRole("button", { name: "确认保存社交名片" }).click();
+  await page.reload();
   await expect(page.getByTestId("social-card")).toContainText("有点护食");
+  expect(api).toBe(0);
 });
-test("mock AI 推荐：本地筛选和偏好分、无结果不编造", async ({ page }) => {
-  await page.route("**/api/ai/match-intent", (route) =>
-    route.fulfill({
-      json: success({
-        ...emptyMatch,
-        radiusKm: 5,
-        temperaments: ["温和"],
-        activities: ["散步"],
-        sort: "match",
-      }),
-    }),
-  );
+test("附近保留手动筛选，重复AI入口已经合并到活动", async ({ page }) => {
   await ready(page, "/discover");
-  await page.locator(".discovery-ai summary").click();
   const before = await saved(page);
-  await generate(page, "AI 智能推荐宠友", "找5公里内温和喜欢散步的狗狗");
-  await page.getByRole("button", { name: "应用条件并查询" }).click();
-  await expect(page.getByTestId("result-count")).toContainText("偏好匹配优先");
-  await expect(
-    page.getByText("偏好匹配分：", { exact: false }).first(),
-  ).toBeVisible();
+  await page.getByLabel("按名称品种或区域搜索").fill("不存在的宠物名字");
+  await expect(page.getByTestId("result-count")).toContainText("0");
   expect(await saved(page)).toBe(before);
-  await page.screenshot({
-    path: `test-results/phase4-recommendation-${test.info().project.name}.png`,
-    fullPage: true,
-  });
+  await expect(page.getByRole("button", { name: "生成 AI 草稿" })).toHaveCount(
+    0,
+  );
+  await page.goto("/assistant");
+  await expect(page).toHaveURL(/activities#companion/);
+  await expect(page.getByLabel("智能约伴需求")).toBeVisible();
 });
 test("mock AI 互助：模糊时间保持空，地点需重新确认", async ({ page }) => {
   await ready(page, "/help/new");
@@ -172,81 +148,18 @@ test("mock AI 互助：模糊时间保持空，地点需重新确认", async ({ 
   await page.getByRole("button", { name: "确认发布求助" }).click();
   await expect(page).toHaveURL("/help");
 });
-test("mock native 工具循环：多工具查询浏览器实际数据并回传，不写业务", async ({
-  page,
-}) => {
+test("合并后的原生工具入口默认不自动请求模型", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/ai/**", (route) => {
+    calls++;
+    return route.abort();
+  });
   await ready(page, "/assistant");
-  await page.evaluate(() => {
-    const s = JSON.parse(localStorage.getItem("pawmeet:state:v1")!);
-    const p = s.pets.find(
-      (p: { ownerId: string }) => p.ownerId !== s.activeUserId,
-    );
-    p.breed = "本地专属品种";
-    p.name = "浏览器实有狗";
-    localStorage.setItem("pawmeet:state:v1", JSON.stringify(s));
-  });
-  await page.reload();
-  await expect(
-    page.getByRole("button", { name: "切换演示身份" }),
-  ).toBeEnabled();
+  await expect(page).toHaveURL(/activities#companion/);
+  await expect(page.getByLabel("智能约伴需求")).toBeVisible();
+  expect(calls).toBe(0);
   const before = await saved(page);
-  let returned: unknown;
-  await page.route("**/api/ai/assistant", async (route) => {
-    const body = route.request().postDataJSON();
-    if (!body.results)
-      await route.fulfill({
-        json: success({
-          continuation: "mock-signed-token",
-          toolCalls: [
-            {
-              id: "pets",
-              type: "function",
-              function: {
-                name: "search_pets",
-                arguments: JSON.stringify({
-                  ...emptyMatch,
-                  radiusKm: 10,
-                  breeds: ["本地专属品种"],
-                }),
-              },
-            },
-            {
-              id: "activities",
-              type: "function",
-              function: {
-                name: "search_activities",
-                arguments: JSON.stringify({
-                  district: null,
-                  radiusKm: 5,
-                  startAfter: null,
-                  startBefore: null,
-                }),
-              },
-            },
-          ],
-          answer: null,
-        }),
-      });
-    else {
-      returned = body.results;
-      await route.fulfill({
-        json: success({
-          continuation: "mock-final-token",
-          toolCalls: [],
-          answer: { summary: "已查询，请查看实际结果卡片。", references: [] },
-        }),
-      });
-    }
-  });
-  await page.getByLabel("AI 助手需求").fill("找本地专属品种宠友和附近活动");
-  await page.getByRole("button", { name: "发送给 AI 助手" }).click();
-  await expect(page.getByTestId("tool-result")).toHaveCount(2);
-  await expect(page.getByText("浏览器实有狗", { exact: true })).toBeVisible();
-  await expect(
-    page.getByText("已查询，请查看实际结果卡片。", { exact: false }),
-  ).toBeVisible();
-  expect(JSON.stringify(returned)).toContain("浏览器实有狗");
-  expect(JSON.stringify(returned)).not.toContain("photo");
+  await page.getByRole("button", { name: "重新开始", exact: true }).click();
   expect(await saved(page)).toBe(before);
 });
 test("mock API 失败和身份切换：真实错误可见，旧草稿不能跨身份保存", async ({

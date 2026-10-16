@@ -1,3 +1,7 @@
+if (process.env.PAWMEET_ALLOW_LIVE_AI !== "approved")
+  throw Error(
+    "真实Qwen测试默认关闭；必须先获得用户明确批准，再设置PAWMEET_ALLOW_LIVE_AI=approved。原Phase4页面套件须按当前入口复核后才能执行。",
+  );
 import { defineConfig, devices } from "@playwright/test";
 const port = Number(process.env.PAWMEET_AI_LIVE_PORT ?? 3105);
 const origin = `http://localhost:${port}`;
@@ -24,6 +28,7 @@ export default defineConfig({
     env: {
       APP_ORIGIN: origin,
       AI_ENABLED: "true",
+      AI_MAX_DAILY_CALLS: "3",
       QUOTA_STORE_PATH: quotaPath,
     },
   },

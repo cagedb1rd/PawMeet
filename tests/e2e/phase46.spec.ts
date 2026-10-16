@@ -228,11 +228,10 @@ test("附近二级切换、我的记录与智能约伴预留入口", async ({ pa
   await expect(
     page.getByRole("button", { name: "我的活动", exact: true }),
   ).toHaveClass(/selected/);
-  await page.locator(".ai-companion summary").click();
-  await expect(page.getByText(/Phase 4.5 将支持/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "AI 智能约伴" })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /打开现有 AI 查询助手/ }),
-  ).toHaveAttribute("href", "/assistant");
+    page.getByRole("link", { name: "手动发起活动" }),
+  ).toHaveAttribute("href", "/activities/new");
 });
 
 test("封面加载失败显示替代状态，详情内容与点赞仍可操作", async ({ page }) => {

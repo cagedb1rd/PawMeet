@@ -120,6 +120,18 @@ export function executeTool(
     };
   }
   try {
+    if (
+      [
+        "search_places",
+        "check_compatibility",
+        "create_activity_draft",
+      ].includes(name)
+    )
+      return {
+        kind: "error",
+        code: "INVALID_ARGUMENTS",
+        message: "组局工具只能通过已确认的智能约伴工作流执行",
+      };
     if (name === "search_pets") {
       const f = taskText
         ? toolSchemas.search_pets.parse(
@@ -167,7 +179,11 @@ export function executeTool(
       const rows = state.activities
         .filter(
           (a) =>
-            a.status === "scheduled" && Date.parse(a.startAt) > now.getTime(),
+            a.status === "scheduled" &&
+            Date.parse(a.startAt) > now.getTime() &&
+            state.activitySignups.filter(
+              (s) => s.activityId === a.id && s.status === "joined",
+            ).length < a.capacity,
         )
         .map((a) => ({
           id: a.id,
