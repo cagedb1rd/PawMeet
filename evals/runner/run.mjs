@@ -7,10 +7,14 @@ const option = (name, fallback) => {
 };
 const mode = option("--mode", "mock");
 const suite = option("--suite", "all");
-if (!["all", "core", "tools", "risk"].includes(suite))
-  throw Error("--suite must be all, core, tools or risk");
+if (!["all", "core", "tools", "risk", "companion"].includes(suite))
+  throw Error("--suite must be all, core, tools, risk or companion");
 if (!["mock", "live"].includes(mode))
   throw Error("--mode must be mock or live");
+if (suite === "companion" && mode !== "live")
+  throw Error(
+    "companion is an explicitly approved live-only smoke; use ordinary unit tests for offline coverage",
+  );
 const max = Number(option("--max-calls", mode === "live" ? "3" : "55"));
 if (mode === "live" && max > 3)
   throw Error("Phase 4.5 首次真实验证最多3次传输（含重试），不得扩大预算。");
@@ -26,9 +30,17 @@ if (args.includes("--dry-run")) {
       {
         mode,
         suite,
-        core: 35,
-        validation: 11,
-        nativeTools: 8,
+        core: suite === "companion" ? undefined : 35,
+        validation: suite === "companion" ? undefined : 11,
+        nativeTools: suite === "companion" ? undefined : 8,
+        steps:
+          suite === "companion"
+            ? [
+                "companion-intent",
+                "native-search_activities",
+                "actual-tool-feedback",
+              ]
+            : undefined,
         maxCalls: max,
         model: process.env.AI_MODEL || "qwen3.8-flash",
         perCallMaxOutputTokens: 1400,

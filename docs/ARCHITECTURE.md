@@ -159,7 +159,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 请求流上限48KB，描述1500字、摘要至多3宠；上游请求30000字符、响应64000字节。固定 qwen3.8-flash、max_tokens=1400、temperature=0.1、关闭思考与流式。结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。格式错误最多一次无工具严格总结修复，计入4轮。429 / 503及受控连接重置 / 连接超时最多一次传输重试，逐次预留额度；单次20秒，浏览器45秒可取消，无无限重试。
 
-[Prompt](../src/server/ai/prompts.ts) 版本 pawmeet-6.0；业务日历由服务端提供。档案 / 互助保留摘录、否定、年龄、日期、本人ID和剂量禁区等防线。约伴自由偏好与其他硬要求必须有原文依据，match 复用原校验。模型日期只作提议：界面要求用户明确输入北京时间起止后确认，未确认不查询，模糊“周六下午”不自动猜小时。所有业务写入继续走正式 Schema、角色 / 状态和 Repository，身份 / 数据 revision 变化中止旧工作流。
+[Prompt](../src/server/ai/prompts.ts) 版本 pawmeet-6.1（明确禁止把排斥条件展开为包含白名单）；业务日历由服务端提供。档案 / 互助保留摘录、否定、年龄、日期、本人ID和剂量禁区等防线。约伴自由偏好与其他硬要求必须有原文依据，match 复用原校验。模型日期只作提议：界面要求用户明确输入北京时间起止后确认，未确认不查询，模糊“周六下午”不自动猜小时。所有业务写入继续走正式 Schema、角色 / 状态和 Repository，身份 / 数据 revision 变化中止旧工作流。
 
 ### 活动优先的原生工具工作流
 
@@ -184,7 +184,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 .runtime/ai-quota.json按mutex串行、临时写入和原子rename，在上游前持久预留；损坏或写失败fail closed，重启不清零。多进程 / serverless 不得沿用该账本；部署属于未授权Phase 5。平台配额也须独立限制。
 
-普通 Playwright 服务显式 AI_ENABLED=false；所有日常测试使用 mock。历史 live runner / 页面套件默认阻断，需用户先明确批准，再由操作者设置 PAWMEET_ALLOW_LIVE_AI=approved；本阶段首次最多3次传输（含重试），不能运行旧大批量命令。待批准方案和真实 / mock 证据见 AI_EVAL。
+普通 Playwright 服务显式 AI_ENABLED=false；所有日常测试使用 mock。历史 live runner / 页面套件默认阻断，需用户先明确批准，再由操作者设置 PAWMEET_ALLOW_LIVE_AI=approved；首次获批3次传输已用完，不能重跑或沿用旧大批量命令；后续需新批准。实际用量、失败及真实 / mock 边界见 AI_EVAL。
 
 ## 7. 高德地图接入
 

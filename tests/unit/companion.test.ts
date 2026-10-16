@@ -800,3 +800,46 @@ describe("Phase 4.5 review regressions", () => {
     },
   );
 });
+
+describe("Phase 4.5 first live extraction regression", () => {
+  const text =
+    "周六下午想带史宾格找3公里内性格温和的狗狗一起散步，不要大型犬，最好附近有草坪。";
+  const intent: CompanionIntent = {
+    mode: "search",
+    match: {
+      ...emptyMatch,
+      radiusKm: 3,
+      sizes: ["small", "medium"],
+      temperaments: ["温和"],
+      activities: ["散步"],
+      excludedSizes: ["large"],
+    },
+    startAt: null,
+    endAt: null,
+    timeText: "周六下午",
+    activityType: "散步",
+    placeQuery: null,
+    preferences: ["最好附近有草坪"],
+    hardRequirements: [],
+    clarifications: ["请确认具体日期和时间"],
+    warnings: [],
+  };
+  it("rejects the actual Qwen response that expands a size exclusion into an inclusion whitelist", () => {
+    expect(companionIntentSchema.safeParse(intent).success).toBe(true);
+    expect(() =>
+      validateOutput("companion-intent", intent, { text, context: {} }, now),
+    ).toThrow("体型缺少用户描述依据");
+  });
+  it("accepts the explicitly stated exclusion without inventing positive size constraints", () => {
+    const extracted = validateOutput(
+      "companion-intent",
+      { ...intent, match: { ...intent.match, sizes: [] } },
+      { text, context: {} },
+      now,
+    ) as CompanionIntent;
+    expect(extracted.match.sizes).toEqual([]);
+    expect(extracted.match.excludedSizes).toEqual(["large"]);
+    expect(extracted.startAt).toBeNull();
+    expect(extracted.preferences).toEqual(["最好附近有草坪"]);
+  });
+});
