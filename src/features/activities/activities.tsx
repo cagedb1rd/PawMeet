@@ -3,6 +3,12 @@ import Link from "next/link";
 import { CalendarDays, MapPin, Users, ArrowUpRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDemo } from "@/features/demo/provider";
+import { useSearchParams } from "next/navigation";
+import {
+  DEFAULT_REFERENCE,
+  distanceMeters,
+  formatDistance,
+} from "@/domain/geo";
 import { Activity } from "@/domain/schemas";
 import { Dialog, Empty, PetImage, Title, formatTime } from "@/components/ui";
 import { PublishLink } from "@/components/shell";
@@ -63,6 +69,19 @@ function ActivityCard({
           <MapPin size={15} />
           {a.place.name}
         </p>
+        <p className="activity-distance">
+          {a.place.location
+            ? `${formatDistance(distanceMeters(DEFAULT_REFERENCE, a.place.location))} · 大致直线距离`
+            : "距离未知 · 文字地点"}
+        </p>
+        <p className="small muted">
+          发起人：{state.users.find((u) => u.id === a.organizerId)?.displayName}
+        </p>
+        <div className="tags">
+          <span>宠友约伴</span>
+          <span>{a.place.district}</span>
+          <span>宠物准入未知</span>
+        </div>
         <div className="activity-bottom">
           <div className="avatar-stack">
             {joined.slice(0, 3).map((s) => (
@@ -83,40 +102,47 @@ function ActivityCard({
   );
 }
 export function Activities() {
+  const params = useSearchParams();
+  return (
+    <ActivityList
+      key={params.get("tab") ?? "all"}
+      initialTab={params.get("tab") === "mine" ? "mine" : "all"}
+    />
+  );
+}
+function ActivityList({ initialTab }: { initialTab: string }) {
   const { state } = useDemo();
-  const [tab, setTab] = useState("all");
+  const [tab, setTab] = useState(initialTab);
   if (!state) return null;
   const activities =
     tab === "all"
       ? state.activities
-      : state.activities.filter((a) =>
-          state.activitySignups.some(
-            (s) =>
-              s.activityId === a.id &&
-              s.userId === state.activeUserId &&
-              s.status === "joined",
-          ),
+      : state.activities.filter(
+          (a) =>
+            state.activitySignups.some(
+              (s) => s.activityId === a.id && s.userId === state.activeUserId,
+            ) || a.organizerId === state.activeUserId,
         );
   return (
     <>
       <Title
         eyebrow="MORE PAWS, MORE JOY"
-        title="快乐，要一起出发。"
+        title="一起出发"
         description="一段散步、一片草地，和毛孩子一起积攒新回忆。"
         action={<PublishLink href="/activities/new">发起活动</PublishLink>}
       />
-      <div className="activity-banner">
-        <CalendarDays size={34} />
-        <div>
-          <h3>把“改天一起”变成下一次见面</h3>
-          <p>所有活动均为虚构本地演示，不会发送邀请或产生真实线下约定。</p>
-        </div>
-        <span>
-          LET’S PLAY
-          <br />
-          TOGETHER.
-        </span>
-      </div>
+      <details className="ai-companion">
+        <summary>
+          AI 智能约伴 <span className="pill">筹备中</span>
+        </summary>
+        <p>
+          Phase 4.5
+          将支持先找已有活动，必要时寻找宠友和地点，再生成可编辑草稿。当前可手动创建活动。
+        </p>
+        <Link href="/assistant" className="text-link">
+          打开现有 AI 查询助手 →
+        </Link>
+      </details>
       <div className="tabs">
         <button
           className={tab === "all" ? "selected" : ""}
@@ -128,7 +154,7 @@ export function Activities() {
           className={tab === "mine" ? "selected" : ""}
           onClick={() => setTab("mine")}
         >
-          我的报名
+          我的活动
         </button>
         <span className="tabs-right">时间均为北京时间</span>
       </div>

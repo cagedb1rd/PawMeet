@@ -1,4 +1,5 @@
 "use client";
+import { NearbyTabs } from "@/components/nearby-tabs";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -89,21 +90,25 @@ export function Discover() {
   );
   return (
     <>
+      <NearbyTabs />
       <Title
         eyebrow="NICE TO MEET YOU"
-        title="总有一个朋友，和它同频。"
-        description="从认识开始，让每次散步多一点期待。这里的宠友均为虚构档案。"
+        title="附近宠友"
+        description="从一次散步开始，认识附近的毛孩子。虚构区域点 · 大致直线距离。"
       />
-      <Link href="/assistant" className="button secondary">
-        AI 助手 · 查宠友、活动与互助草稿
-      </Link>
-      <AiSearch
-        key={state.activeUserId}
-        onApply={(intent, ownId) => {
-          setAiFilter({ intent, ownId, actor: state.activeUserId });
-          setSelectedId("");
-        }}
-      />
+      <details className="discovery-ai">
+        <summary>智能找宠友与现有 AI 助手</summary>
+        <Link href="/assistant" className="button secondary">
+          AI 助手 · 查宠友、活动与互助草稿
+        </Link>
+        <AiSearch
+          key={state.activeUserId}
+          onApply={(intent, ownId) => {
+            setAiFilter({ intent, ownId, actor: state.activeUserId });
+            setSelectedId("");
+          }}
+        />
+      </details>
       {activeAi && (
         <section className="card form-card">
           <p>

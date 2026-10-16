@@ -112,6 +112,7 @@ test("mock AI 推荐：本地筛选和偏好分、无结果不编造", async ({ 
     }),
   );
   await ready(page, "/discover");
+  await page.locator(".discovery-ai summary").click();
   const before = await saved(page);
   await generate(page, "AI 智能推荐宠友", "找5公里内温和喜欢散步的狗狗");
   await page.getByRole("button", { name: "应用条件并查询" }).click();

@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import { NearbyTabs } from "@/components/nearby-tabs";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AiDraft, fillForm, petSummary } from "@/features/ai/draft";
 import { HelpDraft } from "@/lib/ai/contracts";
@@ -62,8 +64,17 @@ function status(h: HelpRequest, now: number) {
     : statuses[h.status];
 }
 export function Help() {
+  const params = useSearchParams();
+  return (
+    <HelpList
+      key={params.get("tab") ?? "all"}
+      initialTab={params.get("tab") === "mine" ? "mine" : "all"}
+    />
+  );
+}
+function HelpList({ initialTab }: { initialTab: string }) {
   const { state } = useDemo();
-  const [tab, setTab] = useState("all");
+  const [tab, setTab] = useState(initialTab);
   const now = useClock();
   if (!state) return null;
   const list = state.helpRequests.filter(
@@ -76,9 +87,10 @@ export function Help() {
   );
   return (
     <>
+      <NearbyTabs help />
       <Title
         eyebrow="A LITTLE HELP, A LOT OF LOVE"
-        title="邻里之间，多一点照应。"
+        title="临时互助"
         description="临时遛狗、简单喂食，从说清楚需求开始。仅为虚构演示，不涉及真实寄养或交易。"
         action={
           <Link className="button" href="/help/new">
@@ -86,14 +98,6 @@ export function Help() {
           </Link>
         }
       />
-      <div className="help-banner">
-        <div>
-          <span className="eyebrow">SMALL ACTS OF KINDNESS</span>
-          <h2>每一份托付，都值得认真交接。</h2>
-          <p>主人选择帮助者，双方分别确认完成。请先核对照看清单。</p>
-        </div>
-        <span className="pill">本地演示流程</span>
-      </div>
       <div className="filter-tags help-tabs">
         <button
           className={tab === "all" ? "selected" : ""}

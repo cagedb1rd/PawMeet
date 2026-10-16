@@ -330,11 +330,13 @@ test("互助保存故障保留原数据与草稿，修复后重试", async ({ pa
 
 test("旧版数据浏览器迁移与过期需求禁止申请", async ({ page }) => {
   await ready(page);
-  await expect(
-    page.getByRole("heading", { name: "邻里之间，多一点照应。" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "临时互助" })).toBeVisible();
   const old = await state(page);
   old.schemaVersion = 1;
+  delete old.follows;
+  old.posts = old.posts.map((p: Record<string, unknown>) =>
+    Object.fromEntries(Object.entries(p).filter(([key]) => key !== "title")),
+  );
   old.pets[0].name = "保留的旧档案";
   old.helpRequests = old.helpRequests.map((h: Record<string, unknown>) =>
     Object.fromEntries(
@@ -366,5 +368,7 @@ test("旧版数据浏览器迁移与过期需求禁止申请", async ({ page }) 
   const migrated = await state(page);
   expect(migrated.schemaVersion).toBe(2);
   expect(migrated.pets[0].name).toBe("保留的旧档案");
-  expect(migrated.posts).toEqual(old.posts);
+  expect(migrated.posts).toEqual(
+    old.posts.map((p: Record<string, unknown>) => ({ ...p, title: "" })),
+  );
 });

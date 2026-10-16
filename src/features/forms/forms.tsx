@@ -298,6 +298,7 @@ function PostEditor() {
           const f = new FormData(e.currentTarget);
           try {
             const input = postInputSchema.parse({
+              title: f.get("title"),
               text,
               petIds: f.getAll("pets"),
               images: draft.images,
@@ -314,6 +315,14 @@ function PostEditor() {
         }}
       >
         <fieldset disabled={!writable || draft.busy}>
+          <Field label="帖子标题（选填）">
+            <input
+              name="title"
+              aria-label="帖子标题"
+              maxLength={60}
+              placeholder="给这个小日常起个名字"
+            />
+          </Field>
           <Field label="今天发生了什么？ *">
             <textarea
               aria-label="动态内容"

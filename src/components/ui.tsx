@@ -22,7 +22,7 @@ export function PetImage({
   const [loaded, setLoaded] = useState<{ id: string; url: string } | null>(
     null,
   );
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const imageId = image.kind === "upload" ? image.imageId : null;
   useEffect(() => {
     if (!imageId) return;
@@ -47,7 +47,7 @@ export function PetImage({
       : loaded?.id === imageId
         ? loaded.url
         : null;
-  if (!src || failed)
+  if (!src || failedSrc === src)
     return (
       <div
         className={`image-fallback ${className}`}
@@ -64,7 +64,7 @@ export function PetImage({
       alt={alt}
       className={className}
       loading="lazy"
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
     />
   );
 }

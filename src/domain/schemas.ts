@@ -90,6 +90,7 @@ export const petSchema = petInputSchema.extend({
   archivedAt: iso.nullable(),
 });
 export const postInputSchema = z.strictObject({
+  title: z.string().trim().max(60).default(""),
   text: text(1000),
   petIds: z.array(id).max(3),
   images: z.array(imageSchema).max(3),
@@ -233,6 +234,10 @@ export const stateSchema = z
     helpApplications: z.array(applicationSchema).max(500),
     helpEvents: z.array(helpEventSchema).max(3000),
     careChecklists: z.array(checklistSchema).max(100),
+    follows: z
+      .array(z.strictObject({ followerId: id, followingId: id }))
+      .max(9900)
+      .default([]),
     settings: z.strictObject({ timezone: z.literal("Asia/Shanghai") }),
   })
   .superRefine((s, ctx) => {
@@ -255,6 +260,20 @@ export const stateSchema = z
     const pet = (pid: string) => s.pets.find((p) => p.id === pid);
     if (!s.users.some((u) => u.id === s.activeUserId && u.isSwitchable))
       fail("演示身份无效");
+    if (
+      !unique(
+        s.follows.map((f) => JSON.stringify([f.followerId, f.followingId])),
+      )
+    )
+      fail("关注关系重复");
+    for (const f of s.follows)
+      if (
+        !user(f.followerId) ||
+        !user(f.followingId) ||
+        f.followerId === f.followingId ||
+        !s.users.some((u) => u.id === f.followerId && u.isSwitchable)
+      )
+        fail("关注关系无效");
     for (const p of s.pets) if (!user(p.ownerId)) fail("宠物主人不存在");
     for (const p of s.posts)
       if (

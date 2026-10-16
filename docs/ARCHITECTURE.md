@@ -12,7 +12,7 @@
 | 校验 | Zod 4，表单、持久化、API 契约共享定义 | 类型来源统一；AI 草稿 Schema 与正式业务 Schema 分离 |
 | 数据 | localStorage JSON + 图片 IndexedDB + 项目静态资源 | 不使用云数据库；每浏览器独立 |
 | 地图 | 高德 JS API 2.0，官方 script 方式按需加载 | 单例加载与服务适配器隔离，安全码仅服务端 |
-| AI | 服务端原生 fetch 调用智谱普通 API | 少依赖；按任务设置 Prompt、Schema、token 上限 |
+| AI | 服务端原生 fetch 调用 Qwen 百炼兼容 API | 少依赖；按任务设置 Prompt、Schema、token 上限 |
 | 测试 | Vitest、Testing Library（必要组件）、Playwright | 规则 / 存储 / 接口 / 关键用户路径分层验证 |
 | 工具 | npm + package-lock、ESLint CLI、Git | 不混用包管理器；build 不替代 lint |
 
@@ -43,10 +43,12 @@ SSR 只输出公共页面壳与稳定骨架。浏览器 `DemoProvider` 挂载后
 当前核心路径：
 
 ```text
-src/app/                         # 五栏、动态 / 活动 / 宠物详情及创建编辑路由
+src/app/                         # 首页 / 附近 / 发布 / 活动 / 我的，搜索、用户及实体详情
 src/components/{shell,ui}.tsx     # 响应式壳、Dialog、图片及公共 UI
 src/features/demo/provider.tsx   # 挂载读取、单标签锁、快照发布、恢复 / 重置
 src/features/{pets,community,activities,discover,help,cards,me,forms}/
+src/domain/community.ts          # 关注流、标题降级与标题 / 正文查询
+src/app/redesign.css              # 当前社区布局及共享响应式覆盖，基础表单 / 地图沿用 globals.css
 src/domain/{schemas,commands,phase2,social}.ts # Zod、状态机、角色与确定性偏好规则
 src/domain/legacy-schema.ts      # 冻结的 Phase 1 v1 校验器，仅用于迁移
 src/data/seed.ts                 # 固定种子 ID、相对时间与公共演示地点
@@ -84,7 +86,8 @@ evals/{cases,runner,reports}/      # 35核心+11对抗+8工具；分开报告liv
 | DemoUser | displayName、avatar ImageRef、isSwitchable；共 25 条，5 条可切换 |
 | Pet | ownerId、species=`dog`、name(1–20)、breed(1–30，可“未知”)、ageMonths(null 或 0–360)、size=`small/medium/large/unknown`、city、district、photo ImageRef、temperamentTags、activityTags、socialNotes(≤500)、demoLocation、isFictional=true |
 | SocialCard | petId、petRevision、traits / likes / dislikes / cautions（各 ≤6 项、单项 ≤60 字）、meetingAdvice(≤300 字)、source=`manual`、confirmedAt、confirmedBy；空数组表示未知，不能当作没有风险 |
-| Post | authorId、petIds(≤3)、text(1–1000)、images(≤3)、likedByUserIds（去重 ID） |
+| Post | authorId、petIds(≤3)、title(0–60，旧数据缺省空串)、text(1–1000)、images(≤3)、likedByUserIds（去重 ID） |
+| Follow（信封内关系） | followerId / followingId，只允许可切换身份关注存在的其他主人；有向关系去重，不允许自己关注自己 |
 | Activity | organizerId、organizerPetId、recommendedPetIds(≤5，仅推荐)、title(1–40)、description(≤500)、place PlaceRef、startAt、endAt、capacity(2–12)、status=`scheduled/cancelled` |
 | ActivitySignup | activityId、userId、petId、status=`joined/cancelled`；每活动每身份最多一个 joined；组织者自动 joined |
 | HelpRequest | requesterId、petId、type=`walk/feed`、title、details(≤1000)、startAt、endAt、place、status=`open/assigned/helper_done/completed/cancelled`、helperId?、acceptedApplicationId?、contentRevision（仅核心内容修改递增） |
@@ -97,9 +100,13 @@ evals/{cases,runner,reports}/      # 35核心+11对抗+8工具；分开报告liv
 
 正式 Pet 至少名称、照片（可选项目占位图）、品种 / 未知、体型 / 未知、城市区域和公共演示位置有效。年龄未知可 null，不阻碍保存。性格 / 活动数组各 ≤8 个，受控标签加说明字段；常用标签词典在 Phase 1 定稿并供 Prompt 引用。活动 / 互助发布须有确定的未来起止时间、地点、本人宠物；`endAt > startAt`，时间边界按同一 clock 计算，不能把未知值自动补成事实。
 
-当前存储 key 保留 `pawmeet:state:v1`，信封 `schemaVersion=2`：schemaVersion、seedVersion、revision、seededAt、activeUserId、users、pets、socialCards、posts、activities、activitySignups、helpRequests、helpApplications、helpEvents、careChecklists、settings。草稿与 UI 状态默认内存保存；用户确认后的业务对象才进入信封。可保存明确“手工草稿”，但不得当作发布记录。
+当前存储 key 保留 `pawmeet:state:v1`，信封 `schemaVersion=2`：schemaVersion、seedVersion、revision、seededAt、activeUserId、users、pets、socialCards、posts、activities、activitySignups、helpRequests、helpApplications、helpEvents、careChecklists、follows、settings。草稿与 UI 状态默认内存保存；用户确认后的业务对象才进入信封。可保存明确“手工草稿”，但不得当作发布记录。
 
 Phase 3 对 v2 的 PlaceRef 作兼容扩展，不重写已有 demo 地点或档案坐标。新浏览器 / 用户明确重置才获得调整后的 25 个演示区域点；没有自动迁移用户位置。旧 v1 仍用冻结 Schema 校验后纯迁移到 v2；旧版应用不承诺理解新增来源，因此不要回退旧应用继续写新数据。
+
+Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空标题 / 空关系，保留 key 和 schemaVersion=2；读取不改写磁盘，下一次成功命令才落盘。v1 仍先通过冻结旧 Schema 再迁移。损坏字段、未知属性及无效关注引用仍拒绝读取，不靠默认值掩盖损坏。关注由 `toggle-follow` 命令和同一 Repository 提交，失败不更新视图；不新增独立存储系统。标题为空只在展示时取正文首行，不重写原正文。
+
+页面与组件边界见 [UI_REDESIGN](UI_REDESIGN.md)：`PostFeed` 将帖子交替分入两列，各列自然堆叠；`PostCard` 复用列表 / 详情点赞，`FollowButton` 在用户主页和详情复用，`NearbyTabs` 保留原业务 URL。搜索只读当前快照，不调用 AI；新关注关系不会作为额外模型上下文发送。活动距离用 `DEFAULT_REFERENCE`（杭州滨江公共演示点）和现有 GCJ02 Haversine，不冒充实时位置；无坐标显示未知。原 Qwen 工作流和 API 未改动。
 
 引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动、未来开放互助或 assigned / helper_done 互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。名片仅主人可确认且 petRevision 必须当前；清单仅求助人可编辑，引用当前宠物版本与需求 contentRevision。实体引用、有效申请唯一性、已选帮助者 / acceptedApplicationId 一致性由 Schema 校验；具体操作的角色与状态在命令层校验。
 

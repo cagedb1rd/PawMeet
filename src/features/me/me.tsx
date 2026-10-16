@@ -11,11 +11,13 @@ import {
 } from "lucide-react";
 import { useDemo } from "@/features/demo/provider";
 import { Dialog, Empty, PetCard, PetImage, Title } from "@/components/ui";
+import { PostFeed } from "@/features/community/community";
 import { PublishLink } from "@/components/shell";
 export function Me() {
   const { state, writable, reset, clean } = useDemo();
   const [confirm, setConfirm] = useState(false),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [people, setPeople] = useState<"following" | "followers" | null>(null);
   if (!state) return null;
   const u = state.users.find((u) => u.id === state.activeUserId)!,
     pets = state.pets.filter((p) => p.ownerId === u.id && !p.archivedAt);
@@ -44,7 +46,7 @@ export function Me() {
             <b>{state.posts.filter((p) => p.authorId === u.id).length}</b>
             <span>日常分享</span>
           </div>
-          <Link href="/activities">
+          <Link href="/activities?tab=mine">
             <CalendarDays size={18} />
             <b>
               {
@@ -62,6 +64,18 @@ export function Me() {
           </Link>
         </div>
       </section>
+      <div className="profile-links">
+        <button onClick={() => setPeople("following")}>
+          关注{" "}
+          <b>{state.follows.filter((f) => f.followerId === u.id).length}</b>
+        </button>
+        <button onClick={() => setPeople("followers")}>
+          粉丝{" "}
+          <b>{state.follows.filter((f) => f.followingId === u.id).length}</b>
+        </button>
+        <Link href="/activities?tab=mine">我的活动 →</Link>
+        <Link href="/help?tab=mine">我的互助 →</Link>
+      </div>
       <div className="section-heading">
         <h2>
           我的毛孩子 <span>{pets.length} 位专属快乐</span>
@@ -79,6 +93,56 @@ export function Me() {
             创建宠物档案
           </Link>
         </Empty>
+      )}
+      <div className="section-heading">
+        <h2>我的帖子</h2>
+        <Link href="/posts/new" className="text-link">
+          发布日常 →
+        </Link>
+      </div>
+      {state.posts.some((p) => p.authorId === u.id) ? (
+        <PostFeed posts={state.posts.filter((p) => p.authorId === u.id)} />
+      ) : (
+        <Empty title="还没有自己的帖子" />
+      )}
+      {people && (
+        <Dialog
+          title={people === "following" ? "我的关注" : "我的粉丝"}
+          close={() => setPeople(null)}
+        >
+          <div className="people-list">
+            {state.users
+              .filter((person) =>
+                state.follows.some((f) =>
+                  people === "following"
+                    ? f.followerId === u.id && f.followingId === person.id
+                    : f.followingId === u.id && f.followerId === person.id,
+                ),
+              )
+              .map((person) => (
+                <Link
+                  key={person.id}
+                  href={`/users/${person.id}`}
+                  onClick={() => setPeople(null)}
+                >
+                  <PetImage image={person.avatar} alt={person.displayName} />
+                  <span>{person.displayName}</span>
+                  <span>查看主页 →</span>
+                </Link>
+              ))}
+          </div>
+          {!state.follows.some((f) =>
+            people === "following"
+              ? f.followerId === u.id
+              : f.followingId === u.id,
+          ) && (
+            <Empty
+              title={
+                people === "following" ? "还没有关注其他主人" : "还没有粉丝"
+              }
+            />
+          )}
+        </Dialog>
       )}
       <div className="section-heading">
         <h2>演示与本地数据</h2>
@@ -133,7 +197,7 @@ export function Me() {
       {confirm && (
         <Dialog title="重置当前浏览器的数据？" close={() => setConfirm(false)}>
           <p>
-            所有新增档案、名片、互助与清单、动态、活动、点赞、报名和上传照片都将清除，此操作无法撤销。其他浏览器不受影响。
+            所有新增档案、名片、互助与清单、动态、活动、关注、点赞、报名和上传照片都将清除，此操作无法撤销。其他浏览器不受影响。
           </p>
           <div className="button-row">
             <button

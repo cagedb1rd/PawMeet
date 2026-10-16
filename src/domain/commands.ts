@@ -9,6 +9,7 @@ import { mutatePhase2, Phase2Command } from "./phase2";
 
 export type Command =
   | Phase2Command
+  | { type: "toggle-follow"; userId: string }
   | { type: "switch-user"; userId: string }
   | { type: "save-pet"; input: unknown; petId?: string }
   | { type: "delete-pet"; petId: string }
@@ -103,6 +104,22 @@ export function execute(
         authorId: uid,
         likedByUserIds: [],
       });
+      break;
+    }
+    case "toggle-follow": {
+      if (
+        command.userId === uid ||
+        !s.users.some((u) => u.id === command.userId)
+      )
+        throw new Error("请选择其他有效主人");
+      const exists = s.follows.some(
+        (f) => f.followerId === uid && f.followingId === command.userId,
+      );
+      s.follows = exists
+        ? s.follows.filter(
+            (f) => !(f.followerId === uid && f.followingId === command.userId),
+          )
+        : [...s.follows, { followerId: uid, followingId: command.userId }];
       break;
     }
     case "toggle-like": {

@@ -530,7 +530,14 @@ describe("v1 → v2 无损迁移", () => {
   it("纯读取不改原文，下一次成功命令原子保存新版本", () => {
     const seed = createSeed(now);
     const legacy = {
-      ...seed,
+      ...Object.fromEntries(
+        Object.entries(seed).filter(([key]) => key !== "follows"),
+      ),
+      posts: seed.posts.map((p) =>
+        Object.fromEntries(
+          Object.entries(p).filter(([key]) => key !== "title"),
+        ),
+      ),
       schemaVersion: 1,
       helpRequests: seed.helpRequests.map((h) =>
         Object.fromEntries(
@@ -576,7 +583,14 @@ describe("v1 → v2 无损迁移", () => {
     expect(() => readState(store)).toThrow("损坏");
     const seed = createSeed(now);
     raw = JSON.stringify({
-      ...seed,
+      ...Object.fromEntries(
+        Object.entries(seed).filter(([key]) => key !== "follows"),
+      ),
+      posts: seed.posts.map((p) =>
+        Object.fromEntries(
+          Object.entries(p).filter(([key]) => key !== "title"),
+        ),
+      ),
       schemaVersion: 1,
       helpRequests: seed.helpRequests.map(
         ({ helperId, acceptedApplicationId, contentRevision, ...h }) => {

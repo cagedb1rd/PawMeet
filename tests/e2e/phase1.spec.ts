@@ -293,7 +293,9 @@ test("损坏数据保护与用户确认恢复", async ({ page }) => {
   expect((await download).suggestedFilename()).toBe("pawmeet-recovery.txt");
   await page.getByRole("button", { name: "重置演示数据", exact: true }).click();
   await page.getByRole("button", { name: "确认重置" }).click();
-  await expect(page.getByRole("heading", { name: /把日常/ })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "宠物社区", exact: true }),
+  ).toBeVisible();
 });
 
 test("第二标签只读，释放写锁后刷新可编辑", async ({ page, context }) => {

@@ -4,17 +4,15 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   CalendarDays,
   Compass,
-  HeartHandshake,
   House,
   MapPin,
   PawPrint,
   Plus,
   UserRound,
-  ArrowUpRight,
   ChevronDown,
   X,
-  ShieldCheck,
   Leaf,
+  Search,
 } from "lucide-react";
 import { useState } from "react";
 import { useDemo } from "@/features/demo/provider";
@@ -22,9 +20,9 @@ import { Dialog, PetImage } from "./ui";
 
 const nav = [
   { href: "/", name: "首页", sub: "社区日常", icon: House },
-  { href: "/discover", name: "发现", sub: "认识新朋友", icon: Compass },
+  { href: "/discover", name: "附近", sub: "宠友与临时互助", icon: Compass },
+  { href: "/posts/new", name: "发布", sub: "发布帖子", icon: Plus },
   { href: "/activities", name: "活动", sub: "一起去撒欢", icon: CalendarDays },
-  { href: "/help", name: "互助", sub: "邻里小温暖", icon: HeartHandshake },
   { href: "/me", name: "我的", sub: "我和毛孩子", icon: UserRound },
 ];
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -38,8 +36,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const active = state?.users.find((u) => u.id === state.activeUserId);
   const activeNav = (href: string) =>
     href === "/"
-      ? path === "/" || path.startsWith("/posts")
-      : path.startsWith(href);
+      ? path === "/" || (path.startsWith("/posts/") && path !== "/posts/new")
+      : href === "/discover"
+        ? path.startsWith("/discover") || path.startsWith("/help")
+        : path.startsWith(href);
   const downloadRaw = () => {
     const url = URL.createObjectURL(
       new Blob([raw ?? ""], { type: "text/plain;charset=utf-8" }),
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="demo-banner">
         <Leaf size={12} />
         <span>本地演示 · 虚构宠友 · 数据仅存当前浏览器</span>
-        <span className="demo-version">PHASE 04</span>
+        <span className="demo-version">DEMO</span>
       </div>
       <div className="app-layout">
         <aside className="sidebar">
@@ -85,26 +85,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="sidebar-note">
-            <div className="little-paws">
-              <PawPrint size={26} />
-              <HeartHandshake size={22} />
-            </div>
-            <h3>好邻居，也是好宠友。</h3>
-            <p>
-              从一次散步开始，
-              <br />
-              让毛孩子的世界大一点。
-            </p>
-            <Link href="/discover">
-              去认识新朋友 <ArrowUpRight size={15} />
-            </Link>
-          </div>
-          <div className="sidebar-foot">
-            <ShieldCheck size={16} /> 牵好绳，让每次相遇更从容
-          </div>
+          <Link href="/search" className="nav-item">
+            搜索帖子与宠友
+          </Link>
+          <p className="sidebar-foot">每一个小日常，都值得分享。</p>
         </aside>
-        <div className="workspace">
+        <div className={`workspace ${path === "/" ? "home-workspace" : ""}`}>
           <header className="topbar">
             <Link href="/" className="mobile-brand">
               <PawPrint fill="currentColor" size={22} /> PawMeet
@@ -118,13 +104,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="global-search"
               onSubmit={(e) => {
                 e.preventDefault();
-                router.push(`/discover?q=${encodeURIComponent(query)}`);
+                router.push(`/search?q=${encodeURIComponent(query)}`);
               }}
             >
-              <Compass size={17} />
+              <Search size={17} />
               <input
-                aria-label="搜索宠友"
-                placeholder="找一位毛茸茸的新朋友"
+                aria-label="搜索帖子与用户"
+                placeholder="搜索帖子、宠友昵称"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -196,10 +182,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             key={n.href}
             href={n.href}
             aria-current={activeNav(n.href) ? "page" : undefined}
-            className={activeNav(n.href) ? "active" : ""}
+            aria-label={n.href === "/posts/new" ? "发布帖子" : undefined}
+            className={`${activeNav(n.href) ? "active" : ""} ${n.href === "/posts/new" ? "nav-publish" : ""}`}
           >
             <n.icon size={21} />
-            <span>{n.name}</span>
+            <span>{n.href === "/posts/new" ? "发布" : n.name}</span>
           </Link>
         ))}
       </nav>
@@ -259,7 +246,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {resetting && (
         <Dialog title="重置演示数据？" close={() => setResetting(false)}>
           <p>
-            当前浏览器新增的档案、名片、互助及清单、动态、活动、点赞和报名，以及上传照片都将清除。恢复
+            当前浏览器新增的档案、名片、互助及清单、动态、活动、关注、点赞和报名，以及上传照片都将清除。恢复
             25 个宠物档案和默认模拟身份。此操作无法撤销。
           </p>
           <div className="button-row">
