@@ -6,7 +6,7 @@ import {
   MatchIntent,
 } from "./contracts";
 
-export const VALIDATION_VERSION = "pawmeet-validation-3";
+export const VALIDATION_VERSION = "pawmeet-validation-7";
 export const genericCare = [
   "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
   "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
@@ -124,6 +124,11 @@ export function validateOutput<T extends AiTask>(
   void _w;
   void _c;
   rejectGuarantee(JSON.stringify(facts));
+  // Labels and titles are visible too; they cannot hide an invented dose/quantity.
+  for (const value of JSON.stringify(facts).match(
+    /\d+(?:\.\d+)?\s*(?:毫克|毫升|公斤|mg|ml|kg|克|粒|g)/gi,
+  ) ?? [])
+    if (!source.includes(value)) throw Error("不得生成剂量或份量");
   const extractive = (values: string[]) => {
     if (values.some((v) => !source.includes(v)))
       throw Error("输出事实缺少原文依据");
@@ -160,6 +165,8 @@ export function validateOutput<T extends AiTask>(
       ...p.activityTags.map((t) => t.evidence),
     ]);
     preserveNegation([...p.likes, ...p.activityTags.map((t) => t.evidence)]);
+    if (p.likes.some((value) => /不怕|不讨厌/.test(value)))
+      throw Error("不害怕不能推断为喜欢");
     if (p.ageMonths !== null && p.ageMonths !== statedAge(request.text))
       throw Error("月龄无明确依据或存在冲突");
     if (
@@ -218,6 +225,20 @@ export function validateOutput<T extends AiTask>(
   }
   if (task === "care-checklist") {
     const c = outputSchemas["care-checklist"].parse(data);
+    if (
+      /只(?:能)?(?:喂|吃).{0,6}(?:原粮|狗粮|犬粮)/.test(source) &&
+      /(?:^|[，。；\n])(?:可以|允许|随意).{0,6}零食/.test(source)
+    ) {
+      c.clarifications = [
+        ...new Set([
+          ...c.clarifications,
+          "喂食要求存在冲突：仅原粮与允许零食需由主人确认，未确认前不得自行喂食。",
+        ]),
+      ].slice(0, 12);
+      c.items.forEach((item) => {
+        item.needsConfirmation = true;
+      });
+    }
     for (const item of c.items) {
       if (!genericCare.includes(item.detail as (typeof genericCare)[number]))
         extractive([item.detail]);
@@ -283,6 +304,49 @@ export function validateOutput<T extends AiTask>(
   }
   if (task === "match-intent") {
     const m = validateMatch(outputSchemas["match-intent"].parse(data));
+    const supported: Record<string, RegExp> = {
+      温和: /温和|温顺|温柔|松弛/,
+      慢热: /慢热|需要.{0,6}熟悉/,
+      活泼: /活泼|活跃/,
+      亲人: /亲人|喜欢人|亲近人/,
+      独立: /独立/,
+      怕追逐: /(?:怕|不喜欢).{0,6}(?:追逐|追赶|奔跑|冲过来)/,
+      喜欢追逐: /(?:喜欢|爱).{0,5}追|会追/,
+      散步: /散步|慢慢走|遛弯/,
+      闻闻探索: /闻闻|嗅闻|闻一闻/,
+      接飞盘: /飞盘/,
+      晒太阳: /晒太阳/,
+      草地撒欢: /草地|撒欢/,
+      一起慢跑: /慢跑|跑步/,
+    };
+    for (const tag of [
+      ...m.temperaments,
+      ...m.excludedTemperaments,
+      ...m.activities,
+      ...m.excludedActivities,
+    ])
+      if (!supported[tag]?.test(request.text))
+        throw Error("筛选标签缺少用户描述依据");
+    const sizeEvidence = {
+      small: /小型|体型小/,
+      medium: /中型|体型中等/,
+      large: /大型|体型大/,
+      unknown: /体型未知|未知体型|不知道体型/,
+    };
+    if (
+      [...m.sizes, ...m.excludedSizes].some(
+        (size) => !sizeEvidence[size].test(request.text),
+      )
+    )
+      throw Error("筛选体型缺少用户描述依据");
+    if (
+      [...m.breeds, ...m.excludedBreeds].some(
+        (breed) =>
+          ["狗", "狗狗", "犬", "宠友"].includes(breed) ||
+          !request.text.includes(breed),
+      )
+    )
+      throw Error("犬种筛选缺少用户描述依据");
     const distances = [
       ...request.text.matchAll(/(\d+(?:\.\d+)?)\s*(?:公里|千米|km)/gi),
     ].map((v) => Number(v[1]));

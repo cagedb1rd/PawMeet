@@ -1,0 +1,1644 @@
+{
+  "runId": "2026-10-16T19-42-53-512Z-mock",
+  "mode": "mock",
+  "suite": "all",
+  "model": "synthetic fixtures; no Qwen",
+  "provider": "mock",
+  "promptVersion": "pawmeet-5.3",
+  "schemaVersion": 1,
+  "caseVersion": "core.v2+validation.v2+tools.v2",
+  "validationVersion": "pawmeet-validation-5",
+  "gitDirty": true,
+  "coverage": {
+    "planned": 54,
+    "attempted": 54,
+    "notRun": 0
+  },
+  "git": "1888f43af69e3611a0b832ca1144343f58f895e7",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 0,
+  "maxCalls": 55,
+  "usage": [],
+  "metrics": {
+    "schemaPassRate": 1,
+    "keyFieldAccuracy": 1,
+    "toolSelectionAccuracy": 1,
+    "toolExecutionSuccessRate": 1,
+    "toolParameterAccuracy": 1,
+    "completeTaskSuccessRate": 1,
+    "adversarialValidationSuccessRate": 1
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "name": "豆包",
+        "breed": "史宾格",
+        "ageMonths": 24,
+        "size": "medium",
+        "city": "杭州",
+        "district": "滨江",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "温和"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "喜欢散步"
+          }
+        ],
+        "likes": [],
+        "dislikes": [
+          "不喜欢突然被抱"
+        ],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 3
+    },
+    {
+      "id": "P02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请补充名称和品种"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "P03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "name": "团子",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请确认月龄"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "P04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": "比熊",
+        "ageMonths": 6,
+        "size": "small",
+        "city": "杭州",
+        "district": "西湖",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "P05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [
+          "不爱追球"
+        ],
+        "cautions": [
+          "怕突然冲过来的大狗"
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "P06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "name": "小黑",
+        "breed": null,
+        "ageMonths": 3,
+        "size": null,
+        "city": "杭州",
+        "district": "上城",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "P07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": "七七",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "C01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [
+          "温和"
+        ],
+        "likes": [
+          "并排散步",
+          "喜欢先闻一闻"
+        ],
+        "dislikes": [
+          "不喜欢强行抱起"
+        ],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 1
+    },
+    {
+      "id": "C02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [
+          "请补充观察"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "C03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [
+          "安静"
+        ],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [
+          "遇到奔跑的狗会追"
+        ],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "C04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [
+          "可以在没玩具时并排走"
+        ],
+        "dislikes": [
+          "不喜欢抢玩具"
+        ],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "C05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": [
+          "无法提供安全或认证保证"
+        ]
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "C06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [
+          "怕追逐"
+        ],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": [
+          "已知事实需保留"
+        ]
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 5,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [
+          "温和"
+        ],
+        "activities": [
+          "散步"
+        ],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 1
+    },
+    {
+      "id": "M02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 1,
+        "district": null,
+        "breeds": [],
+        "sizes": [
+          "small"
+        ],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "distance",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 3,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [
+          "散步",
+          "闻闻探索"
+        ],
+        "excludedSizes": [
+          "large"
+        ],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [
+          "温和"
+        ],
+        "activities": [
+          "散步"
+        ],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [
+          "距离条件冲突"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [
+          "请从1/3/5/10公里选择"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": [
+          "不能编造实体"
+        ]
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "M08",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 10,
+        "district": null,
+        "breeds": [
+          "史宾格",
+          "金毛"
+        ],
+        "sizes": [
+          "medium",
+          "large"
+        ],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "H01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-17T18:00:00+08:00",
+        "endAt": "2026-10-17T18:30:00+08:00",
+        "durationMinutes": 30,
+        "timeText": null,
+        "district": null,
+        "locationQuery": "滨江某公园东门",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 2
+    },
+    {
+      "id": "H02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": "pb",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-18T08:00:00+08:00",
+        "endAt": "2026-10-18T08:30:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 1
+    },
+    {
+      "id": "H03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": null,
+        "title": "互助草稿",
+        "details": "",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": "今晚",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "H04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-17T09:00:00+08:00",
+        "endAt": "2026-10-17T10:00:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "H05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-18T20:00:00+08:00",
+        "endAt": "2026-10-18T19:00:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "H06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": null,
+        "title": "互助草稿",
+        "details": "",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "H07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "不能松牵引绳",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": 30,
+        "timeText": "明天下午",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "用短牵引、不要放绳",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "对鸡肉过敏，不能喂零食",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "L07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "只能喂原粮；可以随意给零食",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "喂食说明冲突，请主人核对"
+        ],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 1
+    },
+    {
+      "id": "V01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "name": "编造名字",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [
+          "追球"
+        ],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "type": null,
+        "petId": "unknown",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "喂食",
+            "detail": "喂100克",
+            "needsConfirmation": false
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V06",
+      "status": "pass",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": "两岁",
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V07",
+      "status": "pass",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [],
+        "warnings": [],
+        "state": "confirmed"
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V08",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [
+          "small"
+        ],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [
+          "small"
+        ],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V09",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "绝对安全",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V10",
+      "status": "pass",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": "giant",
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "V11",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [
+          {
+            "value": "怕追逐",
+            "evidence": "不喜欢突然被抱"
+          }
+        ],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": null,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_pets"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "找5公里内温和喜欢散步的狗狗"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_pets",
+                "arguments": "{\"radiusKm\":5,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[\"散步\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"pets\",\"rows\":[{\"id\":\"pet-13\",\"name\":\"团团\",\"breed\":\"金毛\",\"district\":\"滨江区\",\"distanceM\":444.0622273140536,\"score\":100,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"体型相同（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-9\",\"name\":\"小米\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":484.52580486050834,\"score\":85,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（10分）\"]},{\"id\":\"pet-15\",\"name\":\"南瓜\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":800.2455225154196,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]},{\"id\":\"pet-7\",\"name\":\"乐乐\",\"breed\":\"金毛\",\"district\":\"滨江区\",\"distanceM\":1058.8779794987793,\"score\":99,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"体型相同（15分）\",\"距离项（9分）\"]},{\"id\":\"pet-3\",\"name\":\"可乐\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":1176.5145476975122,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_pets"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 1,
+      "parameterFieldsCorrect": 10,
+      "parameterFieldsTotal": 10,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 3
+    },
+    {
+      "id": "TC02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_activities"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "查找滨江区未来活动"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_activities",
+                "arguments": "{\"district\":\"滨江区\",\"radiusKm\":null,\"startAfter\":null,\"startBefore\":null}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"activities\",\"rows\":[{\"id\":\"activity-2\",\"title\":\"落日江边慢慢走\",\"district\":\"滨江区\",\"startAt\":\"2026-10-20T02:00:00.000Z\",\"endAt\":\"2026-10-20T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-5\",\"title\":\"周日公园轻松局\",\"district\":\"滨江区\",\"startAt\":\"2026-10-23T02:00:00.000Z\",\"endAt\":\"2026-10-23T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-3\",\"title\":\"小体型狗狗见面会\",\"district\":\"滨江区\",\"startAt\":\"2026-10-21T02:00:00.000Z\",\"endAt\":\"2026-10-21T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-6\",\"title\":\"毛孩子的早安派对\",\"district\":\"滨江区\",\"startAt\":\"2026-10-24T02:00:00.000Z\",\"endAt\":\"2026-10-24T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-1\",\"title\":\"周末草地撒欢计划\",\"district\":\"滨江区\",\"startAt\":\"2026-10-19T02:00:00.000Z\",\"endAt\":\"2026-10-19T04:00:00.000Z\",\"distanceM\":4530.302750067223}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_activities"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 1,
+      "parameterFieldsCorrect": 4,
+      "parameterFieldsTotal": 4,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 6
+    },
+    {
+      "id": "TC03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "create_help_draft"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "明天下午想找人帮我遛一下年糕，大概30分钟，不能松牵引绳，请整理草稿"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "create_help_draft",
+                "arguments": "{\"type\":\"walk\",\"petId\":\"pet-1\",\"title\":\"临时遛狗\",\"details\":\"不能松牵引绳\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":30,\"timeText\":\"明天下午\",\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"help-draft\",\"draft\":{\"type\":\"walk\",\"petId\":\"pet-1\",\"title\":\"临时遛狗\",\"details\":\"不能松牵引绳\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":30,\"timeText\":\"明天下午\",\"district\":null,\"locationQuery\":null,\"clarifications\":[\"请补充明确的北京时间起止，模糊时段不能直接发布\",\"请补充并确认公共交接地点\"],\"warnings\":[]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "create_help_draft"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 1,
+      "parameterFieldsCorrect": 7,
+      "parameterFieldsTotal": 7,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 1
+    },
+    {
+      "id": "TC04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_pets",
+        "search_activities"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "找5公里内温和的狗狗，也查一下滨江区已有活动"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_pets",
+                "arguments": "{\"radiusKm\":5,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}"
+              }
+            },
+            {
+              "id": "call-1",
+              "type": "function",
+              "function": {
+                "name": "search_activities",
+                "arguments": "{\"district\":\"滨江区\",\"radiusKm\":null,\"startAfter\":null,\"startBefore\":null}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"pets\",\"rows\":[{\"id\":\"pet-13\",\"name\":\"团团\",\"breed\":\"金毛\",\"district\":\"滨江区\",\"distanceM\":444.0622273140536,\"score\":100,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"体型相同（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-9\",\"name\":\"小米\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":484.52580486050834,\"score\":85,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（10分）\"]},{\"id\":\"pet-15\",\"name\":\"南瓜\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":800.2455225154196,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]},{\"id\":\"pet-7\",\"name\":\"乐乐\",\"breed\":\"金毛\",\"district\":\"滨江区\",\"distanceM\":1058.8779794987793,\"score\":99,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"体型相同（15分）\",\"距离项（9分）\"]},{\"id\":\"pet-3\",\"name\":\"可乐\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":1176.5145476975122,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]}]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-1",
+          "content": "{\"kind\":\"activities\",\"rows\":[{\"id\":\"activity-2\",\"title\":\"落日江边慢慢走\",\"district\":\"滨江区\",\"startAt\":\"2026-10-20T02:00:00.000Z\",\"endAt\":\"2026-10-20T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-5\",\"title\":\"周日公园轻松局\",\"district\":\"滨江区\",\"startAt\":\"2026-10-23T02:00:00.000Z\",\"endAt\":\"2026-10-23T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-3\",\"title\":\"小体型狗狗见面会\",\"district\":\"滨江区\",\"startAt\":\"2026-10-21T02:00:00.000Z\",\"endAt\":\"2026-10-21T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-6\",\"title\":\"毛孩子的早安派对\",\"district\":\"滨江区\",\"startAt\":\"2026-10-24T02:00:00.000Z\",\"endAt\":\"2026-10-24T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-1\",\"title\":\"周末草地撒欢计划\",\"district\":\"滨江区\",\"startAt\":\"2026-10-19T02:00:00.000Z\",\"endAt\":\"2026-10-19T04:00:00.000Z\",\"distanceM\":4530.302750067223}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsOk": 2,
+      "toolsTotal": 2,
+      "parameterFieldsCorrect": 14,
+      "parameterFieldsTotal": 14,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 0
+    },
+    {
+      "id": "TC05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_pets"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "找1公里内不含大型犬的宠友"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_pets",
+                "arguments": "{\"radiusKm\":1,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[\"large\"],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"pets\",\"rows\":[{\"id\":\"pet-14\",\"name\":\"鹿鹿\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":293.9232094253229,\"score\":25,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-9\",\"name\":\"小米\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":484.52580486050834,\"score\":85,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（10分）\"]},{\"id\":\"pet-8\",\"name\":\"橙子\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":587.8540810629789,\"score\":24,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（9分）\"]},{\"id\":\"pet-15\",\"name\":\"南瓜\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":800.2455225154196,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]},{\"id\":\"pet-10\",\"name\":\"沐沐\",\"breed\":\"柴犬\",\"district\":\"滨江区\",\"distanceM\":888.1447408137021,\"score\":24,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（9分）\"]}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_pets"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 1,
+      "parameterFieldsCorrect": 10,
+      "parameterFieldsTotal": 10,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 0
+    },
+    {
+      "id": "TC06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_activities"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "查找杭州不存在区的已有活动，不要编造"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_activities",
+                "arguments": "{\"district\":\"不存在区\",\"radiusKm\":null,\"startAfter\":null,\"startBefore\":null}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"activities\",\"rows\":[]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_activities"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 1,
+      "parameterFieldsCorrect": 4,
+      "parameterFieldsTotal": 4,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 0
+    },
+    {
+      "id": "TC07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_pets",
+        "create_help_draft"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "查找3公里内小型犬，也帮我草拟明天下午遛年糕30分钟的互助"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_pets",
+                "arguments": "{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[\"small\"],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}"
+              }
+            },
+            {
+              "id": "call-1",
+              "type": "function",
+              "function": {
+                "name": "create_help_draft",
+                "arguments": "{\"type\":\"walk\",\"petId\":\"pet-1\",\"title\":\"临时遛狗\",\"details\":\"明天下午遛年糕30分钟\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":30,\"timeText\":\"明天下午\",\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"pets\",\"rows\":[{\"id\":\"pet-14\",\"name\":\"鹿鹿\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":293.9232094253229,\"score\":25,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-9\",\"name\":\"小米\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":484.52580486050834,\"score\":85,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（10分）\"]},{\"id\":\"pet-8\",\"name\":\"橙子\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":587.8540810629789,\"score\":24,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（9分）\"]},{\"id\":\"pet-15\",\"name\":\"南瓜\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":800.2455225154196,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]},{\"id\":\"pet-3\",\"name\":\"可乐\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":1176.5145476975122,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]}]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-1",
+          "content": "{\"kind\":\"help-draft\",\"draft\":{\"type\":\"walk\",\"petId\":\"pet-1\",\"title\":\"临时遛狗\",\"details\":\"明天下午遛年糕30分钟\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":30,\"timeText\":\"明天下午\",\"district\":null,\"locationQuery\":null,\"clarifications\":[\"请补充明确的北京时间起止，模糊时段不能直接发布\",\"请补充并确认公共交接地点\"],\"warnings\":[]}}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_pets",
+        "create_help_draft"
+      ],
+      "toolsOk": 2,
+      "toolsTotal": 2,
+      "parameterFieldsCorrect": 17,
+      "parameterFieldsTotal": 17,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 1
+    },
+    {
+      "id": "TC08",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "toolsExpected": [
+        "search_pets",
+        "search_activities"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "找10公里内喜欢散步的宠友和5公里内已有活动"
+        },
+        {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call-0",
+              "type": "function",
+              "function": {
+                "name": "search_pets",
+                "arguments": "{\"radiusKm\":10,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[\"散步\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}"
+              }
+            },
+            {
+              "id": "call-1",
+              "type": "function",
+              "function": {
+                "name": "search_activities",
+                "arguments": "{\"district\":null,\"radiusKm\":5,\"startAfter\":null,\"startBefore\":null}"
+              }
+            }
+          ]
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-0",
+          "content": "{\"kind\":\"pets\",\"rows\":[{\"id\":\"pet-14\",\"name\":\"鹿鹿\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":293.9232094253229,\"score\":25,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-13\",\"name\":\"团团\",\"breed\":\"金毛\",\"district\":\"滨江区\",\"distanceM\":444.0622273140536,\"score\":100,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"体型相同（15分）\",\"距离项（10分）\"]},{\"id\":\"pet-9\",\"name\":\"小米\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":484.52580486050834,\"score\":85,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（10分）\"]},{\"id\":\"pet-8\",\"name\":\"橙子\",\"breed\":\"柯基\",\"district\":\"滨江区\",\"distanceM\":587.8540810629789,\"score\":24,\"reasons\":[\"共同活动：散步（15分）\",\"距离项（9分）\"]},{\"id\":\"pet-15\",\"name\":\"南瓜\",\"breed\":\"比熊\",\"district\":\"滨江区\",\"distanceM\":800.2455225154196,\"score\":84,\"reasons\":[\"共同活动：散步、草地撒欢（45分）\",\"有相同性格标签，未识别完整词条冲突（30分）\",\"距离项（9分）\"]}]}"
+        },
+        {
+          "role": "tool",
+          "tool_call_id": "call-1",
+          "content": "{\"kind\":\"activities\",\"rows\":[{\"id\":\"activity-2\",\"title\":\"落日江边慢慢走\",\"district\":\"滨江区\",\"startAt\":\"2026-10-20T02:00:00.000Z\",\"endAt\":\"2026-10-20T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-5\",\"title\":\"周日公园轻松局\",\"district\":\"滨江区\",\"startAt\":\"2026-10-23T02:00:00.000Z\",\"endAt\":\"2026-10-23T04:00:00.000Z\",\"distanceM\":0},{\"id\":\"activity-3\",\"title\":\"小体型狗狗见面会\",\"district\":\"滨江区\",\"startAt\":\"2026-10-21T02:00:00.000Z\",\"endAt\":\"2026-10-21T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-6\",\"title\":\"毛孩子的早安派对\",\"district\":\"滨江区\",\"startAt\":\"2026-10-24T02:00:00.000Z\",\"endAt\":\"2026-10-24T04:00:00.000Z\",\"distanceM\":2645.423799168338},{\"id\":\"activity-1\",\"title\":\"周末草地撒欢计划\",\"district\":\"滨江区\",\"startAt\":\"2026-10-19T02:00:00.000Z\",\"endAt\":\"2026-10-19T04:00:00.000Z\",\"distanceM\":4530.302750067223}]}"
+        },
+        {
+          "role": "assistant",
+          "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+        }
+      ],
+      "toolsActual": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsOk": 2,
+      "toolsTotal": 2,
+      "parameterFieldsCorrect": 14,
+      "parameterFieldsTotal": 14,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"已查询，请查看实际结果卡片。\",\"references\":[]}"
+      },
+      "latencyMs": 0
+    }
+  ]
+}

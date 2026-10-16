@@ -6,7 +6,7 @@ const success = (data: unknown) => ({
   requestId: "e2e-mock-request",
   data,
   meta: {
-    provider: "glm",
+    provider: "qwen",
     model: "mock-fixture",
     promptVersion: "mock",
     usage: null,
@@ -258,8 +258,8 @@ test("mock API 失败和身份切换：真实错误可见，旧草稿不能跨�
         ok: false,
         requestId: "mock-429",
         error: {
-          code: "GLM_HTTP_429",
-          message: "GLM模型当前繁忙",
+          code: "AI_UPSTREAM_HTTP_429",
+          message: "Qwen模型当前繁忙",
           retryable: true,
         },
       },
@@ -269,7 +269,9 @@ test("mock API 失败和身份切换：真实错误可见，旧草稿不能跨�
   const before = await saved(page);
   await page.getByLabel("AI 宠物档案与社交信息描述").fill("一只狗");
   await page.getByRole("button", { name: "生成 AI 草稿", exact: true }).click();
-  await expect(page.locator("p[role=alert]")).toContainText("GLM_HTTP_429");
+  await expect(page.locator("p[role=alert]")).toContainText(
+    "AI_UPSTREAM_HTTP_429",
+  );
   await expect(page.getByTestId("ai-draft")).toHaveCount(0);
   expect(await saved(page)).toBe(before);
   page.once("dialog", (dialog) => dialog.accept());

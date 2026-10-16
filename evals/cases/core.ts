@@ -75,7 +75,12 @@ const c = (
   task,
   input: {
     text,
-    context: task === "pet-profile" || task === "match-intent" ? {} : { pets },
+    context:
+      task === "help-intent"
+        ? { pets }
+        : id === "C06"
+          ? { facts: "怕追逐" }
+          : {},
   },
   mock,
   expect,

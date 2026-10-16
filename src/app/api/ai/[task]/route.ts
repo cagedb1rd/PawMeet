@@ -78,7 +78,7 @@ export async function POST(
         requestId,
         data: result.data,
         meta: {
-          provider: "glm",
+          provider: "qwen",
           model: result.model,
           promptVersion: PROMPT_VERSION,
           schemaVersion: 1,

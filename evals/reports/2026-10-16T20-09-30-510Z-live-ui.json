@@ -1,0 +1,57 @@
+{
+  "mode": "live-ui",
+  "provider": "qwen",
+  "model": "qwen3.8-flash",
+  "promptVersion": "pawmeet-5.5",
+  "source": "tests/live/ai.spec.ts + playwright.ai.config.ts; actual Next server, no AI mocks",
+  "stats": {
+    "startTime": "2026-10-16T20:09:30.510Z",
+    "duration": 46562.21,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "真实Qwen：页面生成、主人编辑确认和刷新",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 12227
+        }
+      ]
+    },
+    {
+      "title": "真实Qwen原生多工具：本地查询、工具回传和最终回答",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 15968
+        }
+      ]
+    },
+    {
+      "title": "真实Qwen互助工具和后续对话：草稿可编辑且未发布",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 10310
+        }
+      ]
+    },
+    {
+      "title": "真实Qwen：规则适配解释和社区文案保持事实来源",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 6124
+        }
+      ]
+    }
+  ]
+}

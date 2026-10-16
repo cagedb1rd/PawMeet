@@ -6,6 +6,9 @@ const option = (name, fallback) => {
   return i < 0 ? fallback : args[i + 1];
 };
 const mode = option("--mode", "mock");
+const suite = option("--suite", "all");
+if (!["all", "core", "tools", "risk"].includes(suite))
+  throw Error("--suite must be all, core, tools or risk");
 if (!["mock", "live"].includes(mode))
   throw Error("--mode must be mock or live");
 const max = Number(option("--max-calls", "55"));
@@ -20,11 +23,12 @@ if (args.includes("--dry-run")) {
     JSON.stringify(
       {
         mode,
+        suite,
         core: 35,
         validation: 11,
         nativeTools: 8,
         maxCalls: max,
-        model: process.env.GLM_MODEL || "glm-4.7-flash",
+        model: process.env.AI_MODEL || "qwen3.8-flash",
         perCallMaxOutputTokens: 1400,
         automaticAttempts: 2,
         note: "Live包含实际工具回传续轮，受max-calls限制；原始输出Schema率与最终校验成功分别统计。",
@@ -35,16 +39,16 @@ if (args.includes("--dry-run")) {
   );
   process.exit(0);
 }
-if (mode === "live" && !process.env.GLM_API_KEY) {
+if (mode === "live" && !process.env.DASHSCOPE_API_KEY) {
   writeFileSync(
     report,
     JSON.stringify(
       {
         runId,
         mode,
-        model: "glm-4.7-flash",
+        model: "qwen3.8-flash",
         status: "not_run",
-        reason: "GLM_API_KEY missing",
+        reason: "DASHSCOPE_API_KEY missing",
         plannedCases: 43,
         actualProviderCalls: 0,
         metrics: {
@@ -59,7 +63,7 @@ if (mode === "live" && !process.env.GLM_API_KEY) {
       2,
     ),
   );
-  console.log(`真实评测未运行：缺少GLM_API_KEY。报告 ${report}`);
+  console.log(`真实评测未运行：缺少DASHSCOPE_API_KEY。报告 ${report}`);
   process.exit(2);
 }
 const child = spawnSync(
@@ -75,6 +79,7 @@ const child = spawnSync(
     env: {
       ...process.env,
       AI_EVAL_MODE: mode,
+      AI_EVAL_SUITE: suite,
       AI_EVAL_REPORT: report,
       AI_EVAL_RUN_ID: runId,
       AI_EVAL_MAX_CALLS: String(max),

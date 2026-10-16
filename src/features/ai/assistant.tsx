@@ -155,7 +155,7 @@ function Assistant() {
         </details>
         <p className="form-hint">
           参考坐标仅在浏览器计算距离。每次最多展示5张结果卡；未指定半径默认5公里。必要的筛选结果会发送
-          GLM，图片和完整数据表不会发送。
+          Qwen，图片和完整数据表不会发送。
         </p>
         <div aria-live="polite">
           {messages.map((m, i) => (

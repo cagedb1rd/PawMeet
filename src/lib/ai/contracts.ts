@@ -123,6 +123,31 @@ export const toolSchemas = {
   search_activities: activitySearchSchema,
   create_help_draft: helpDraftSchema,
 };
+// Native tools accept only supplied conditions; full business drafts remain strict.
+export const nativeToolSchemas = {
+  search_pets: matchIntentSchema.partial().extend({
+    radiusKm: radiusSchema.optional(),
+    district: nullable(30).unwrap().optional(),
+    sort: z.enum(["distance", "match"]).optional(),
+  }),
+  search_activities: activitySearchSchema.partial().extend({
+    radiusKm: radiusSchema.optional(),
+    district: nullable(30).unwrap().optional(),
+    startAfter: z.iso.datetime({ offset: true }).optional(),
+    startBefore: z.iso.datetime({ offset: true }).optional(),
+  }),
+  create_help_draft: helpDraftSchema.partial().extend({
+    type: z.enum(["walk", "feed"]).optional(),
+    petId: short(100).min(1).optional(),
+    details: short(1000),
+    startAt: z.iso.datetime({ offset: true }).optional(),
+    endAt: z.iso.datetime({ offset: true }).optional(),
+    durationMinutes: z.number().int().min(1).max(1440).optional(),
+    timeText: short(100).min(1).optional(),
+    district: short(30).min(1).optional(),
+    locationQuery: short(100).min(1).optional(),
+  }),
+};
 export type ToolName = keyof typeof toolSchemas;
 const petRowSchema = z.strictObject({
   id: short(100),
@@ -196,6 +221,7 @@ export const assistantRequestSchema = z.strictObject({
 export type AssistantRequest = z.infer<typeof assistantRequestSchema>;
 export const assistantSummaries = [
   "已查询，请查看实际结果卡片。",
+  "已生成互助草稿，请编辑并确认，尚未发布。",
   "没有符合条件的结果，请调整条件。",
   "需要补充信息，请查看工具提示。",
   "工具执行失败，请稍后重试。",
@@ -215,7 +241,7 @@ export type AiSuccess<T> = {
   requestId: string;
   data: T;
   meta: {
-    provider: "glm";
+    provider: "qwen";
     model: string;
     promptVersion: string;
     latencyMs: number;

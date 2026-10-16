@@ -2,9 +2,9 @@ import "server-only";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { AiError } from "./errors";
 function secret() {
-  const key = process.env.DEMO_SESSION_SECRET || process.env.GLM_API_KEY;
+  const key = process.env.DEMO_SESSION_SECRET || process.env.DASHSCOPE_API_KEY;
   if (!key)
-    throw new AiError("AI_NOT_CONFIGURED", "AI尚未配置GLM_API_KEY", 503);
+    throw new AiError("AI_NOT_CONFIGURED", "AI尚未配置DASHSCOPE_API_KEY", 503);
   return key;
 }
 function mac(data: string) {

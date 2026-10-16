@@ -8,21 +8,28 @@ import {
   toolCallSchema,
   petSummarySchema,
   toolResultSchema,
-  assistantAnswerSchema,
   assistantSummaries,
 } from "@/lib/ai/contracts";
 import { validateOutput } from "@/lib/ai/validation";
-import { callGlm, Message } from "./client";
-import { taskPrompt, assistantPrompt, nativeTools } from "./prompts";
+import { callModel, Message } from "./client";
+import {
+  taskPrompt,
+  assistantPrompt,
+  nativeTools,
+  calendarContext,
+  taskOutputSchema,
+  finalAnswerSchema,
+} from "./prompts";
 import { AiError } from "./errors";
 import { seal, unseal } from "./session";
+import { checkedAnswer, answerRepairInstruction } from "./answer";
 export async function generateTask(
   task: AiTask,
   input: TaskRequest,
   session: string,
   requestId: string,
   now = new Date(),
-  call = callGlm,
+  call = callModel,
 ) {
   const result = await call(
     [
@@ -33,11 +40,15 @@ export async function generateTask(
           input,
           now: now.toISOString(),
           timezone: "Asia/Shanghai",
+          calendar: calendarContext(now),
         }),
       },
     ],
     session,
     requestId,
+    undefined,
+    undefined,
+    taskOutputSchema(task),
   );
   try {
     return {
@@ -78,7 +89,7 @@ export async function assistantStep(
   session: string,
   requestId: string,
   now = new Date(),
-  call = callGlm,
+  call = callModel,
 ): Promise<{ data: AssistantStep; usage: unknown; model: string }> {
   let state: z.infer<typeof stateSchema>;
   if (input.continuation) {
@@ -153,43 +164,79 @@ export async function assistantStep(
       "工具调用已达4轮上限，请缩小任务后重试",
       400,
     );
+  const messages: Message[] = [
+    {
+      role: "system",
+      content: `${assistantPrompt}\nsummary只允许以下值之一：${JSON.stringify(assistantSummaries)}\ncalendar=${JSON.stringify(calendarContext(now))}；now=${now.toISOString()}；本人宠物=${JSON.stringify(state.pets)}`,
+    },
+    ...(state.messages as Message[]),
+  ];
+  const finalize =
+    !!input.results?.length &&
+    input.results.every((r) => r.result.kind !== "error");
   const result = await call(
-    [
-      {
-        role: "system",
-        content: `${assistantPrompt}\nsummary只允许以下值之一：${JSON.stringify(assistantSummaries)}\n当前北京时间依据now=${now.toISOString()}；本人宠物=${JSON.stringify(state.pets)}`,
-      },
-      ...(state.messages as Message[]),
-    ],
+    messages,
     session,
     requestId,
-    nativeTools,
+    finalize ? undefined : nativeTools,
+    undefined,
+    finalize ? finalAnswerSchema : undefined,
   );
   const calls = result.message.tool_calls ?? [];
+  if (finalize && calls.length)
+    throw new AiError("AI_TOOL_PROTOCOL", "助手总结阶段返回了额外工具调用");
   if (new Set(calls.map((c) => c.id)).size !== calls.length)
-    throw new AiError("AI_TOOL_PROTOCOL", "GLM返回重复工具调用ID");
-  state.messages.push(result.message);
+    throw new AiError("AI_TOOL_PROTOCOL", "Qwen返回重复工具调用ID");
   state.round++;
   state.refs = [...new Set(state.refs)].slice(-30);
   state.pending = calls;
   let answer: AssistantStep["answer"] = null;
+  let usage: unknown = result.usage;
   if (!calls.length) {
-    try {
-      answer = assistantAnswerSchema.parse(
-        JSON.parse(result.message.content ?? ""),
+    const checked = await checkedAnswer(
+      result.message,
+      state.refs,
+      state.round < 4
+        ? () =>
+            call(
+              [
+                ...messages,
+                result.message,
+                answerRepairInstruction(state.refs),
+              ],
+              session,
+              requestId,
+              undefined,
+              undefined,
+              finalAnswerSchema,
+            )
+        : undefined,
+    );
+    answer = checked.answer;
+    if (
+      input.results?.some((r) => r.result.kind === "error") &&
+      [
+        "已查询，请查看实际结果卡片。",
+        "已生成互助草稿，请编辑并确认，尚未发布。",
+        "没有符合条件的结果，请调整条件。",
+      ].includes(answer.summary)
+    )
+      throw new AiError(
+        "AI_INVALID_OUTPUT",
+        "工具失败尚未解决，不能返回查询成功或空结果状态",
       );
-      if (answer.references.some((id) => !state.refs.includes(id)))
-        throw Error("Unknown reference");
-    } catch {
-      throw new AiError("AI_INVALID_OUTPUT", "助手回答未通过结果引用校验");
+    state.messages.push(checked.message);
+    if (checked.repaired) {
+      state.round++;
+      usage = { initial: result.usage, repair: checked.usage };
     }
-  }
+  } else state.messages.push(result.message);
   const continuation = seal(state);
   if (continuation.length > 40000)
     throw new AiError("AI_CONTEXT_LIMIT", "对话上下文已满，请重新开始", 400);
   return {
     data: { continuation, toolCalls: calls, answer },
-    usage: result.usage,
+    usage,
     model: result.model,
   };
 }

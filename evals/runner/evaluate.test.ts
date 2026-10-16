@@ -8,9 +8,9 @@ import { validateOutput, VALIDATION_VERSION } from "@/lib/ai/validation";
 import {
   outputSchemas,
   emptyMatch,
-  assistantAnswerSchema,
   assistantSummaries,
   toolSchemas,
+  nativeToolSchemas,
   ToolName,
 } from "@/lib/ai/contracts";
 import {
@@ -18,10 +18,14 @@ import {
   assistantPrompt,
   nativeTools,
   PROMPT_VERSION,
+  calendarContext,
+  taskOutputSchema,
+  finalAnswerSchema,
 } from "@/server/ai/prompts";
-import { callGlm, Message } from "@/server/ai/client";
+import { callModel, Message } from "@/server/ai/client";
 import { AiError } from "@/server/ai/errors";
-import { executeTool } from "@/lib/ai/tools";
+import { checkedAnswer, answerRepairInstruction } from "@/server/ai/answer";
+import { executeTool, parseToolArguments } from "@/lib/ai/tools";
 import { createSeed } from "@/data/seed";
 import { DEFAULT_REFERENCE } from "@/domain/geo";
 const mode = process.env.AI_EVAL_MODE ?? "mock";
@@ -41,6 +45,8 @@ type Row = {
   toolsActual?: string[];
   toolsOk?: number;
   toolsTotal?: number;
+  parameterFieldsCorrect?: number;
+  parameterFieldsTotal?: number;
 };
 const equal = (a: unknown, b: unknown) =>
   typeof a === "string" &&
@@ -210,8 +216,63 @@ const nativeCases = [
     ],
   },
 ];
+function assessParameters(
+  name: string,
+  raw: unknown,
+  expected: Record<string, unknown>,
+) {
+  let actual: Record<string, unknown> | null = null;
+  try {
+    actual = parseToolArguments(name as ToolName, raw);
+  } catch {
+    /* Invalid parameters score zero. */
+  }
+  const fields = Object.entries(expected).filter(([key, value]) =>
+    name === "create_help_draft"
+      ? [
+          "type",
+          "petId",
+          "durationMinutes",
+          "startAt",
+          "endAt",
+          "district",
+          "locationQuery",
+        ].includes(key)
+      : !["clarifications", "warnings", "unmappedTerms"].includes(key) &&
+        (key !== "sort" || value !== null),
+  );
+  return {
+    correct: fields.filter(([key, value]) => equal(actual?.[key], value))
+      .length,
+    total: fields.length,
+  };
+}
+it("工具参数评测拒绝错误地区、通称犬种和遗漏排除条件", () => {
+  expect(
+    assessParameters(
+      "search_activities",
+      { district: "西湖区" },
+      { district: "滨江区" },
+    ).correct,
+  ).toBe(0);
+  expect(
+    assessParameters(
+      "search_pets",
+      { ...emptyMatch, breeds: ["狗狗"] },
+      emptyMatch,
+    ).correct,
+  ).toBeLessThan(12);
+  expect(
+    assessParameters("search_pets", emptyMatch, { excludedSizes: ["large"] })
+      .correct,
+  ).toBe(0);
+  expect(
+    assessParameters("search_pets", { radiusKm: "5" }, { radiusKm: 5 }),
+  ).toEqual({ correct: 1, total: 1 });
+});
 it("执行并保存分离的AI评测报告", async () => {
   const rows: Row[] = [];
+  const suite = process.env.AI_EVAL_SUITE || "all";
   let actualCalls = 0;
   const max = Number(process.env.AI_EVAL_MAX_CALLS ?? 55);
   const report = process.env.AI_EVAL_REPORT ?? "evals/reports/manual-mock.json";
@@ -220,27 +281,52 @@ it("执行并保存分离的AI评测报告", async () => {
     const old = JSON.parse(await readFile(resume, "utf8"));
     if (
       old.mode !== mode ||
+      old.suite !== suite ||
+      (mode === "live" &&
+        old.model !== (process.env.AI_MODEL || "qwen3.8-flash")) ||
       old.promptVersion !== PROMPT_VERSION ||
-      old.caseVersion !== "core.v1+validation.v2+tools.v1"
+      old.validationVersion !== VALIDATION_VERSION ||
+      old.caseVersion !== "core.v2+validation.v2+tools.v5"
     )
-      throw Error("resume模式或Prompt/用例版本不匹配，需独立重跑");
+      throw Error(
+        "resume模式、套件、模型或Prompt/校验/用例版本不匹配，需独立重跑",
+      );
     rows.push(...old.cases.filter((c: Row) => c.status === "pass"));
   }
   const selected = process.env.AI_EVAL_CASE;
+  const planned = selected
+    ? 1
+    : suite === "risk"
+      ? 20
+      : suite === "tools"
+        ? 8
+        : suite === "core"
+          ? mode === "live"
+            ? 35
+            : 46
+          : mode === "live"
+            ? 43
+            : 54;
   const wanted = (id: string) =>
-    !rows.some((r) => r.id === id) && (!selected || id === selected);
+    !rows.some((r) => r.id === id) &&
+    (!selected || id === selected) &&
+    (suite === "all" || (suite === "tools") === id.startsWith("TC"));
   const usage: unknown[] = [];
   let upstreamFailures = 0;
-  process.env.GLM_MODEL = process.env.GLM_MODEL || "glm-4.7-flash";
+  process.env.AI_MODEL = process.env.AI_MODEL || "qwen3.8-flash";
   if (mode === "live") {
     process.env.AI_ENABLED = "true";
     process.env.QUOTA_STORE_PATH = `.local/ai-eval/${process.env.AI_EVAL_RUN_ID ?? "manual"}.quota.json`;
   }
   let lastDispatch = 0;
-  const liveCall = async (messages: Message[], tools?: unknown[]) => {
+  const liveCall = async (
+    messages: Message[],
+    tools?: unknown[],
+    jsonSchema?: Record<string, unknown>,
+  ) => {
     if (upstreamFailures >= 3) throw Error("CIRCUIT_OPEN");
     if (actualCalls >= max) throw Error("MAX_CALLS");
-    const r = await callGlm(
+    const r = await callModel(
       messages,
       `eval-${actualCalls}`,
       crypto.randomUUID(),
@@ -293,11 +379,32 @@ it("执行并保存分离的AI评测报告", async () => {
         else upstreamFailures = 0;
         return response;
       },
+      jsonSchema,
     );
     usage.push(r.usage);
     return r;
   };
-  for (const c of coreCases.filter(
+  const riskIds = [
+    "C03",
+    "C05",
+    "M03",
+    "M05",
+    "M07",
+    "H03",
+    "H04",
+    "H06",
+    "L03",
+    "L06",
+  ];
+  const taskCases =
+    suite === "risk"
+      ? coreCases
+          .filter((c) => riskIds.includes(c.id))
+          .flatMap((c) =>
+            [1, 2].map((round) => ({ ...c, id: `${c.id}-R${round}` })),
+          )
+      : coreCases;
+  for (const c of taskCases.filter(
     (c) => mode === "mock" || !c.id.startsWith("V"),
   )) {
     if (!wanted(c.id)) continue;
@@ -306,17 +413,22 @@ it("执行并保存分离的AI评测报告", async () => {
       let raw: unknown = c.mock,
         used: unknown = null;
       if (mode === "live") {
-        const r = await liveCall([
-          { role: "system", content: taskPrompt(c.task) },
-          {
-            role: "user",
-            content: JSON.stringify({
-              input: c.input,
-              now: now.toISOString(),
-              timezone: "Asia/Shanghai",
-            }),
-          },
-        ]);
+        const r = await liveCall(
+          [
+            { role: "system", content: taskPrompt(c.task) },
+            {
+              role: "user",
+              content: JSON.stringify({
+                input: c.input,
+                now: now.toISOString(),
+                timezone: "Asia/Shanghai",
+                calendar: calendarContext(now),
+              }),
+            },
+          ],
+          undefined,
+          taskOutputSchema(c.task),
+        );
         used = r.usage;
         try {
           raw = JSON.parse(r.message.content ?? "");
@@ -357,24 +469,33 @@ it("执行并保存分离的AI评测报告", async () => {
     const toolsActual: string[] = [];
     let toolsOk = 0,
       toolsTotal = 0;
+    let parameterFieldsCorrect = 0,
+      parameterFieldsTotal = 0;
     let rawToolSchema = true;
     let nativeTrace: Message[] = [];
     try {
       const messages: Message[] = [
         {
           role: "system",
-          content: `${assistantPrompt}\nsummary只允许${JSON.stringify(assistantSummaries)}\nnow=${now.toISOString()} 本人宠物=${JSON.stringify([{ id: own.id, name: own.name }])}`,
+          content: `${assistantPrompt}\nsummary只允许${JSON.stringify(assistantSummaries)}\ncalendar=${JSON.stringify(calendarContext(now))} now=${now.toISOString()} 本人宠物=${JSON.stringify([{ id: own.id, name: own.name }])}`,
         },
         { role: "user", content: c.text },
       ];
       nativeTrace = messages;
       let final = false;
+      let finalize = false;
       const refs: string[] = [];
       let raw: unknown;
       for (let round = 0; round < 4; round++) {
         const message =
           mode === "live"
-            ? (await liveCall(messages, nativeTools)).message
+            ? (
+                await liveCall(
+                  messages,
+                  finalize ? undefined : nativeTools,
+                  finalize ? finalAnswerSchema : undefined,
+                )
+              ).message
             : round === 0
               ? {
                   role: "assistant" as const,
@@ -382,7 +503,18 @@ it("执行并保存分离的AI评测报告", async () => {
                   tool_calls: c.names.map((name, i) => ({
                     id: `call-${i}`,
                     type: "function" as const,
-                    function: { name, arguments: JSON.stringify(c.args[i]) },
+                    function: {
+                      name,
+                      arguments: JSON.stringify(
+                        Object.fromEntries(
+                          Object.entries(
+                            name === "create_help_draft"
+                              ? { ...c.args[i], petId: own.id }
+                              : c.args[i],
+                          ).filter(([, value]) => value !== null),
+                        ),
+                      ),
+                    },
                   })),
                 }
               : {
@@ -395,20 +527,55 @@ it("执行并保存分离的AI评测报告", async () => {
         messages.push(message);
         raw = message;
         const calls = message.tool_calls ?? [];
+        if (finalize && calls.length)
+          throw Error("Unexpected tool call during final response");
         if (!calls.length) {
-          const answer = assistantAnswerSchema.parse(
-            JSON.parse(message.content ?? ""),
+          const checked = await checkedAnswer(
+            message,
+            refs,
+            mode === "live" && round < 3
+              ? () =>
+                  liveCall(
+                    [...messages, answerRepairInstruction(refs)],
+                    undefined,
+                    finalAnswerSchema,
+                  )
+              : undefined,
           );
-          if (answer.references.some((id) => !refs.includes(id)))
-            throw Error("Unknown final reference");
+          if (checked.repaired) {
+            messages.push(checked.message);
+            raw = checked.message;
+            rawToolSchema = false;
+            round++;
+          }
           final = true;
           break;
         }
+        let allToolsOk = true;
         for (const call of calls) {
+          const expectedIndex = c.names.indexOf(call.function.name);
+          if (expectedIndex >= 0) {
+            const expected = c.args[expectedIndex];
+            const score = assessParameters(
+              call.function.name,
+              (() => {
+                try {
+                  return JSON.parse(call.function.arguments);
+                } catch {
+                  return null;
+                }
+              })(),
+              call.function.name === "create_help_draft"
+                ? { ...expected, petId: own.id }
+                : expected,
+            );
+            parameterFieldsCorrect += score.correct;
+            parameterFieldsTotal += score.total;
+          }
           try {
             if (
               !Object.hasOwn(toolSchemas, call.function.name) ||
-              !toolSchemas[call.function.name as ToolName].safeParse(
+              !nativeToolSchemas[call.function.name as ToolName].safeParse(
                 JSON.parse(call.function.arguments),
               ).success
             )
@@ -427,6 +594,7 @@ it("执行并保存分离的AI评测报告", async () => {
             c.text,
           );
           if (result.kind !== "error") toolsOk++;
+          else allToolsOk = false;
           if (result.kind === "pets" || result.kind === "activities")
             refs.push(...result.rows.map((r) => r.id));
           messages.push({
@@ -435,13 +603,18 @@ it("执行并保存分离的AI评测报告", async () => {
             content: JSON.stringify(result),
           });
         }
+        finalize = allToolsOk;
       }
       const choice = equal(
         [...new Set(toolsActual)].sort(),
         [...c.names].sort(),
       );
       const success =
-        final && choice && toolsOk === toolsTotal && toolsTotal > 0;
+        final &&
+        choice &&
+        toolsOk === toolsTotal &&
+        toolsTotal > 0 &&
+        parameterFieldsCorrect === parameterFieldsTotal;
       rows.push({
         id: c.id,
         status: success ? "pass" : "fail",
@@ -454,6 +627,8 @@ it("执行并保存分离的AI评测报告", async () => {
         toolsActual,
         toolsOk,
         toolsTotal,
+        parameterFieldsCorrect,
+        parameterFieldsTotal,
         raw,
         latencyMs: Date.now() - start,
       });
@@ -473,6 +648,8 @@ it("执行并保存分离的AI评测报告", async () => {
         toolsActual,
         toolsOk,
         toolsTotal,
+        parameterFieldsCorrect,
+        parameterFieldsTotal,
         latencyMs: Date.now() - start,
       });
     }
@@ -484,18 +661,20 @@ it("执行并保存分离的AI评测报告", async () => {
   const result = {
     runId: process.env.AI_EVAL_RUN_ID,
     mode,
+    suite,
     model:
-      mode === "live" ? process.env.GLM_MODEL : "synthetic fixtures; no GLM",
+      mode === "live" ? process.env.AI_MODEL : "synthetic fixtures; no Qwen",
+    provider: mode === "live" ? "qwen" : "mock",
     promptVersion: PROMPT_VERSION,
     schemaVersion: 1,
-    caseVersion: "core.v1+validation.v2+tools.v1",
+    caseVersion: "core.v2+validation.v2+tools.v5",
     validationVersion: VALIDATION_VERSION,
     gitDirty:
       execFileSync("git", ["status", "--porcelain"], {
         encoding: "utf8",
       }).trim().length > 0,
     coverage: {
-      planned: selected ? 1 : mode === "live" ? 43 : 54,
+      planned,
       attempted: executed.length,
       notRun: rows.filter((r) => r.status === "not_run").length,
     },
@@ -525,6 +704,10 @@ it("执行并保存分离的AI评测报告", async () => {
         toolRows.reduce((s, r) => s + (r.toolsOk ?? 0), 0),
         toolRows.reduce((s, r) => s + (r.toolsTotal ?? 0), 0),
       ),
+      toolParameterAccuracy: ratio(
+        toolRows.reduce((s, r) => s + (r.parameterFieldsCorrect ?? 0), 0),
+        toolRows.reduce((s, r) => s + (r.parameterFieldsTotal ?? 0), 0),
+      ),
       completeTaskSuccessRate: ratio(
         valid.filter((r) => r.taskSuccess).length,
         valid.length,
@@ -545,7 +728,7 @@ it("执行并保存分离的AI评测报告", async () => {
         mode,
         metrics: result.metrics,
         counts: {
-          planned: selected ? 1 : mode === "live" ? 43 : 54,
+          planned,
           executed: executed.length,
           passed: executed.filter((r) => r.taskSuccess).length,
           notRun: rows.filter((r) => r.status === "not_run").length,

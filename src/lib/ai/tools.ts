@@ -8,6 +8,8 @@ import {
   toolSchemas,
   ToolName,
   toolResultSchema,
+  nativeToolSchemas,
+  emptyMatch,
 } from "./contracts";
 import { validateHelp, validateMatch, validateOutput } from "./validation";
 /** Normalize only canonical provider encodings, then apply strict Zod ranges/enums. */
@@ -38,6 +40,49 @@ export function normalizeToolArguments(raw: unknown) {
     value.durationMinutes = Number(value.durationMinutes);
   return value;
 }
+export function parseToolArguments(name: ToolName, raw: unknown) {
+  const normalized = normalizeToolArguments(raw);
+  const legacy = toolSchemas[name].safeParse(normalized);
+  if (legacy.success) return legacy.data;
+  if (
+    !normalized ||
+    typeof normalized !== "object" ||
+    Array.isArray(normalized)
+  )
+    throw Error("Invalid arguments");
+  const sparse = Object.fromEntries(
+    Object.entries(normalized).filter(
+      ([key, value]) =>
+        !(value === null && Object.hasOwn(nativeToolSchemas[name].shape, key)),
+    ),
+  );
+  const provided = nativeToolSchemas[name].parse(sparse);
+  const defaults =
+    name === "search_pets"
+      ? emptyMatch
+      : name === "search_activities"
+        ? {
+            district: null,
+            radiusKm: null,
+            startAfter: null,
+            startBefore: null,
+          }
+        : {
+            type: null,
+            petId: null,
+            title: "临时互助草稿",
+            details: "",
+            startAt: null,
+            endAt: null,
+            durationMinutes: null,
+            timeText: null,
+            district: null,
+            locationQuery: null,
+            clarifications: [],
+            warnings: [],
+          };
+  return toolSchemas[name].parse({ ...defaults, ...provided });
+}
 /** Read-only browser executor. No Repository or business command imports. */
 export function executeTool(
   call: ToolCall,
@@ -64,13 +109,16 @@ export function executeTool(
       message: "工具参数不是JSON",
     };
   }
-  const parsed = toolSchemas[name].safeParse(normalizeToolArguments(raw));
-  if (!parsed.success)
+  let parsed: { data: ReturnType<typeof parseToolArguments> };
+  try {
+    parsed = { data: parseToolArguments(name, raw) };
+  } catch {
     return {
       kind: "error",
       code: "INVALID_ARGUMENTS",
       message: "工具参数未通过Zod校验，请修正参数",
     };
+  }
   try {
     if (name === "search_pets") {
       const f = taskText
@@ -183,6 +231,13 @@ export function executeTool(
         );
     return { kind: "help-draft", draft };
   } catch {
+    if (name === "create_help_draft")
+      return {
+        kind: "error",
+        code: "INVALID_ARGUMENTS",
+        message:
+          "互助草稿校验失败：details、地点须为用户原文连续片段，不添加前缀或标点；petId须为本人宠物；模糊时段的startAt/endAt应为null。请修正后重试。",
+      };
     return {
       kind: "error",
       code: "TOOL_FAILED",

@@ -10,37 +10,45 @@ export type Message = {
   tool_call_id?: string;
 };
 export function aiConfig() {
-  if (process.env.AI_ENABLED !== "true" || !process.env.GLM_API_KEY)
+  if (process.env.AI_ENABLED !== "true" || !process.env.DASHSCOPE_API_KEY)
     throw new AiError(
       "AI_NOT_CONFIGURED",
-      "AI尚未配置：请在服务端设置GLM_API_KEY并启用AI_ENABLED",
+      "AI尚未配置：请在服务端设置DASHSCOPE_API_KEY并启用AI_ENABLED",
       503,
     );
-  const model = process.env.GLM_MODEL || "glm-4.7-flash";
-  if (model !== "glm-4.7-flash")
+  const model = process.env.AI_MODEL || "qwen3.8-flash";
+  if (model !== "qwen3.8-flash")
     throw new AiError(
       "AI_MODEL_NOT_APPROVED",
-      "本阶段仅允许glm-4.7-flash；其他模型需要用户授权",
+      "本阶段仅允许qwen3.8-flash；其他模型需要用户授权",
       503,
     );
   const base = new URL(
-    process.env.GLM_BASE_URL || "https://open.bigmodel.cn/api/paas/v4",
+    process.env.AI_BASE_URL ||
+      "https://dashscope.aliyuncs.com/compatible-mode/v1",
   );
   if (
     base.protocol !== "https:" ||
-    base.hostname !== "open.bigmodel.cn" ||
+    !(
+      new Set(["dashscope.aliyuncs.com", "dashscope-intl.aliyuncs.com"]).has(
+        base.hostname,
+      ) ||
+      /^[a-z0-9-]+\.(cn-beijing|ap-southeast-1|us-east-1|ap-northeast-1)\.maas\.aliyuncs\.com$/.test(
+        base.hostname,
+      )
+    ) ||
     base.port ||
     base.username ||
     base.password ||
     base.search ||
     base.hash ||
-    base.pathname.replace(/\/$/, "") !== "/api/paas/v4"
+    base.pathname.replace(/\/$/, "") !== "/compatible-mode/v1"
   )
-    throw new AiError("AI_CONFIG", "GLM_BASE_URL必须是智谱普通API地址", 503);
+    throw new AiError("AI_CONFIG", "AI_BASE_URL必须是百炼官方兼容API地址", 503);
   return {
     model,
-    url: `${base.origin}/api/paas/v4/chat/completions`,
-    key: process.env.GLM_API_KEY,
+    url: `${base.origin}/compatible-mode/v1/chat/completions`,
+    key: process.env.DASHSCOPE_API_KEY,
   };
 }
 const responseSchema = z.object({
@@ -61,6 +69,8 @@ const responseSchema = z.object({
                 }),
             )
             .max(3)
+            .nullable()
+            .transform((value) => value ?? undefined)
             .optional(),
         }),
       }),
@@ -74,25 +84,34 @@ const responseSchema = z.object({
     })
     .optional(),
 });
-export async function callGlm(
+export async function callModel(
   messages: Message[],
   session: string,
   requestId: string,
   tools?: unknown[],
   transport: typeof fetch = fetch,
+  jsonSchema?: Record<string, unknown>,
 ) {
   const config = aiConfig();
   const body = JSON.stringify({
     model: config.model,
     messages,
-    request_id: requestId,
-    thinking: { type: "disabled" },
+    enable_thinking: false,
+    preserve_thinking: false,
     temperature: 0.1,
     max_tokens: 1400,
     stream: false,
-    ...(tools
-      ? { tools, tool_choice: "auto" }
-      : { response_format: { type: "json_object" } }),
+    response_format: jsonSchema
+      ? {
+          type: "json_schema",
+          json_schema: {
+            name: "pawmeet_result",
+            strict: true,
+            schema: jsonSchema,
+          },
+        }
+      : { type: "json_object" },
+    ...(tools ? { tools, tool_choice: "auto", parallel_tool_calls: true } : {}),
   });
   if (body.length > 30000)
     throw new AiError(
@@ -112,6 +131,7 @@ export async function callGlm(
           headers: {
             Authorization: `Bearer ${config.key}`,
             "Content-Type": "application/json",
+            "X-Client-Request-Id": requestId,
           },
           body,
           signal: controller.signal,
@@ -130,18 +150,19 @@ export async function callGlm(
               ? provider.error.code
               : undefined;
           throw new AiError(
-            `GLM_HTTP_${response.status}`,
-            providerCode === "1305"
-              ? "GLM免费模型当前访问量过大，请稍后重试"
-              : response.status === 401 || response.status === 403
-                ? "GLM认证或访问权限失败"
-                : "GLM服务调用失败，请稍后重试",
+            `AI_UPSTREAM_HTTP_${response.status}`,
+            response.status === 401 || response.status === 403
+              ? "Qwen认证或访问权限失败"
+              : response.status === 429
+                ? "Qwen请求已受限，请稍后重试"
+                : "Qwen服务调用失败，请稍后重试",
             502,
             [429, 500, 502, 503, 504].includes(response.status),
             providerCode,
           );
         }
-        if (!response.body) throw new AiError("GLM_EMPTY", "GLM返回空响应");
+        if (!response.body)
+          throw new AiError("AI_UPSTREAM_EMPTY", "Qwen返回空响应");
         const reader = response.body.getReader();
         const chunks: Uint8Array[] = [];
         let length = 0;
@@ -151,7 +172,7 @@ export async function callGlm(
           length += part.value.length;
           if (length > 64000) {
             await reader.cancel();
-            throw new AiError("GLM_RESPONSE_LIMIT", "GLM响应超过限制");
+            throw new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制");
           }
           chunks.push(part.value);
         }
@@ -160,11 +181,11 @@ export async function callGlm(
         const choice = result.choices[0];
         if (!["stop", "tool_calls"].includes(choice.finish_reason))
           throw new AiError(
-            "GLM_INCOMPLETE",
-            "GLM输出未完整结束，不能使用该草稿",
+            "AI_UPSTREAM_INCOMPLETE",
+            "Qwen输出未完整结束，不能使用该草稿",
           );
         if (!choice.message.content && !choice.message.tool_calls?.length)
-          throw new AiError("GLM_EMPTY", "GLM未返回内容或工具调用");
+          throw new AiError("AI_UPSTREAM_EMPTY", "Qwen未返回内容或工具调用");
         return {
           message: {
             role: "assistant" as const,
@@ -180,19 +201,33 @@ export async function callGlm(
         if (e instanceof AiError) throw e;
         if (controller.signal.aborted)
           throw new AiError(
-            "GLM_TIMEOUT",
-            "GLM请求超时，请手动重试",
+            "AI_UPSTREAM_TIMEOUT",
+            "Qwen请求超时，请手动重试",
             504,
             true,
           );
         if (e instanceof SyntaxError || e instanceof z.ZodError)
           throw new AiError(
-            "GLM_INVALID_RESPONSE",
-            "GLM返回非法结构或非JSON内容",
+            "AI_UPSTREAM_INVALID_RESPONSE",
+            "Qwen返回非法结构或非JSON内容",
           );
+        const networkCode = (e as { cause?: { code?: string } })?.cause?.code;
+        if (
+          attempt === 0 &&
+          networkCode &&
+          [
+            "ECONNRESET",
+            "ETIMEDOUT",
+            "UND_ERR_CONNECT_TIMEOUT",
+            "UND_ERR_SOCKET",
+          ].includes(networkCode)
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 350));
+          continue;
+        }
         throw new AiError(
-          "GLM_NETWORK",
-          "GLM网络连接失败，请手动重试",
+          "AI_UPSTREAM_NETWORK",
+          "Qwen网络连接失败，请手动重试",
           502,
           true,
         );
@@ -200,6 +235,6 @@ export async function callGlm(
         clearTimeout(timer);
       }
     }
-    throw new AiError("GLM_RETRY_LIMIT", "GLM重试次数已达上限");
+    throw new AiError("AI_UPSTREAM_RETRY_LIMIT", "Qwen重试次数已达上限");
   });
 }

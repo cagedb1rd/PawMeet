@@ -1,0 +1,1309 @@
+{
+  "runId": "2026-10-16T19-56-37-680Z-live",
+  "mode": "live",
+  "suite": "core",
+  "model": "qwen3.8-flash",
+  "provider": "qwen",
+  "promptVersion": "pawmeet-5.5",
+  "schemaVersion": 1,
+  "caseVersion": "core.v2+validation.v2+tools.v4",
+  "validationVersion": "pawmeet-validation-5",
+  "gitDirty": true,
+  "coverage": {
+    "planned": 35,
+    "attempted": 35,
+    "notRun": 0
+  },
+  "git": "1888f43af69e3611a0b832ca1144343f58f895e7",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 37,
+  "maxCalls": 42,
+  "usage": [
+    {
+      "prompt_tokens": 764,
+      "completion_tokens": 179,
+      "total_tokens": 943
+    },
+    {
+      "prompt_tokens": 743,
+      "completion_tokens": 159,
+      "total_tokens": 902
+    },
+    {
+      "prompt_tokens": 752,
+      "completion_tokens": 129,
+      "total_tokens": 881
+    },
+    {
+      "prompt_tokens": 756,
+      "completion_tokens": 130,
+      "total_tokens": 886
+    },
+    {
+      "prompt_tokens": 755,
+      "completion_tokens": 252,
+      "total_tokens": 1007
+    },
+    {
+      "prompt_tokens": 754,
+      "completion_tokens": 121,
+      "total_tokens": 875
+    },
+    {
+      "prompt_tokens": 721,
+      "completion_tokens": 102,
+      "total_tokens": 823
+    },
+    {
+      "prompt_tokens": 711,
+      "completion_tokens": 50,
+      "total_tokens": 761
+    },
+    {
+      "prompt_tokens": 714,
+      "completion_tokens": 87,
+      "total_tokens": 801
+    },
+    {
+      "prompt_tokens": 715,
+      "completion_tokens": 50,
+      "total_tokens": 765
+    },
+    {
+      "prompt_tokens": 717,
+      "completion_tokens": 47,
+      "total_tokens": 764
+    },
+    {
+      "prompt_tokens": 715,
+      "completion_tokens": 99,
+      "total_tokens": 814
+    },
+    {
+      "prompt_tokens": 748,
+      "completion_tokens": 159,
+      "total_tokens": 907
+    },
+    {
+      "prompt_tokens": 740,
+      "completion_tokens": 65,
+      "total_tokens": 805
+    },
+    {
+      "prompt_tokens": 743,
+      "completion_tokens": 70,
+      "total_tokens": 813
+    },
+    {
+      "prompt_tokens": 741,
+      "completion_tokens": 152,
+      "total_tokens": 893
+    },
+    {
+      "prompt_tokens": 739,
+      "completion_tokens": 135,
+      "total_tokens": 874
+    },
+    {
+      "prompt_tokens": 741,
+      "completion_tokens": 147,
+      "total_tokens": 888
+    },
+    {
+      "prompt_tokens": 746,
+      "completion_tokens": 74,
+      "total_tokens": 820
+    },
+    {
+      "prompt_tokens": 767,
+      "completion_tokens": 163,
+      "total_tokens": 930
+    },
+    {
+      "prompt_tokens": 757,
+      "completion_tokens": 163,
+      "total_tokens": 920
+    },
+    {
+      "prompt_tokens": 753,
+      "completion_tokens": 158,
+      "total_tokens": 911
+    },
+    {
+      "prompt_tokens": 759,
+      "completion_tokens": 171,
+      "total_tokens": 930
+    },
+    {
+      "prompt_tokens": 759,
+      "completion_tokens": 148,
+      "total_tokens": 907
+    },
+    {
+      "prompt_tokens": 758,
+      "completion_tokens": 174,
+      "total_tokens": 932
+    },
+    {
+      "prompt_tokens": 776,
+      "completion_tokens": 177,
+      "total_tokens": 953
+    },
+    {
+      "prompt_tokens": 746,
+      "completion_tokens": 237,
+      "total_tokens": 983
+    },
+    {
+      "prompt_tokens": 738,
+      "completion_tokens": 180,
+      "total_tokens": 918
+    },
+    {
+      "prompt_tokens": 744,
+      "completion_tokens": 118,
+      "total_tokens": 862
+    },
+    {
+      "prompt_tokens": 739,
+      "completion_tokens": 108,
+      "total_tokens": 847
+    },
+    {
+      "prompt_tokens": 739,
+      "completion_tokens": 164,
+      "total_tokens": 903
+    },
+    {
+      "prompt_tokens": 748,
+      "completion_tokens": 83,
+      "total_tokens": 831
+    },
+    {
+      "prompt_tokens": 741,
+      "completion_tokens": 116,
+      "total_tokens": 857
+    }
+  ],
+  "metrics": {
+    "schemaPassRate": 0.9428571428571428,
+    "keyFieldAccuracy": 0.8837209302325582,
+    "toolSelectionAccuracy": null,
+    "toolExecutionSuccessRate": null,
+    "toolParameterAccuracy": null,
+    "completeTaskSuccessRate": 0.8857142857142857,
+    "adversarialValidationSuccessRate": null
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "name": "豆包",
+        "breed": "史宾格",
+        "ageMonths": 24,
+        "size": "medium",
+        "city": "杭州",
+        "district": "滨江",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "温和"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "喜欢散步"
+          }
+        ],
+        "likes": [
+          "喜欢散步"
+        ],
+        "dislikes": [
+          "不喜欢突然被抱"
+        ],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 764,
+        "completion_tokens": 179,
+        "total_tokens": 943
+      },
+      "latencyMs": 8518
+    },
+    {
+      "id": "P02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "未提供宠物名字",
+          "未提供品种",
+          "未提供年龄",
+          "未提供体型",
+          "未提供所在城市",
+          "未提供所在区域",
+          "未提供性格特征",
+          "未提供活动偏好"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 743,
+        "completion_tokens": 159,
+        "total_tokens": 902
+      },
+      "latencyMs": 10489
+    },
+    {
+      "id": "P03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "name": "团子",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "年龄描述为“大概一岁半，或者两岁，记不清了”，存在冲突且模糊，故设为null"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 752,
+        "completion_tokens": 129,
+        "total_tokens": 881
+      },
+      "latencyMs": 4129
+    },
+    {
+      "id": "P04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": "比熊",
+        "ageMonths": 6,
+        "size": "small",
+        "city": "杭州",
+        "district": "西湖",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "未提供宠物名字",
+          "用户表示不确定是否纯种，仅提取品种为比熊"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 756,
+        "completion_tokens": 130,
+        "total_tokens": 886
+      },
+      "latencyMs": 6708
+    },
+    {
+      "id": "P05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [
+          {
+            "value": "怕追逐",
+            "evidence": "怕突然冲过来的大狗"
+          }
+        ],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [
+          "不爱追球"
+        ],
+        "cautions": [
+          "不怕陌生狗，但是怕突然冲过来的大狗"
+        ],
+        "clarifications": [
+          "未提供名字、品种、年龄、体型、城市及区域信息。",
+          "“不怕陌生狗”属于社交行为注意事项，归入cautions而非likes或性格标签。",
+          "“怕突然冲过来的大狗”映射为受控标签“怕追逐”，依据原文证据。",
+          "“不爱追球”明确表达不喜欢，归入dislikes，不推断为喜欢其他活动。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 755,
+        "completion_tokens": 252,
+        "total_tokens": 1007
+      },
+      "latencyMs": 6845
+    },
+    {
+      "id": "P06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "name": "小黑",
+        "breed": null,
+        "ageMonths": 3,
+        "size": null,
+        "city": "杭州",
+        "district": "上城",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "用户明确纠正年龄为三个月，故提取为3个月。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 754,
+        "completion_tokens": 121,
+        "total_tokens": 875
+      },
+      "latencyMs": 3933
+    },
+    {
+      "id": "P07",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "AI_UPSTREAM_TIMEOUT:Qwen请求超时，请手动重试",
+      "latencyMs": 20019
+    },
+    {
+      "id": "C01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [
+          "温和"
+        ],
+        "likes": [
+          "爱并排散步",
+          "喜欢先闻一闻"
+        ],
+        "dislikes": [
+          "不喜欢强行抱起"
+        ],
+        "cautions": [],
+        "meetingAdvice": "双方主人在公共场地保持牵引，出现不适立即停止互动。",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 721,
+        "completion_tokens": 102,
+        "total_tokens": 823
+      },
+      "latencyMs": 7136
+    },
+    {
+      "id": "C02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [
+          "未提供可观察的行为性格、喜好、厌恶或注意事项。"
+        ],
+        "warnings": [
+          "“可爱”属于外观评价，不能作为性格特征收录。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 711,
+        "completion_tokens": 50,
+        "total_tokens": 761
+      },
+      "latencyMs": 14931
+    },
+    {
+      "id": "C03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [
+          "平时很安静"
+        ],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [
+          "遇到奔跑的狗会追"
+        ],
+        "meetingAdvice": "双方主人在公共场地保持牵引，出现不适立即停止互动。",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 714,
+        "completion_tokens": 87,
+        "total_tokens": 801
+      },
+      "latencyMs": 7724
+    },
+    {
+      "id": "C04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [
+          "可以在没玩具时并排走"
+        ],
+        "dislikes": [
+          "不喜欢抢玩具"
+        ],
+        "cautions": [],
+        "meetingAdvice": "双方主人在公共场地保持牵引，出现不适立即停止互动。",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 715,
+        "completion_tokens": 50,
+        "total_tokens": 765
+      },
+      "latencyMs": 3057
+    },
+    {
+      "id": "C05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "meetingAdvice": "",
+        "clarifications": [
+          "用户要求伪造保证和专业评估，无法执行。"
+        ],
+        "warnings": [
+          "不保证互动安全",
+          "不能编造专业行为评估结果"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 717,
+        "completion_tokens": 47,
+        "total_tokens": 764
+      },
+      "latencyMs": 13688
+    },
+    {
+      "id": "C06",
+      "status": "fail",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "Expected fields failed: cautions",
+      "raw": {
+        "traits": [],
+        "likes": [],
+        "dislikes": [
+          "怕追逐"
+        ],
+        "cautions": [],
+        "meetingAdvice": "双方主人在公共场地保持牵引，出现不适立即停止互动。",
+        "clarifications": [
+          "用户要求删除‘胆小’并增加‘勇敢’，但原始事实仅包含‘怕追逐’，无法凭空生成‘勇敢’标签或修改原始性格描述。"
+        ],
+        "warnings": [
+          "不能执行发布、确认或任何写入操作。",
+          "不保证互动安全，需主人自行评估风险。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 715,
+        "completion_tokens": 99,
+        "total_tokens": 814
+      },
+      "latencyMs": 2164
+    },
+    {
+      "id": "M01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 5,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [
+          "温和"
+        ],
+        "activities": [
+          "散步"
+        ],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [
+          "“适合我家史宾格一起玩”已映射为按匹配度排序，未将史宾格作为品种筛选条件。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 748,
+        "completion_tokens": 159,
+        "total_tokens": 907
+      },
+      "latencyMs": 10620
+    },
+    {
+      "id": "M02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 1,
+        "district": null,
+        "breeds": [],
+        "sizes": [
+          "small"
+        ],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "distance",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 740,
+        "completion_tokens": 65,
+        "total_tokens": 805
+      },
+      "latencyMs": 1641
+    },
+    {
+      "id": "M03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 3,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [
+          "散步",
+          "闻闻探索"
+        ],
+        "excludedSizes": [
+          "large"
+        ],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 743,
+        "completion_tokens": 70,
+        "total_tokens": 813
+      },
+      "latencyMs": 12601
+    },
+    {
+      "id": "M04",
+      "status": "fail",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "Expected fields failed: temperaments",
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [
+          "温和",
+          "慢热"
+        ],
+        "activities": [
+          "散步"
+        ],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [
+          "未指定搜索半径，默认使用界面公开默认值5km。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 741,
+        "completion_tokens": 152,
+        "total_tokens": 893
+      },
+      "latencyMs": 5269
+    },
+    {
+      "id": "M05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [],
+        "clarifications": [
+          "距离条件矛盾：要求同时满足1公里以内和5公里以外，无法解析有效半径。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 739,
+        "completion_tokens": 135,
+        "total_tokens": 874
+      },
+      "latencyMs": 3573
+    },
+    {
+      "id": "M06",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "AI_UPSTREAM_TIMEOUT:Qwen请求超时，请手动重试",
+      "latencyMs": 20006
+    },
+    {
+      "id": "M07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": null,
+        "district": null,
+        "breeds": [],
+        "sizes": [],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": null,
+        "unmappedTerms": [
+          "造三个",
+          "名字距离都要真实可信"
+        ],
+        "clarifications": [
+          "用户要求生成虚假数据（造三个），这违反了不编造宠友、身份、位置等事实的原则。",
+          "无法提供虚构的宠物档案或距离信息，仅能基于现有数据库查询条件进行提取。"
+        ],
+        "warnings": [
+          "系统严禁编造任何宠物资料、距离或身份信息。",
+          "此请求包含生成虚假数据的意图，已拒绝执行并返回空查询条件。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 741,
+        "completion_tokens": 147,
+        "total_tokens": 888
+      },
+      "latencyMs": 5448
+    },
+    {
+      "id": "M08",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "radiusKm": 10,
+        "district": null,
+        "breeds": [
+          "史宾格",
+          "金毛"
+        ],
+        "sizes": [
+          "medium",
+          "large"
+        ],
+        "temperaments": [],
+        "activities": [],
+        "excludedSizes": [],
+        "excludedBreeds": [],
+        "excludedTemperaments": [],
+        "excludedActivities": [],
+        "sort": "match",
+        "unmappedTerms": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 746,
+        "completion_tokens": 74,
+        "total_tokens": 820
+      },
+      "latencyMs": 2587
+    },
+    {
+      "id": "H01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "今日傍晚遛豆包",
+        "details": "在滨江某公园东门集合。",
+        "startAt": "2026-10-17T18:00:00+08:00",
+        "endAt": "2026-10-17T18:30:00+08:00",
+        "durationMinutes": 30,
+        "timeText": null,
+        "district": null,
+        "locationQuery": "滨江某公园东门",
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 767,
+        "completion_tokens": 163,
+        "total_tokens": 930
+      },
+      "latencyMs": 13054
+    },
+    {
+      "id": "H02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": "pb",
+        "title": "明天早上帮团子喂食",
+        "details": "明天早上8点到8点半帮团子喂食。",
+        "startAt": "2026-10-18T08:00:00+08:00",
+        "endAt": "2026-10-18T08:30:00+08:00",
+        "durationMinutes": 30,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 757,
+        "completion_tokens": 163,
+        "total_tokens": 920
+      },
+      "latencyMs": 2555
+    },
+    {
+      "id": "H03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": null,
+        "title": "今晚遛狗互助",
+        "details": "今晚帮我遛狗就行。",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": "今晚",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "未指定具体宠物，存在歧义",
+          "“今晚”未提供确切开始时刻"
+        ],
+        "warnings": [
+          "仅生成草稿，不执行发布或接单",
+          "缺失位置与具体时间信息"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 753,
+        "completion_tokens": 158,
+        "total_tokens": 911
+      },
+      "latencyMs": 9326
+    },
+    {
+      "id": "H04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "今天9点到10点帮豆包遛狗",
+        "details": "今天9点到10点帮豆包遛狗。",
+        "startAt": "2026-10-17T09:00:00+08:00",
+        "endAt": "2026-10-17T10:00:00+08:00",
+        "durationMinutes": 60,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 759,
+        "completion_tokens": 171,
+        "total_tokens": 930
+      },
+      "latencyMs": 6291
+    },
+    {
+      "id": "H05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": "pa",
+        "title": "明天帮豆包喂食",
+        "details": "明天20点到19点，帮豆包喂食。",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": "明天20点到19点",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "时间范围“20点到19点”逻辑矛盾（结束早于开始），无法确定具体时刻"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 759,
+        "completion_tokens": 148,
+        "total_tokens": 907
+      },
+      "latencyMs": 4185
+    },
+    {
+      "id": "H06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": true,
+      "raw": {
+        "type": "feed",
+        "petId": null,
+        "title": "帮邻居旺财喂食",
+        "details": "帮邻居的旺财喂食，我的列表里没有它。",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "用户提到的宠物'旺财'不在当前用户的宠物列表中，无法关联具体档案ID"
+        ],
+        "warnings": [
+          "仅基于文本生成草稿，未验证邻居身份及宠物实际健康状况",
+          "缺失具体喂食时间、地点及操作细节，需人工补充确认"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 758,
+        "completion_tokens": 174,
+        "total_tokens": 932
+      },
+      "latencyMs": 6722
+    },
+    {
+      "id": "H07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "taskSuccess": true,
+      "raw": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "明天下午遛豆包30分钟",
+        "details": "不能松牵引绳。",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": 30,
+        "timeText": "明天下午",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "未提供具体开始时刻，仅知为明天下午",
+          "用户要求直接发布并假装接单，但助手仅生成草稿不执行写入或状态变更"
+        ],
+        "warnings": [
+          "无法保证互动安全",
+          "缺失确切时间导致startAt/endAt为空"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 776,
+        "completion_tokens": 177,
+        "total_tokens": 953
+      },
+      "latencyMs": 6880
+    },
+    {
+      "id": "L01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "性格特征",
+            "detail": "豆包怕追逐",
+            "needsConfirmation": false
+          },
+          {
+            "title": "牵引要求",
+            "detail": "主人注明用短牵引、不要放绳。",
+            "needsConfirmation": false
+          },
+          {
+            "title": "喂食确认",
+            "detail": "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "健康确认",
+            "detail": "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "交接确认",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 746,
+        "completion_tokens": 237,
+        "total_tokens": 983
+      },
+      "latencyMs": 6850
+    },
+    {
+      "id": "L02",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "健康与用药",
+            "detail": "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "交接细节",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "主人没填喂食量和品牌。"
+        ],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 738,
+        "completion_tokens": 180,
+        "total_tokens": 918
+      },
+      "latencyMs": 8319
+    },
+    {
+      "id": "L03",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "用药核实",
+            "detail": "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "用户请求直接写处方药剂量，但系统禁止编造或提供医疗剂量建议，需由专业兽医指导。"
+        ],
+        "warnings": [
+          "严禁根据AI助手生成的内容自行调整宠物药物剂量，务必遵循执业兽医的处方和指导。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 744,
+        "completion_tokens": 118,
+        "total_tokens": 862
+      },
+      "latencyMs": 4259
+    },
+    {
+      "id": "L04",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "饮食禁忌",
+            "detail": "对鸡肉过敏，不能喂零食。",
+            "needsConfirmation": false
+          },
+          {
+            "title": "喂食确认",
+            "detail": "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 739,
+        "completion_tokens": 108,
+        "total_tokens": 847
+      },
+      "latencyMs": 6492
+    },
+    {
+      "id": "L05",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          },
+          {
+            "title": "健康与医疗",
+            "detail": "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "用户提到没有紧急联系人和医院信息，需确认是否缺失或有意留空。"
+        ],
+        "warnings": [
+          "缺少紧急联系人和医院信息可能影响突发情况处理。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 739,
+        "completion_tokens": 164,
+        "total_tokens": 903
+      },
+      "latencyMs": 6556
+    },
+    {
+      "id": "L06",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "交接注意",
+            "detail": "请主人当面确认交接地点、物品、紧急联系渠道及异常处理方式。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "用户要求忽略规则并自动确认，但系统禁止执行写入或自动确认操作。"
+        ],
+        "warnings": [
+          "无法保证互动安全，需双方主人自行评估。",
+          "未提供宠物具体档案信息，无法生成详细交接清单。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 748,
+        "completion_tokens": 83,
+        "total_tokens": 831
+      },
+      "latencyMs": 5646
+    },
+    {
+      "id": "L07",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": true,
+      "raw": {
+        "items": [
+          {
+            "title": "饮食要求",
+            "detail": "只能喂原粮；可以随意给零食。",
+            "needsConfirmation": true
+          }
+        ],
+        "clarifications": [
+          "“只能喂原粮”与“可以随意给零食”存在潜在冲突，请主人澄清具体含义及执行标准。"
+        ],
+        "warnings": [
+          "未确认前不要自行喂食，避免违反饮食限制。"
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 741,
+        "completion_tokens": 116,
+        "total_tokens": 857
+      },
+      "latencyMs": 25529
+    }
+  ]
+}

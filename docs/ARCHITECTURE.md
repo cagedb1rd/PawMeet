@@ -1,6 +1,6 @@
 # PawMeet 技术架构
 
-状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4 已实现 GLM 服务、结构化草稿、规则推荐和原生工具调用循环。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md) 与 [PROGRESS](PROGRESS.md)。Phase 5 未授权。
+状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4 已实现 Qwen 服务、结构化草稿、规则推荐和原生工具调用循环。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md) 与 [PROGRESS](PROGRESS.md)。Phase 5 未授权。
 
 ## 1. 选型与边界
 
@@ -26,8 +26,8 @@ flowchart LR
   STORE --> IDB[IndexedDB 图片]
   UI --> PARSE[同源 AI Route Handler]
   PARSE --> GUARD[校验 / 限额 / 固定 Prompt]
-  GUARD --> GLM[真实 GLM API]
-  GLM --> DRAFT[Zod 校验后的草稿]
+  GUARD --> Qwen[真实 Qwen API]
+  Qwen --> DRAFT[Zod 校验后的草稿]
   DRAFT --> UI
   STORE --> QUERY[规则查询 / 距离 / 排序]
   QUERY --> UI
@@ -68,8 +68,8 @@ Phase 4 实现入口：
 src/app/api/ai/[task]/route.ts     # 固定任务白名单，无通用聊天透传
 src/domain/matching.ts            # 可解释偏好匹配分与比较依据
 src/lib/ai/                       # 客户端、Schema、语义校验、只读工具执行器
-src/server/ai/                    # server-only GLM client、prompts、validators
-tests/unit/ai*.test.ts            # GLM mock、工具协议、限额与规则
+src/server/ai/                    # server-only Qwen client、prompts、validators
+tests/unit/ai*.test.ts            # Qwen mock、工具协议、限额与规则
 evals/{cases,runner,reports}/      # 35核心+11对抗+8工具；分开报告live/mock
 ```
 
@@ -132,13 +132,13 @@ Phase 3 对 v2 的 PlaceRef 作兼容扩展，不重写已有 demo 地点或档�
 [matching.ts](../src/domain/matching.ts) 已实现推荐扩展：
 - 匹配为可解释偏好分（非安全概率）：活动标签 Jaccard ×45、已知相同性格且无已识别冲突项 ×30、体型相同项 ×15、`max(0,1-distanceM/10000)` ×10；未知项为 0 并提示信息不足，不归一化冒充完整信息。性格相容项复用明确相同标签与comparePets冲突规则，例如一方“怕追逐”而另一方“喜欢追逐”标注意事项，不推断攻击风险。
 - 按匹配排序为分降序→距离升序→ID。显示对应规则贡献与已知差异，不将“同品种”默认计为合适。数字称“偏好匹配分”，不能叫安全分。
-- 适配分析先运行 comparePets 与 comparisonEvidence；GLM 只能选择、排序给定依据并逐行摘录，不新增事实。解释引用和句子均校验；输出不合约时解释失败可见，原规则结果仍可使用。自由社交文字不做专业行为判断。
+- 适配分析先运行 comparePets 与 comparisonEvidence；Qwen 只能选择、排序给定依据并逐行摘录，不新增事实。解释引用和句子均校验；输出不合约时解释失败可见，原规则结果仍可使用。自由社交文字不做专业行为判断。
 
-## 6. GLM 调用与确认机制
+## 6. Qwen 调用与确认机制
 
 ### 统一服务与任务
 
-[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)。密钥、Prompt、固定模型与额度模块使用 server-only。仅允许服务端环境 GLM_API_KEY / GLM_BASE_URL / GLM_MODEL；默认 glm-4.7-flash，拒绝其他型号，不自动使用付费模型。Base URL 固定校验为 HTTPS open.bigmodel.cn/api/paas/v4，禁止客户端透传。
+[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)。密钥、Prompt、固定模型与额度模块使用 server-only。仅允许服务端环境 DASHSCOPE_API_KEY / AI_BASE_URL / AI_MODEL；默认 qwen3.8-flash，用户已授权该型号，拒绝其他型号且无自动回退。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
 POST /api/ai/{task} 接受 {text, context}。固定任务为 pet-profile、social-card、match-intent、help-intent、care-checklist、social-analysis、post-copy；不接受 now、system、model、URL 或业务写入字段。服务端构造可信当前时间与 Asia/Shanghai。仅本地评测可冻结时间。
 
@@ -154,28 +154,29 @@ POST /api/ai/{task} 接受 {text, context}。固定任务为 pet-profile、socia
 
 成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；clarifications / warnings 位于各任务 data 内。失败 {ok:false,requestId,error:{code,message,retryable}}，不返回上游原始正文或思考过程。400 输入 / 协议、413 超量、403 来源、429 本地额度、503 配置 / 账本、502 上游 / 非法输出、504 超时。
 
-实际流读取上限48KB，用户描述1500字；上下文、数组、字符串另由共享 strict Zod 限制。上游请求序列化上限30000字符，响应最多64000字节；统一 max_tokens=1400、temperature=0.1、thinking.disabled、非流式。结构化任务使用 response_format=json_object，并由 Zod 与语义防线验证；不声称提供方支持强制 json_schema。429 / 503 最多重试一次，逐次预留额度；网络 / 超时 / 结构失败不自动重试。单次传输20秒，浏览器45秒可主动取消；已发出的上游请求不会退还额度。
+实际流读取上限48KB，用户描述1500字；上下文、数组、字符串另由共享 strict Zod 限制。上游请求序列化上限30000字符，响应最多64000字节；统一 max_tokens=1400、temperature=0.1、enable_thinking=false、preserve_thinking=false、非流式。结构化任务使用共享Zod生成的JSON Schema strict并执行本地Zod与事实校验；原生tools请求使用JSON模式。最终回答不合约时，最多一次不带tools的真实严格Schema修复，仍受4轮和额度上限；失败不伪装成功。429 / 503及受控连接重置/连接超时最多重试一次，逐次预留额度；其余网络 / 总超时 / 结构失败不自动重试。单次传输20秒，浏览器45秒可主动取消；已发出的上游请求不会退还额度。
 
-Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。输出校验包括：来源摘录、月龄与体型依据、标签与证据的受控映射、否定范围、相对日期与模糊时段、本人宠物ID、日期先后、筛选冲突 / 不支持半径、剂量与保证禁区、解释依据。语义验证是保守防线，不能证明所有自然语言都正确；疑义与事实仍须主人复核。
+Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。服务端提供可信北京时间日历today/tomorrow/dayAfterTomorrow，辅助模型处理相对日期；最终日期仍校验。输出校验包括：来源摘录、月龄与体型依据、标签与证据的受控映射、否定范围、相对日期与模糊时段、本人宠物ID、日期先后、筛选冲突 / 不支持半径、剂量与保证禁区、解释依据。语义验证是保守防线，不能证明所有自然语言都正确；疑义与事实仍须主人复核。
 
 草稿只保存在内存，身份 / 来源 revision 改变时重建相关组件并中止在途结果。填入现有表单仍不写入；主人编辑并点击原确认按钮，经过已有业务 Schema、角色 / 状态机和 Repository 才保存。互助生成后强制重新确认公共地点；模糊时间留空。清单继续引用 petRevision / contentRevision。
 
 ### 原生 Tool Calling 与 localStorage
 
-助手请求 /api/ai/assistant。服务端使用真实 tools + tool_choice=auto，接受官方 assistant.tool_calls；传输层允许官方 index 元数据但剥离后再进入共享严格协议。没有将 JSON 意图解析当作工具调用。
+助手请求 /api/ai/assistant。服务端使用真实 tools + tool_choice=auto、parallel_tool_calls=true，接受官方 assistant.tool_calls；传输层允许官方 index 元数据但剥离后再进入共享严格协议；tool_calls=null按无调用处理。原生参数使用稀疏可选字段，缺失省略；radiusKm为integer数字枚举，durationMinutes为integer。浏览器先按nativeToolSchemas校验、补齐null/空数组等业务默认值，再按原toolSchemas完整校验；未知字段、非法范围/枚举仍拒绝。原始工具Schema评测采用实际发布的nativeToolSchemas，不把规范化后成功算原始正确。没有将 JSON 意图解析当作工具调用。
 
 1. 首轮只发送用户问题和最多3只本人宠物摘要，不发送全表、图片、完整localStorage或参考坐标。
-2. GLM 返回原生 tool_calls；服务端签名续传令牌绑定匿名cookie会话、待执行call IDs、对话历史、轮次与15分钟有效期。客户端不能上传自定义 system 或伪造历史。
+2. Qwen 返回原生 tool_calls；服务端签名续传令牌绑定匿名cookie会话、待执行call IDs、对话历史、轮次与15分钟有效期。客户端不能上传自定义 system 或伪造历史。
 3. 浏览器 [executeTool](../src/lib/ai/tools.ts) 校验名称 / Zod 参数，查询当前 Provider 快照。search_pets 复用 discoverQuery / matchQuery 与 GCJ02 距离；search_activities 查询现有未来 scheduled 活动；create_help_draft 只返回结构化内存草稿。
-4. 每个查询最多5个必要结果摘要返回模型。服务端校验全部待执行ID唯一且齐全、结果类型与大小，按原 tool_call_id 加入 role=tool 再调用 GLM。签名不能证明客户端实体真实性；当前浏览器是演示数据所有者，业务确认仍在本地。
+4. 每个查询最多5个必要结果摘要返回模型。服务端校验全部待执行ID唯一且齐全、结果类型与大小，按原 tool_call_id 加入 role=tool 再调用 Qwen。签名不能证明客户端实体真实性；当前浏览器是演示数据所有者，业务确认仍在本地。
+   本轮全部工具成功时移除tools，用严格回答Schema总结；任一工具失败时保留原生tools供模型修正。工具错误未解决时，服务端拒绝“已查询/已生成/空结果”等成功状态，不把执行失败解释为无记录。
 5. 支持每轮最多3个工具、每次用户请求最多4次模型轮转、最多4轮用户对话。工具异常 / 空结果 / 参数错误 / 本地2秒检查超时显式回传；不能自动扩大范围。达到轮次或上下文上限要求新对话。
-6. 最终回答使用受控状态文字和真实结果ID白名单；宠友 / 活动卡片由浏览器实际结果渲染，模型不能重造距离、分数、实体。互助草稿须打开已有表单并经主人确认，工具执行器不导入写命令或Repository。
+6. 最终回答使用受控状态文字和真实结果ID白名单；互助草稿专用状态明确“尚未发布”且无实体引用；宠友 / 活动卡片由浏览器实际结果渲染，模型不能重造距离、分数、实体。互助草稿须打开已有表单并经主人确认，工具执行器不导入写命令或Repository。
 
 签名token是防篡改的上下文，不是加密保险箱；只包含该对话选择过的必要数据，不持久化业务副本。通过HTTPS传输，清理对话即可丢弃客户端内存。不要将带token的请求日志公开。
 
 ### 公开 Demo 保护
 
-仅支持一个Node进程 / 实例。APP_ORIGIN精确同源与Fetch Metadata检查，HttpOnly、SameSite=Strict签名匿名cookie；HTTPS生产cookie使用Secure。身份切换不重置额度。DEMO_SESSION_SECRET可配置，缺省从服务端GLM key签名，轮换key将使旧对话失效。匿名机制不是认证，不能阻止脚本直连。
+仅支持一个Node进程 / 实例。APP_ORIGIN精确同源与Fetch Metadata检查，HttpOnly、SameSite=Strict签名匿名cookie；HTTPS生产cookie使用Secure。身份切换不重置额度。DEMO_SESSION_SECRET可配置，缺省从服务端Qwen key签名，轮换key将使旧对话失效。匿名机制不是认证，不能阻止脚本直连。
 
 额度全局10次/分钟、每日最多200次；每session 6次/分钟、20次/日；并发2。全局限制覆盖每个来源IP，忽略不可信IP header，不保存地址。每次尝试按整个请求UTF-8字节数加1400保守预留token，日上限300000，可通过环境降低。缺usage也不退款，不将该账本解释为人民币硬保证。
 
@@ -195,7 +196,7 @@ Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。�
 - 演示点与选点统一 GCJ02（经度在前）。原生 browser geolocation WGS84 经官方 `convertFrom(...,'gps')` 转换一次；当前不使用 AMap.Geolocation，也没有自定义偏移算法。未归一化的坐标不进入查询；转换失败不采用原始 WGS84。
 - `discoverQuery` 的同一结果数组驱动 marker 和列表；选中 ID 双向联动，显示范围圈。更新条件只替换覆盖物，卸载销毁地图和事件；共享加载 Promise，异步加载结束前卸载不会创建地图。地图模式同时保留卡片，失败仍可筛选与查看名片。
 - 地点卡“一键高德导航”采用官方 URI 路径规划链接，编码名称、目标 GCJ02 坐标；新窗口安全打开，手机可调起 App / 网页，桌面打开网页版。仅传目标公共地点，不把家庭住址或真实位置放进分享链接。
-- 宠物位置始终是虚构公共区域点；浏览器当前位置仅作当前参考，不持久化为宠物位置，不发送 GLM。创建活动 / 互助只保存用户主动确认的公共集合点。
+- 宠物位置始终是虚构公共区域点；浏览器当前位置仅作当前参考，不持久化为宠物位置，不发送 Qwen。创建活动 / 互助只保存用户主动确认的公共集合点。
 - 地图不可用可选演示点或文字公共点。文字地点保持 `location=null`，不借用参考点或演示坐标，不生成导航链接；已有自选 POI 编辑后保持原来源与坐标，不回落为默认演示点。
 
 ## 8. 环境配置与部署
@@ -204,7 +205,7 @@ Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。�
 
 | 变量 | 可见性 / 用途 |
 | --- | --- |
-| GLM_API_KEY、GLM_MODEL、GLM_BASE_URL | 服务端；key默认空，model默认glm-4.7-flash，base URL如上 |
+| DASHSCOPE_API_KEY、AI_MODEL、AI_BASE_URL | 服务端；key默认空，model默认qwen3.8-flash，base URL如上；旧GLM配置不再使用 |
 | AI_ENABLED、AI_MAX_DAILY_CALLS、AI_MAX_DAILY_TOKENS | 服务端；未配置密钥默认关闭 AI |
 | DEMO_SESSION_SECRET、QUOTA_STORE_PATH | 服务端；签名与可写持久化账本文件 |
 | APP_ORIGIN | 服务端；精确线上同源值 |
@@ -213,18 +214,18 @@ Prompt、示例与版本集中在 [prompts.ts](../src/server/ai/prompts.ts)。�
 
 首选候选：国内网络可达的香港区域 Linux Node 单实例 + HTTPS 反向代理，自带持久磁盘，无云数据库；Phase 5 经授权后选服务商 / 域名和预算。内地部署、域名 / 接入要求按选定平台官方说明核查后决定；不在 Phase 0 承诺合规状态或零费用。Vercel 只作备选，需解决持久限额和国内可达性再采用。不能静态导出，因为 AI / 高德代理需要 Node 服务。
 
-不自动部署、不自动购买。代码和图片本地托管，不依赖 Google Fonts 或海外图片热链。HTTPS 为定位与文件分享能力提供基础，浏览器不支持的分享自动降级下载。上线前在国内移动 / 桌面网络实测首页、GLM、高德、导航和冷启动；开发机成功不代表国内 HR 可访问。
+不自动部署、不自动购买。代码和图片本地托管，不依赖 Google Fonts 或海外图片热链。HTTPS 为定位与文件分享能力提供基础，浏览器不支持的分享自动降级下载。上线前在国内移动 / 桌面网络实测首页、Qwen、高德、导航和冷启动；开发机成功不代表国内 HR 可访问。
 
 ## 9. 外部依据与待验证项
 
-以下官方资料于 2026-10-17 查阅；高德准备、安全代理、POI、坐标转换和 URI 已于本阶段重新核对。实现与真实联调证据见 PROGRESS，已执行真实GLM评测，存在失败与未完成项。
+以下官方资料于 2026-10-17 查阅；高德准备、安全代理、POI、坐标转换和 URI 已于本阶段重新核对。实现与真实联调证据见 PROGRESS，已执行真实Qwen评测，存在失败与未完成项。
 
 - [Next.js 安装](https://nextjs.org/docs/app/getting-started/installation)：App Router 与环境要求；版本最终以 Phase 1 lockfile / 构建为准。
 - [Next.js 项目结构](https://nextjs.org/docs/app/getting-started/project-structure)：下划线路由需使用 `%5F` 目录前缀，避免被识别为私有目录。
-- [GLM-4.7-Flash模型](https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash)、[原生工具调用](https://docs.bigmodel.cn/cn/guide/capabilities/function-calling)、[智谱对话补全](https://docs.bigmodel.cn/api-reference/模型-api/对话补全) 与 [结构化输出](https://docs.bigmodel.cn/cn/guide/capabilities/struct-output)：普通接口、JSON 模式；不假定所有模型支持服务端 JSON Schema 强约束。
+- [Qwen3.8-Flash](https://help.aliyun.com/zh/model-studio/qwen3-8-flash)、[OpenAI兼容接口](https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope)、[结构化输出](https://help.aliyun.com/zh/model-studio/qwen-structured-output)、[Function Calling](https://help.aliyun.com/zh/model-studio/qwen-function-calling)：核验模型ID qwen3.8-flash，支持 JSON 输出与原生工具调用；地域与密钥需匹配。
 - [高德安全密钥](https://lbs.amap.com/api/javascript-api-v2/guide/abc/jscode)：serviceHost 服务端代理方案。
 - [高德准备](https://lbs.amap.com/api/javascript-api-v2/prerequisites)、[官方 GPS 转换](https://lbs.amap.com/api/javascript-api-v2/guide/transform/convertfrom)：JS 平台 Key / 安全密钥与 convertFrom。
 - [高德坐标基础类](https://lbs.amap.com/api/javascript-api-v2/guide/abc/basetype)、[定位](https://lbs.amap.com/api/javascript-api-v2/guide/services/geolocation)：坐标口径与定位能力。
 - [POI 搜索](https://lbs.amap.com/api/javascript-api-v2/guide/services/autocomplete)、[URI 路径规划](https://lbs.amap.com/api/uri-api/guide/travel/route)：地点与导航接口。
 
-本机 Chromium 的实际检查、SDK mock 与真实高德结果分别维护在 [PROGRESS](PROGRESS.md)。待验证：未通过的真实地图子项、物理 GPS 与系统高德 App 唤起、平台额度耗尽、Safari / Android 真机、国内网络；GLM稳定性 / 全量通过与部署仍未验证。不能用文档推理、mock 或 HTTP 200 代替真实渲染 / 联调证据。
+本机 Chromium 的实际检查、SDK mock 与真实高德结果分别维护在 [PROGRESS](PROGRESS.md)。待验证：未通过的真实地图子项、物理 GPS 与系统高德 App 唤起、平台额度耗尽、Safari / Android 真机、国内网络；Qwen稳定性 / 全量通过与部署仍未验证。不能用文档推理、mock 或 HTTP 200 代替真实渲染 / 联调证据。
