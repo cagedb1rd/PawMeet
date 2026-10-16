@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { AiDraft, fillForm, petSummary } from "@/features/ai/draft";
+import { comparisonEvidence } from "@/domain/matching";
 import { useSearchParams } from "next/navigation";
 import { useDemo } from "@/features/demo/provider";
 import { Empty, PetImage, Title, useUnsaved } from "@/components/ui";
@@ -50,7 +52,7 @@ function CardView({ id }: { id: string }) {
             </p>
             <span className="pill">
               {current
-                ? "主人已确认 · 手工填写"
+                ? "主人已确认 · 已复核内容"
                 : c
                   ? "档案已变更 · 待重新确认"
                   : "尚未确认名片"}
@@ -138,6 +140,7 @@ function CardView({ id }: { id: string }) {
       </div>
       {editing && mine && (
         <CardEditor
+          facts={JSON.stringify(petSummary(p))}
           key={`${p.revision}-${c?.revision}`}
           initial={
             c ?? {
@@ -170,18 +173,22 @@ function CardView({ id }: { id: string }) {
   );
 }
 function CardEditor({
+  facts,
   initial,
   save,
   writable,
 }: {
+  facts: string;
   initial: SocialCardInput;
   save: (input: SocialCardInput) => boolean;
   writable: boolean;
 }) {
+  const form = useRef<HTMLFormElement>(null);
   const { setDirty } = useUnsaved(),
     [error, setError] = useState("");
   return (
     <form
+      ref={form}
       className="card form-card"
       onChange={() => setDirty(true)}
       onSubmit={(e) => {
@@ -207,11 +214,26 @@ function CardEditor({
       }}
     >
       <fieldset disabled={!writable}>
+        <AiDraft
+          task="social-card"
+          title="AI 狗狗社交名片"
+          context={{ facts }}
+          disabled={!writable}
+          onApply={(data) => {
+            fillForm(form.current, {
+              traits: data.traits.join("\n"),
+              likes: data.likes.join("\n"),
+              dislikes: data.dislikes.join("\n"),
+              cautions: data.cautions.join("\n"),
+              meetingAdvice: data.meetingAdvice,
+            });
+            setDirty(true);
+          }}
+        />
         <h2>主人复核后确认</h2>
         <p className="form-hint">
           每行一项，未知可留空。规则比较仅识别这些完整词条：
-          {behaviors.join("、")}；自由说明仍展示给主人，不能推断为确定冲突。AI
-          自动生成尚未开放。
+          {behaviors.join("、")}；自由说明仍展示给主人，不能推断为确定冲突。
         </p>
         {Object.entries(blocks).map(([k, label]) => (
           <label className="field" key={k}>
@@ -316,6 +338,15 @@ function Comparison({ target }: { target: string }) {
             ))}
           </div>
           <section className="card form-card">
+            <AiDraft
+              key={`${a!.id}-${a!.revision}-${b!.id}-${b!.revision}-${state!.revision}`}
+              task="social-analysis"
+              title="AI 社交适配解释"
+              initialText="请整理共同活动、已识别差异和初见注意事项。"
+              context={{ evidence: comparisonEvidence(state!, a!, b!) }}
+              onApply={() => {}}
+              applyLabel="已阅读解释"
+            />
             <h2>明确的偏好冲突</h2>
             {result.conflicts.length ? (
               result.conflicts.map((t) => (

@@ -1,0 +1,195 @@
+import "server-only";
+import { z } from "zod";
+import {
+  AiTask,
+  TaskRequest,
+  AssistantRequest,
+  AssistantStep,
+  toolCallSchema,
+  petSummarySchema,
+  toolResultSchema,
+  assistantAnswerSchema,
+  assistantSummaries,
+} from "@/lib/ai/contracts";
+import { validateOutput } from "@/lib/ai/validation";
+import { callGlm, Message } from "./client";
+import { taskPrompt, assistantPrompt, nativeTools } from "./prompts";
+import { AiError } from "./errors";
+import { seal, unseal } from "./session";
+export async function generateTask(
+  task: AiTask,
+  input: TaskRequest,
+  session: string,
+  requestId: string,
+  now = new Date(),
+  call = callGlm,
+) {
+  const result = await call(
+    [
+      { role: "system", content: taskPrompt(task) },
+      {
+        role: "user",
+        content: JSON.stringify({
+          input,
+          now: now.toISOString(),
+          timezone: "Asia/Shanghai",
+        }),
+      },
+    ],
+    session,
+    requestId,
+  );
+  try {
+    return {
+      data: validateOutput(
+        task,
+        JSON.parse(result.message.content ?? ""),
+        input,
+        now,
+      ),
+      usage: result.usage,
+      model: result.model,
+    };
+  } catch {
+    throw new AiError(
+      "AI_INVALID_OUTPUT",
+      "AI输出未通过结构与事实校验，请修改描述后重试",
+    );
+  }
+}
+const messageSchema = z.strictObject({
+  role: z.enum(["user", "assistant", "tool"]),
+  content: z.string().max(18000).nullable(),
+  tool_calls: z.array(toolCallSchema).max(3).optional(),
+  tool_call_id: z.string().max(100).optional(),
+});
+const stateSchema = z.strictObject({
+  session: z.string(),
+  expires: z.number(),
+  round: z.number().int().min(0).max(4),
+  turns: z.number().int().min(1).max(4),
+  messages: z.array(messageSchema).max(28),
+  pets: z.array(petSummarySchema).max(3),
+  refs: z.array(z.string().max(100)).max(30),
+  pending: z.array(toolCallSchema).max(3),
+});
+export async function assistantStep(
+  input: AssistantRequest,
+  session: string,
+  requestId: string,
+  now = new Date(),
+  call = callGlm,
+): Promise<{ data: AssistantStep; usage: unknown; model: string }> {
+  let state: z.infer<typeof stateSchema>;
+  if (input.continuation) {
+    try {
+      state = stateSchema.parse(unseal(input.continuation));
+    } catch (e) {
+      if (e instanceof AiError) throw e;
+      throw new AiError("AI_CONTINUATION", "对话凭据结构无效", 400);
+    }
+    if (state.session !== session || state.expires < now.getTime())
+      throw new AiError("AI_CONTINUATION", "对话已过期，请重新开始", 400);
+    if (input.pets)
+      throw new AiError("AI_PROTOCOL", "对话中不能替换宠物上下文", 400);
+    if (state.pending.length) {
+      if (
+        input.text ||
+        !input.results ||
+        input.results.length !== state.pending.length ||
+        new Set(input.results.map((r) => r.toolCallId)).size !==
+          state.pending.length ||
+        input.results.some(
+          (r) => !state.pending.some((c) => c.id === r.toolCallId),
+        )
+      )
+        throw new AiError("AI_PROTOCOL", "必须返回本轮所有工具调用的结果", 400);
+      for (const c of state.pending) {
+        const r = toolResultSchema.parse(
+          input.results.find((r) => r.toolCallId === c.id)!.result,
+        );
+        const expected = {
+          search_pets: "pets",
+          search_activities: "activities",
+          create_help_draft: "help-draft",
+        }[c.function.name];
+        if (r.kind !== "error" && r.kind !== expected)
+          throw new AiError("AI_PROTOCOL", "工具结果类型不匹配", 400);
+        state.messages.push({
+          role: "tool",
+          tool_call_id: c.id,
+          content: JSON.stringify(r),
+        });
+        if (r.kind === "pets" || r.kind === "activities")
+          state.refs.push(...r.rows.map((v) => v.id));
+      }
+      state.pending = [];
+    } else {
+      if (!input.text?.trim() || input.results?.length)
+        throw new AiError("AI_PROTOCOL", "请输入后续问题", 400);
+      if (state.turns >= 4)
+        throw new AiError("AI_TURN_LIMIT", "最多4轮用户对话，请重新开始", 400);
+      state.messages.push({ role: "user", content: input.text });
+      state.turns++;
+      state.round = 0;
+    }
+  } else {
+    if (!input.text?.trim() || input.results?.length)
+      throw new AiError("AI_PROTOCOL", "请输入问题后开始对话", 400);
+    state = {
+      session,
+      expires: now.getTime() + 15 * 60000,
+      round: 0,
+      turns: 1,
+      messages: [{ role: "user", content: input.text }],
+      pets: input.pets ?? [],
+      refs: [],
+      pending: [],
+    };
+  }
+  if (state.round >= 4)
+    throw new AiError(
+      "AI_TOOL_ROUND_LIMIT",
+      "工具调用已达4轮上限，请缩小任务后重试",
+      400,
+    );
+  const result = await call(
+    [
+      {
+        role: "system",
+        content: `${assistantPrompt}\nsummary只允许以下值之一：${JSON.stringify(assistantSummaries)}\n当前北京时间依据now=${now.toISOString()}；本人宠物=${JSON.stringify(state.pets)}`,
+      },
+      ...(state.messages as Message[]),
+    ],
+    session,
+    requestId,
+    nativeTools,
+  );
+  const calls = result.message.tool_calls ?? [];
+  if (new Set(calls.map((c) => c.id)).size !== calls.length)
+    throw new AiError("AI_TOOL_PROTOCOL", "GLM返回重复工具调用ID");
+  state.messages.push(result.message);
+  state.round++;
+  state.refs = [...new Set(state.refs)].slice(-30);
+  state.pending = calls;
+  let answer: AssistantStep["answer"] = null;
+  if (!calls.length) {
+    try {
+      answer = assistantAnswerSchema.parse(
+        JSON.parse(result.message.content ?? ""),
+      );
+      if (answer.references.some((id) => !state.refs.includes(id)))
+        throw Error("Unknown reference");
+    } catch {
+      throw new AiError("AI_INVALID_OUTPUT", "助手回答未通过结果引用校验");
+    }
+  }
+  const continuation = seal(state);
+  if (continuation.length > 40000)
+    throw new AiError("AI_CONTEXT_LIMIT", "对话上下文已满，请重新开始", 400);
+  return {
+    data: { continuation, toolCalls: calls, answer },
+    usage: result.usage,
+    model: result.model,
+  };
+}

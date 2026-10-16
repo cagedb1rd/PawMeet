@@ -1,0 +1,74 @@
+{
+  "runId": "2026-10-16T16-51-40-344Z-live",
+  "mode": "live",
+  "model": "glm-4.7-flash",
+  "promptVersion": "pawmeet-4.6",
+  "schemaVersion": 1,
+  "caseVersion": "core.v1+validation.v1+tools.v1",
+  "git": "926e975034e89e04c58ad2c0427da5d61f03949e",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 2,
+  "maxCalls": 2,
+  "usage": [
+    {
+      "prompt_tokens": 639,
+      "completion_tokens": 171,
+      "total_tokens": 810
+    }
+  ],
+  "metrics": {
+    "schemaPassRate": 1,
+    "keyFieldAccuracy": 1,
+    "toolSelectionAccuracy": null,
+    "toolExecutionSuccessRate": null,
+    "completeTaskSuccessRate": 1,
+    "adversarialValidationSuccessRate": null
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "status": "pass",
+      "schema": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "taskSuccess": true,
+      "raw": {
+        "name": "豆包",
+        "breed": "史宾格",
+        "ageMonths": 24,
+        "size": "medium",
+        "city": "杭州",
+        "district": "滨江",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "温和"
+          },
+          {
+            "value": "怕追逐",
+            "evidence": "不喜欢突然被抱"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "喜欢散步"
+          }
+        ],
+        "likes": [],
+        "dislikes": [
+          "不喜欢突然被抱"
+        ],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 639,
+        "completion_tokens": 171,
+        "total_tokens": 810
+      },
+      "latencyMs": 9234
+    }
+  ]
+}

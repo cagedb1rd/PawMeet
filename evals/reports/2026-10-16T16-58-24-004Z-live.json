@@ -1,0 +1,63 @@
+{
+  "runId": "2026-10-16T16-58-24-004Z-live",
+  "mode": "live",
+  "model": "glm-4.7-flash",
+  "promptVersion": "pawmeet-4.8",
+  "schemaVersion": 1,
+  "caseVersion": "core.v1+validation.v2+tools.v1",
+  "gitDirty": true,
+  "coverage": {
+    "planned": 1,
+    "attempted": 1,
+    "notRun": 0
+  },
+  "git": "926e975034e89e04c58ad2c0427da5d61f03949e",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 2,
+  "maxCalls": 8,
+  "usage": [
+    {
+      "prompt_tokens": 2896,
+      "completion_tokens": 168,
+      "total_tokens": 3064
+    },
+    {
+      "prompt_tokens": 3441,
+      "completion_tokens": 17,
+      "total_tokens": 3458
+    }
+  ],
+  "metrics": {
+    "schemaPassRate": 0,
+    "keyFieldAccuracy": 1,
+    "toolSelectionAccuracy": 1,
+    "toolExecutionSuccessRate": 0.5,
+    "completeTaskSuccessRate": 0,
+    "adversarialValidationSuccessRate": null
+  },
+  "cases": [
+    {
+      "id": "TC04",
+      "status": "fail",
+      "schema": false,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "toolsExpected": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsActual": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsOk": 1,
+      "toolsTotal": 2,
+      "raw": {
+        "role": "assistant",
+        "content": "{\"summary\":\"需要补充信息，请查看工具提示。\",\"references\":[]}"
+      },
+      "latencyMs": 14158
+    }
+  ]
+}

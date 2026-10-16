@@ -1,0 +1,52 @@
+{
+  "runId": "2026-10-16T17-05-41-854Z-live",
+  "mode": "live",
+  "model": "glm-4.7-flash",
+  "promptVersion": "pawmeet-4.9",
+  "schemaVersion": 1,
+  "caseVersion": "core.v1+validation.v2+tools.v1",
+  "validationVersion": "pawmeet-validation-3",
+  "gitDirty": true,
+  "coverage": {
+    "planned": 1,
+    "attempted": 1,
+    "notRun": 0
+  },
+  "git": "926e975034e89e04c58ad2c0427da5d61f03949e",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 1,
+  "maxCalls": 6,
+  "usage": [],
+  "metrics": {
+    "schemaPassRate": 0,
+    "keyFieldAccuracy": 0,
+    "toolSelectionAccuracy": 0,
+    "toolExecutionSuccessRate": null,
+    "completeTaskSuccessRate": 0,
+    "adversarialValidationSuccessRate": null
+  },
+  "cases": [
+    {
+      "id": "TC03",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "GLM_TIMEOUT:GLM请求超时，请手动重试",
+      "toolsExpected": [
+        "create_help_draft"
+      ],
+      "trace": [
+        {
+          "role": "user",
+          "content": "明天下午想找人帮我遛一下年糕，大概30分钟，不能松牵引绳，请整理草稿"
+        }
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 20027
+    }
+  ]
+}

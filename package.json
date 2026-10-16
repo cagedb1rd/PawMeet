@@ -13,7 +13,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:maps:live": "playwright test --config playwright.maps.config.ts"
+    "test:maps:live": "playwright test --config playwright.maps.config.ts",
+    "eval:ai": "node evals/runner/run.mjs",
+    "test:ai:live": "playwright test --config playwright.ai.config.ts"
   },
   "dependencies": {
     "lucide-react": "1.58.0",

@@ -3361,3 +3361,10 @@ textarea::placeholder {
     min-height: 44px;
   }
 }
+/* AI drafts share the existing form and card system. */
+.ai-panel { padding: 1.25rem; margin-block: 1rem; background: #f0f4ed; border: 1px solid #dbe5d6; border-radius: 1rem; }
+.ai-preview { display: grid; gap: .6rem; margin-block: 1rem; overflow-wrap: anywhere; }
+.ai-preview > div { display: grid; grid-template-columns: minmax(6rem, 25%) minmax(0, 1fr); gap: .8rem; }
+.ai-preview dt { font-weight: 600; }
+.ai-preview dd { margin: 0; }
+@media(max-width: 500px) { .ai-preview > div { grid-template-columns: 1fr; gap: .2rem; } }

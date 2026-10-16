@@ -1,0 +1,555 @@
+{
+  "runId": "2026-10-16T17-01-55-415Z-live",
+  "mode": "live",
+  "model": "glm-4.7-flash",
+  "promptVersion": "pawmeet-4.9",
+  "schemaVersion": 1,
+  "caseVersion": "core.v1+validation.v2+tools.v1",
+  "validationVersion": "pawmeet-validation-3",
+  "gitDirty": true,
+  "coverage": {
+    "planned": 43,
+    "attempted": 4,
+    "notRun": 39
+  },
+  "git": "926e975034e89e04c58ad2c0427da5d61f03949e",
+  "clock": "2026-10-17T02:00:00.000Z",
+  "actualProviderCalls": 7,
+  "maxCalls": 80,
+  "usage": [
+    {
+      "prompt_tokens": 639,
+      "completion_tokens": 97,
+      "total_tokens": 736
+    }
+  ],
+  "metrics": {
+    "schemaPassRate": 0.25,
+    "keyFieldAccuracy": 0,
+    "toolSelectionAccuracy": null,
+    "toolExecutionSuccessRate": null,
+    "completeTaskSuccessRate": 0,
+    "adversarialValidationSuccessRate": null
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "status": "fail",
+      "schema": true,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "taskSuccess": false,
+      "error": "标签与原文证据不相符",
+      "raw": {
+        "name": "豆包",
+        "breed": "史宾格",
+        "ageMonths": 24,
+        "size": "medium",
+        "city": "杭州",
+        "district": "滨江",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "温和"
+          },
+          {
+            "value": "慢热",
+            "evidence": "温和"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "喜欢散步"
+          }
+        ],
+        "likes": [
+          "散步"
+        ],
+        "dislikes": [
+          "突然被抱"
+        ],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "usage": {
+        "prompt_tokens": 639,
+        "completion_tokens": 97,
+        "total_tokens": 736
+      },
+      "latencyMs": 9413
+    },
+    {
+      "id": "P02",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "GLM_TIMEOUT:GLM请求超时，请手动重试",
+      "latencyMs": 20006
+    },
+    {
+      "id": "P03",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "GLM_HTTP_429:GLM服务调用失败，请稍后重试",
+      "latencyMs": 7396
+    },
+    {
+      "id": "P04",
+      "status": "error",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "GLM_HTTP_429:GLM免费模型当前访问量过大，请稍后重试",
+      "latencyMs": 13005
+    },
+    {
+      "id": "P05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "P06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "P07",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C01",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C02",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C03",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C04",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "C06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M01",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M02",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M03",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M04",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M07",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "M08",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H01",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H02",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H03",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H04",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "H07",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L01",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L02",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L03",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L04",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "L07",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 0,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "latencyMs": 0
+    },
+    {
+      "id": "TC01",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_pets"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC02",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_activities"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC03",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "create_help_draft"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "TC04",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC05",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_pets"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC06",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_activities"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC07",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_pets",
+        "create_help_draft"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    },
+    {
+      "id": "TC08",
+      "status": "not_run",
+      "schema": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "taskSuccess": false,
+      "error": "ERROR:CIRCUIT_OPEN",
+      "toolsExpected": [
+        "search_pets",
+        "search_activities"
+      ],
+      "toolsActual": [],
+      "toolsOk": 0,
+      "toolsTotal": 0,
+      "latencyMs": 0
+    }
+  ]
+}

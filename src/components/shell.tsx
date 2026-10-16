@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="demo-banner">
         <Leaf size={12} />
         <span>本地演示 · 虚构宠友 · 数据仅存当前浏览器</span>
-        <span className="demo-version">PHASE 03</span>
+        <span className="demo-version">PHASE 04</span>
       </div>
       <div className="app-layout">
         <aside className="sidebar">

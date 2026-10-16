@@ -201,7 +201,7 @@ test("名片确认、精确偏好冲突、PNG 导出、约伴带入与档案变�
     .getByRole("checkbox", { name: "我已逐项复核，这是我对宠物的描述" })
     .check();
   await page.getByRole("button", { name: "确认保存社交名片" }).click();
-  await expect(page.getByText("主人已确认 · 手工填写")).toBeVisible();
+  await expect(page.getByText("主人已确认 · 已复核内容")).toBeVisible();
   const downloading = page.waitForEvent("download");
   await page.getByRole("button", { name: "下载 PNG" }).click();
   const download = await downloading;

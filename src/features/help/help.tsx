@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AiDraft, fillForm, petSummary } from "@/features/ai/draft";
+import { HelpDraft } from "@/lib/ai/contracts";
 import { useRouter } from "next/navigation";
 import { useDemo } from "@/features/demo/provider";
 import {
@@ -370,6 +372,9 @@ function Detail({ id }: { id: string }) {
         )}
         {mine && ["open", "assigned"].includes(h.status) && (
           <ChecklistEditor
+            facts={[JSON.stringify(petSummary(p)), h.type, h.details].join(
+              "\n",
+            )}
             key={`${uid}-${h.contentRevision}-${p.revision}-${checklist?.revision}`}
             initial={
               checklist ?? {
@@ -426,10 +431,12 @@ function Detail({ id }: { id: string }) {
   );
 }
 function ChecklistEditor({
+  facts,
   initial,
   save,
   writable,
 }: {
+  facts: string;
   initial: ChecklistInput;
   save: (input: ChecklistInput) => boolean;
   writable: boolean;
@@ -454,9 +461,19 @@ function ChecklistEditor({
       }}
     >
       <fieldset disabled={!writable}>
+        <AiDraft
+          task="care-checklist"
+          title="AI 照看交接清单"
+          initialText="请整理本次互助交接注意事项，未知事项保留待确认。"
+          context={{ facts }}
+          disabled={!writable}
+          onApply={(data) => {
+            setItems(data.items);
+            setDirty(true);
+          }}
+        />
         <p className="form-hint">
-          手工清单；AI 清单生成在 Phase 4
-          接入。只填写主人已知内容，不确定项保留“待确认”，不要填写门牌、联系方式或用药剂量。
+          只填写主人已知内容，不确定项保留“待确认”，不要填写门牌、联系方式或用药剂量。
         </p>
         {items.map((item, i) => (
           <div className="checklist-editor" key={i}>
@@ -543,7 +560,13 @@ function ChecklistEditor({
 }
 const localTime = (iso?: string) =>
   iso ? new Date(Date.parse(iso) + 8 * 3600000).toISOString().slice(0, 16) : "";
-export function HelpForm({ id }: { id?: string }) {
+export function HelpForm({
+  id,
+  initialDraft,
+}: {
+  id?: string;
+  initialDraft?: HelpDraft;
+}) {
   const { state } = useDemo();
   if (!state) return null;
   const h = state.helpRequests.find((h) => h.id === id);
@@ -561,18 +584,44 @@ export function HelpForm({ id }: { id?: string }) {
         <Link href="/help">返回互助</Link>
       </Empty>
     );
-  return <HelpEditor key={`${state.activeUserId}-${id ?? "new"}`} id={id} />;
+  return (
+    <HelpEditor
+      key={`${state.activeUserId}-${id ?? "new"}`}
+      id={id}
+      initialDraft={initialDraft}
+    />
+  );
 }
-function HelpEditor({ id }: { id?: string }) {
+function HelpEditor({
+  id,
+  initialDraft,
+}: {
+  id?: string;
+  initialDraft?: HelpDraft;
+}) {
+  const form = useRef<HTMLFormElement>(null);
   const { state, run, writable } = useDemo(),
     router = useRouter();
   const h = state!.helpRequests.find((h) => h.id === id);
   const [place, setPlace] = useState<PlaceRef>(h?.place ?? demoPlaces[0]);
   const [error, setError] = useState("");
+  const [aiDraft, setAiDraft] = useState<HelpDraft | undefined>(initialDraft);
+  const [needsPlace, setNeedsPlace] = useState(!!initialDraft);
   const { setDirty } = useUnsaved();
   const pets = state!.pets.filter(
     (p) => p.ownerId === state!.activeUserId && !p.archivedAt,
   );
+  useEffect(() => {
+    if (initialDraft)
+      fillForm(form.current, {
+        title: initialDraft.title,
+        details: initialDraft.details,
+        pet: initialDraft.petId,
+        type: initialDraft.type,
+        startAt: localTime(initialDraft.startAt ?? undefined),
+        endAt: localTime(initialDraft.endAt ?? undefined),
+      });
+  }, [initialDraft]);
   return (
     <div className="form-container">
       <Link href="/help" className="back-link">
@@ -584,11 +633,16 @@ function HelpEditor({ id }: { id?: string }) {
         description="只演示临时遛狗与简单喂食。明确时间和公共交接点，不填写真实住址。"
       />
       <form
+        ref={form}
         className="card form-card"
         onChange={() => setDirty(true)}
         onSubmit={(e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget);
+          if (needsPlace) {
+            setError("请通过下方地点选择器明确确认公共交接地点");
+            return;
+          }
           try {
             const input = helpInputSchema.parse({
               title: f.get("title"),
@@ -618,6 +672,43 @@ function HelpEditor({ id }: { id?: string }) {
         }}
       >
         <fieldset disabled={!writable}>
+          <AiDraft
+            key={`${state!.activeUserId}-${h?.contentRevision}`}
+            task="help-intent"
+            title="AI 临时互助需求"
+            context={{ pets: pets.slice(0, 3).map(petSummary) }}
+            disabled={!writable}
+            onApply={(data) => {
+              fillForm(form.current, {
+                title: data.title,
+                details: data.details,
+                pet: data.petId,
+                type: data.type,
+                startAt: localTime(data.startAt ?? undefined),
+                endAt: localTime(data.endAt ?? undefined),
+              });
+              setAiDraft(data);
+              setNeedsPlace(true);
+              setDirty(true);
+            }}
+          />
+          {aiDraft && (
+            <div className="meeting-note">
+              <p>
+                AI 草稿 · 时间描述：{aiDraft.timeText ?? "未提供"} · 时长：
+                {aiDraft.durationMinutes ?? "未知"}分钟 · 地点线索：
+                {aiDraft.locationQuery ?? "未提供"}
+              </p>
+              {aiDraft.clarifications.map((t, i) => (
+                <p key={i}>{t}</p>
+              ))}
+              <p>请补齐并复核下方表单，重新选择公共交接地点。</p>
+              <label className="check-line">
+                <input type="checkbox" required />
+                我已复核 AI 草稿中的宠物、时间与特别要求
+              </label>
+            </div>
+          )}
           <label className="field">
             <span>求助标题</span>
             <input
@@ -630,7 +721,12 @@ function HelpEditor({ id }: { id?: string }) {
           <div className="form-grid">
             <label className="field">
               <span>关联宠物</span>
-              <select name="pet" required defaultValue={h?.petId}>
+              <select
+                name="pet"
+                required
+                defaultValue={h?.petId ?? pets[0]?.id}
+              >
+                <option value="">请选择本人宠物</option>
                 {pets.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -640,7 +736,8 @@ function HelpEditor({ id }: { id?: string }) {
             </label>
             <label className="field">
               <span>互助类型</span>
-              <select name="type" defaultValue={h?.type ?? "walk"}>
+              <select name="type" required defaultValue={h?.type ?? "walk"}>
+                <option value="">请选择互助类型</option>
                 <option value="walk">临时遛狗</option>
                 <option value="feed">简单喂食</option>
               </select>
@@ -669,6 +766,7 @@ function HelpEditor({ id }: { id?: string }) {
             value={place}
             onChange={(p) => {
               setPlace(p);
+              setNeedsPlace(false);
               setDirty(true);
             }}
           />
@@ -684,8 +782,7 @@ function HelpEditor({ id }: { id?: string }) {
             />
           </label>
           <p className="form-hint">
-            宠物准入未知。发布后请确认照看交接清单；已有有效申请时需取消重建。AI
-            需求解析尚未开放。
+            宠物准入未知。发布后请确认照看交接清单；已有有效申请时需取消重建。
           </p>
           {error && (
             <p role="alert" className="field-error">

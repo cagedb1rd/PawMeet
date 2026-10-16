@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { AiDraft, fillForm } from "@/features/ai/draft";
 import { z } from "zod";
 import { useDemo } from "@/features/demo/provider";
 import {
@@ -62,6 +63,7 @@ export function PetForm({ id }: { id?: string }) {
   return <PetEditor key={`${state.activeUserId}-${id ?? "new"}`} id={id} />;
 }
 function PetEditor({ id }: { id?: string }) {
+  const form = useRef<HTMLFormElement>(null);
   const { state, run, writable, notify } = useDemo(),
     router = useRouter();
   const pet = state!.pets.find((p) => p.id === id);
@@ -85,6 +87,7 @@ function PetEditor({ id }: { id?: string }) {
         description="慢慢介绍它，不确定的信息可以如实填写未知。所有档案均为虚构演示。"
       />
       <form
+        ref={form}
         className="card form-card"
         onChange={() => setDirty(true)}
         onSubmit={(e) => {
@@ -122,6 +125,31 @@ function PetEditor({ id }: { id?: string }) {
         }}
       >
         <fieldset disabled={!writable || draft.busy}>
+          <AiDraft
+            key={`${state!.activeUserId}-${pet?.revision}`}
+            task="pet-profile"
+            title="AI 宠物档案与社交信息"
+            disabled={!writable}
+            onApply={(data) => {
+              fillForm(form.current, {
+                name: data.name ?? pet?.name,
+                breed: data.breed ?? pet?.breed,
+                age: data.ageMonths,
+                size: data.size ?? pet?.size ?? "unknown",
+                city: data.city ?? pet?.city ?? "",
+                district: data.district ?? pet?.district ?? "",
+                notes: [
+                  pet?.socialNotes ?? "",
+                  ...data.likes.map((v) => `喜欢：${v}`),
+                  ...data.dislikes.map((v) => `不喜欢：${v}`),
+                  ...data.cautions,
+                ].join("；"),
+              });
+              setTraits(data.temperamentTags.map((t) => t.value));
+              setLikes(data.activityTags.map((t) => t.value));
+              setDirty(true);
+            }}
+          />
           <h2>它的第一张名片</h2>
           <PhotoPicker draft={draft} max={1} />
           <div className="form-grid">
@@ -224,7 +252,6 @@ function PetEditor({ id }: { id?: string }) {
               placeholder="例如：慢热，需要一点时间熟悉。不要填写手机号、微信号或住址。"
             />
           </Field>
-          <Unavailable>AI 档案解析尚未开放 · 当前为人工录入</Unavailable>
           {error && (
             <p role="alert" className="field-error">
               {error}
@@ -312,7 +339,15 @@ function PostEditor() {
           </div>
           <h3>加几张可爱照片</h3>
           <PhotoPicker draft={draft} max={3} />
-          <Unavailable>AI 文案尚未开放 · 发布后仅保存在当前浏览器</Unavailable>
+          <AiDraft
+            task="post-copy"
+            title="AI 整理分享文案"
+            disabled={!writable}
+            onApply={(data) => {
+              setText(data.text);
+              setDirty(true);
+            }}
+          />
           {error && (
             <p role="alert" className="field-error">
               {error}
