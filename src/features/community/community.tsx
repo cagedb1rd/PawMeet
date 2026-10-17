@@ -80,7 +80,7 @@ export function PostCard({
             </Link>
           ))}
         </div>
-        <p className="form-hint">{formatTime(post.createdAt)} · 本地演示社区</p>
+        <p className="form-hint">{formatTime(post.createdAt)}</p>
         <div className="post-actions">
           {like}
           <span className="muted">评论暂未开放</span>

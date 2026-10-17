@@ -227,9 +227,6 @@ function CompanionFlow() {
   return (
     <section className="ai-companion" aria-label="AI 智能约伴" id="companion">
       <h2>AI 智能约伴</h2>
-      <p>
-        先找已有活动，再由你决定是否组局。所有宠友和活动来自当前浏览器演示数据；大致直线距离，场地准入需核实。
-      </p>
       <fieldset disabled={busy}>
         <label className="field">
           <span>参考宠物</span>
@@ -249,10 +246,7 @@ function CompanionFlow() {
           </select>
         </label>
         <details>
-          <summary>
-            参考地点：{reference.name}（
-            {reference.source === "demo" ? "演示点" : "公共点"}）
-          </summary>
+          <summary>参考地点：{reference.name}</summary>
           <PlacePicker
             label="约伴参考地点"
             value={reference}
@@ -286,26 +280,28 @@ function CompanionFlow() {
           </Link>
         </div>
       </fieldset>
-      <p role="status">
-        {
+      {!["idle", "recommendations", "draft", "error"].includes(phase) && (
+        <p role="status">
           {
-            idle: "说个大概计划就能先找活动，创建时再确认具体时间。",
-            extracting: "正在理解需求…",
-            clarifying: "补充哪天或大概时段就行，不用精确到分钟。",
-            searching: "正在优先查询已有活动…",
-            recommendations: "已有活动查询完成，可进入详情自行报名。",
-            organizing: "正在寻找宠友与地点，整理组局草稿…",
-            draft: "可编辑草稿已准备好，尚未创建。",
-            error: "工作流未完成，可重试或手动操作。",
-          }[phase]
-        }
-      </p>
+            {
+              idle: "",
+              extracting: "正在理解需求…",
+              clarifying: "想哪天出发？",
+              searching: "正在优先查询已有活动…",
+              recommendations: "",
+              organizing: "正在寻找宠友与地点，整理组局草稿…",
+              draft: "",
+              error: "",
+            }[phase]
+          }
+        </p>
+      )}
       {intent && !busy && (
         <div className="card form-card">
           <h3>你的约伴计划</h3>
           <p>
             {intent.timeText ?? "未提供时间"} · {intent.match.radiusKm ?? 5}{" "}
-            公里（未指定默认5公里） · {intent.activityType ?? "活动类型未提供"}
+            公里 · {intent.activityType ?? "活动类型未提供"}
           </p>
           <p>
             偏好：
@@ -340,9 +336,6 @@ function CompanionFlow() {
           ))}
           <p data-testid="availability-label">
             {timeLabel || "还需要一个大概日期"}
-          </p>
-          <p className="form-hint">
-            宽时段仅用于找活动：上午6–12点、下午12–18点、晚上18–24点，不是替你定好活动时间。只改距离可说“扩大到5公里”。
           </p>
           <details open={phase === "clarifying"}>
             <summary>调整日期与时段</summary>
@@ -419,20 +412,24 @@ function CompanionFlow() {
           className="card form-card"
           key={name}
           data-testid="companion-result"
+          data-tool={name}
         >
-          <h3>实际工具结果 · {name}</h3>
+          <h3>
+            {
+              {
+                search_activities: "推荐活动",
+                search_pets: "推荐宠友",
+                search_places: "候选地点",
+                check_compatibility: "互动建议",
+                create_activity_draft: "活动草稿",
+              }[name]
+            }
+          </h3>
           {result.kind === "error" ? (
-            <p role="alert">
-              工具失败：{result.message}（{result.code}
-              ）。未当作空结果；可重试或手动操作。
-            </p>
+            <p role="alert">查询失败：{result.message}</p>
           ) : result.kind === "activities" ? (
             <>
-              {!result.rows.length && (
-                <p>
-                  没有满足时间、距离、名额及已知硬约束的活动；未扩大条件，可选择自己组局。
-                </p>
-              )}
+              {!result.rows.length && <p>暂时没有合适的活动，试试自己组局。</p>}
               {result.rows.map((r) => (
                 <article key={r.id}>
                   <Link href={`/activities/${r.id}`}>{r.title} · 查看详情</Link>
@@ -444,16 +441,14 @@ function CompanionFlow() {
                     · 剩余{r.remaining}位
                   </p>
                   <p>{r.reasons?.join("；")}</p>
-                  <p>差异 / 未核实：{r.differences?.join("；")}</p>
+                  <p>待确认：{r.differences?.join("；")}</p>
                 </article>
               ))}
             </>
           ) : result.kind === "pets" ? (
             <>
               {!result.rows.length && (
-                <p>
-                  没有匹配宠友。可明确输入“扩大到5公里”等调整范围；未经同意不会放宽硬约束。也可先创建活动等待参与。
-                </p>
+                <p>暂时没有匹配宠友，可以调整范围或先发起活动。</p>
               )}
               {result.rows.map((r) => {
                 const p = state!.pets.find(
@@ -470,14 +465,13 @@ function CompanionFlow() {
           ) : result.kind === "places" ? (
             <>
               {!result.rows.length && (
-                <p>地点查询成功但没有范围内候选，可改关键词或手动选点。</p>
+                <p>没找到合适地点，换个关键词或手动选点。</p>
               )}
               {result.rows.map((r) => (
                 <div key={r.index}>
                   <p>
                     {r.name} · {formatDistance(r.distanceM)} ·{" "}
-                    {r.source === "demo" ? "明确演示地点" : "高德查询"} ·
-                    宠物准入未知
+                    {r.source === "demo" ? "演示地点" : "高德地图"}
                   </p>
                   {queriedPlaces[r.index] && (
                     <PlaceDetails place={queriedPlaces[r.index]} />
@@ -488,15 +482,13 @@ function CompanionFlow() {
           ) : result.kind === "compatibility" ? (
             result.rows.map((r) => (
               <div key={r.id}>
-                <p>
-                  {r.conflicts.join("；") || "未识别明确冲突，不代表安全保证"}
-                </p>
+                <p>{r.conflicts.join("；") || "未发现明显的偏好冲突"}</p>
                 <p>{r.advice.join("；")}</p>
-                {r.incomplete && <p>名片信息不完整，需向主人核实</p>}
+                {r.incomplete && <p>名片信息待补充</p>}
               </div>
             ))
           ) : result.kind === "activity-draft" ? (
-            <p>活动草稿已生成，仍须编辑并确认创建。</p>
+            <p>活动草稿已生成。</p>
           ) : null}
         </div>
       ))}
@@ -536,9 +528,6 @@ function CompanionFlow() {
       <button type="button" onClick={reset}>
         {busy ? "取消查询" : "重新开始"}
       </button>
-      <p className="form-hint">
-        高德周边搜索最多5公里，候选并非全量场地。仅上传选中宠物摘要和最多5条查询结果，不上传图片、完整数据或参考坐标。每阶段最多4轮模型、9次工具；自动有限重试由现有服务控制。
-      </p>
     </section>
   );
 }

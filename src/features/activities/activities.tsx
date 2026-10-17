@@ -34,7 +34,7 @@ function ActivityCard({
           image={{ kind: "static", path: `/images/dog-${(index % 6) + 1}.jpg` }}
           alt={a.title}
         />
-        <span className="photo-label">虚构演示活动</span>
+
         <div className="date-badge">
           <b>
             {new Intl.DateTimeFormat("zh-CN", {
@@ -53,11 +53,7 @@ function ActivityCard({
       <div className="activity-body">
         <div className="row-between">
           <span className="pill">
-            {a.status === "cancelled"
-              ? "已取消"
-              : me
-                ? "已报名"
-                : "线下相遇 · 演示"}
+            {a.status === "cancelled" ? "已取消" : me ? "已报名" : "线下相遇"}
           </span>
           <ArrowUpRight size={18} />
         </div>
@@ -81,7 +77,6 @@ function ActivityCard({
         <div className="tags">
           <span>宠友约伴</span>
           <span>{a.place.district}</span>
-          <span>宠物准入未知</span>
         </div>
         <div className="activity-bottom">
           <div className="avatar-stack">
@@ -202,7 +197,6 @@ export function ActivityDetail({ id }: { id: string }) {
               image={state.pets.find((p) => p.id === a.organizerPetId)!.photo}
               alt={a.title}
             />
-            <span className="photo-label">虚构演示活动</span>
           </div>
           <div className="detail-padding">
             <span className="pill">
@@ -222,7 +216,6 @@ export function ActivityDetail({ id }: { id: string }) {
               <p>
                 <MapPin />
                 {a.place.name}
-                <small>公共约定点 · 宠物准入未核实</small>
               </p>
             </div>
             <PlaceDetails place={a.place} />
@@ -230,9 +223,6 @@ export function ActivityDetail({ id }: { id: string }) {
             <p className="pre-wrap">
               {a.description || "一起轻松散步，由主人确认各自宠物的互动方式。"}
             </p>
-            <div className="safety-note">
-              演示约伴不会向任何人发送消息。实际遛宠请牵引、携带饮水及拾便袋，初见前与主人确认。
-            </div>
             <h3>
               已经加入的小伙伴{" "}
               <span className="muted">
@@ -340,7 +330,6 @@ export function ActivityDetail({ id }: { id: string }) {
                   : "确认报名"}
             </button>
           )}
-          <small className="muted">本地演示 · 无交易或服务保障</small>
         </aside>
       </div>
       {confirm && (

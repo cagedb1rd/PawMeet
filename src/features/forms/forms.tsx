@@ -84,7 +84,7 @@ function PetEditor({ id }: { id?: string }) {
       <Title
         eyebrow="EVERY PAW HAS A STORY"
         title={pet ? `编辑${pet.name}的档案` : "认识一下，新来的小朋友。"}
-        description="慢慢介绍它，不确定的信息可以如实填写未知。所有档案均为虚构演示。"
+        description="慢慢介绍它，让大家认识你的毛孩子。"
       />
       <form
         ref={form}
@@ -212,9 +212,6 @@ function PetEditor({ id }: { id?: string }) {
               </select>
             </Field>
           </div>
-          <p className="form-hint">
-            位置为虚构公共区域参考点，不收集住址；区域文字不会生成精确位置或距离。
-          </p>
           <h3>它是什么性格？</h3>
           <div className="choice-tags">
             {temperaments.map((t) => (
@@ -306,7 +303,7 @@ function PostEditor() {
             if (run({ type: "publish-post", input })) {
               draft.markSaved();
               setDirty(false);
-              notify("动态已发布到本地演示社区");
+              notify("动态已发布");
               router.push("/");
             }
           } catch (e) {
@@ -432,7 +429,6 @@ export function ActivityEditor({
               推荐约伴对象：
               {state!.pets.find((p) => p.id === recommendedId && !p.archivedAt)
                 ?.name ?? "对象不存在，请重新选择"}
-              。仅带入推荐，不代表对方同意，也不会发送邀请。请确认时间与公共地点。
             </p>
           )}
           <Field label="活动名称 *">
@@ -520,9 +516,6 @@ export function ActivityEditor({
               placeholder="活动安排、需要带的物品、初次见面的注意事项…"
             />
           </Field>
-          <p className="form-hint">
-            请核实时间、名额和地点准入；确认创建后才保存，不会发送真实邀请。
-          </p>
           {error && (
             <p role="alert" className="field-error">
               {error}

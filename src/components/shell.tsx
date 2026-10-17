@@ -11,7 +11,6 @@ import {
   UserRound,
   ChevronDown,
   X,
-  Leaf,
   Search,
 } from "lucide-react";
 import { useState } from "react";
@@ -52,11 +51,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
   return (
     <>
-      <div className="demo-banner">
-        <Leaf size={12} />
-        <span>本地演示 · 虚构宠友 · 数据仅存当前浏览器</span>
-        <span className="demo-version">DEMO</span>
-      </div>
       <div className="app-layout">
         <aside className="sidebar">
           <Link href="/" className="brand">
@@ -98,7 +92,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="city">
               <MapPin size={16} />
               <b>杭州 · 滨江</b>
-              <span>公共演示区域</span>
             </div>
             <form
               className="global-search"
@@ -200,9 +193,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
       {switcher && state && (
         <Dialog title="切换演示身份" close={() => setSwitcher(false)}>
-          <p className="muted">
-            以下均为虚构模拟身份，切换不是登录。所有身份共享当前浏览器的数据。
-          </p>
+          <p className="muted">选择一个身份继续体验。</p>
           <div className="switcher-list">
             {state.users
               .filter((u) => u.isSwitchable)

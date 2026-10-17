@@ -156,9 +156,6 @@ export function MapCanvas({
           )}
         </div>
       )}
-      <p className="map-legend">
-        虚构宠友 · 公共演示区域 · 普通地点宠物准入未知
-      </p>
     </div>
   );
 }

@@ -83,12 +83,11 @@ export function Discover() {
       <Title
         eyebrow="NICE TO MEET YOU"
         title="附近宠友"
-        description="从一次散步开始，认识附近的毛孩子。虚构区域点 · 大致直线距离。"
+        description="从一次散步开始，认识附近的毛孩子。"
       />
       <section className="card reference-panel">
         <span className="eyebrow">从一处公共地点，认识附近的它</span>
         <h3 data-testid="reference-label">{referenceLabel}</h3>
-        <p>坐标仅代表虚构区域。参考位置只保留于当前页面，不保存为宠物位置。</p>
         <div className="button-row">
           <button
             type="button"
@@ -108,9 +107,7 @@ export function Discover() {
             onClick={async () => {
               const id = ++locationRequest.current;
               setLocating(true);
-              setMessage(
-                "请求浏览器定位；仅作本页参考。定位坐标将交由高德转换。",
-              );
+              setMessage("正在获取当前位置…");
               try {
                 const position = await currentPosition();
                 if (id !== locationRequest.current) return;
@@ -211,9 +208,7 @@ export function Discover() {
           )}
           {filterGroup("temperaments", "性格标签", temperaments)}
           {filterGroup("activities", "活动偏好", interests)}
-          <p className="form-hint">
-            同一类多选满足任一，类别之间同时满足。自由文字仅搜索，不推断性格。
-          </p>
+          <p className="form-hint">同类条件可多选。</p>
         </details>
         <button type="button" onClick={() => setFilters({ ...defaultFilters })}>
           清除筛选
@@ -291,7 +286,6 @@ export function Discover() {
                 <p className="card form-hint">
                   偏好匹配分：{String(row.score)} / 100 ·{" "}
                   {"reasons" in row ? (row.reasons as string[]).join("；") : ""}
-                  。不是安全保证。
                 </p>
               )}
             </div>

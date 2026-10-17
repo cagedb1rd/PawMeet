@@ -142,10 +142,6 @@ export function AiDraft<T extends AiTask>({
   return (
     <section className="ai-panel" aria-label={title}>
       <h3>{title}</h3>
-      <p className="form-hint">
-        AI
-        仅生成草稿。只发送当前描述与所选档案的必要摘要，请勿输入联系方式或住址；填入后可编辑，确认保存才生效。
-      </p>
       <label className="field">
         <span>描述需求</span>
         <textarea

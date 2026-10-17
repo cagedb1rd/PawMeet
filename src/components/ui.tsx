@@ -110,7 +110,7 @@ export function Title({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   action?: React.ReactNode;
 }) {
   return (
@@ -118,7 +118,7 @@ export function Title({
       <div>
         <div className="eyebrow">{eyebrow}</div>
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       {action}
     </div>
@@ -169,7 +169,6 @@ export function PetCard({
       >
         <div className="pet-photo">
           <PetImage image={pet.photo} alt={pet.name} />
-          <span className="photo-label">虚构宠友</span>
           <span className="round-arrow">
             <ArrowUpRight size={18} />
           </span>

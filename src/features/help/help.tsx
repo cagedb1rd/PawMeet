@@ -92,7 +92,7 @@ function HelpList({ initialTab }: { initialTab: string }) {
       <Title
         eyebrow="A LITTLE HELP, A LOT OF LOVE"
         title="临时互助"
-        description="临时遛狗、简单喂食，从说清楚需求开始。仅为虚构演示，不涉及真实寄养或交易。"
+        description="临时遛狗、简单喂食，从说清楚需求开始。"
         action={
           <Link className="button" href="/help/new">
             发布求助
@@ -129,7 +129,7 @@ function HelpList({ initialTab }: { initialTab: string }) {
               </div>
               <h3>{h.title}</h3>
               <p>{formatTime(h.startAt)} · 北京时间</p>
-              <p>{h.place.name} · 宠物准入未知</p>
+              <p>{h.place.name}</p>
               <div className="help-pet">
                 <PetImage image={p.photo} alt={p.name} />
                 <span>
@@ -193,11 +193,7 @@ function Detail({ id }: { id: string }) {
       <Link href="/help" className="back-link">
         ← 返回互助
       </Link>
-      <Title
-        eyebrow="A LITTLE TRUST"
-        title={h.title}
-        description="虚构需求 · 仅保存于当前浏览器 · 不涉及真实服务承诺"
-      />
+      <Title eyebrow="A LITTLE TRUST" title={h.title} />
       <div className="help-detail-grid">
         <section className="card form-card">
           <span className="pill" data-testid="help-status">
@@ -638,7 +634,7 @@ function HelpEditor({
       <Title
         eyebrow="A SMALL REQUEST"
         title={h ? "编辑求助" : "为毛孩子找一点照应。"}
-        description="只演示临时遛狗与简单喂食。明确时间和公共交接点，不填写真实住址。"
+        description="说说需要怎样的帮助。"
       />
       <form
         ref={form}
@@ -789,9 +785,6 @@ function HelpEditor({
               defaultValue={h?.details}
             />
           </label>
-          <p className="form-hint">
-            宠物准入未知。发布后请确认照看交接清单；已有有效申请时需取消重建。
-          </p>
           {error && (
             <p role="alert" className="field-error">
               {error}

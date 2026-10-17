@@ -26,7 +26,7 @@ export function UserProfile({ id }: { id: string }) {
         <div>
           <h1>{user.displayName}</h1>
           <p>
-            虚构社区用户 · {pets.map((p) => p.name).join("、") || "毛孩子"}
+            {pets.map((p) => p.name).join("、") || "毛孩子"}
             的主人
           </p>
           <p>

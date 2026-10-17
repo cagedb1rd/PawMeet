@@ -193,7 +193,7 @@ test("无活动转组局：原生多工具、规则比较、可编辑草稿及�
   await understand(page);
   await finished(page);
   await expect(page.getByTestId("companion-result")).toContainText(
-    "没有满足时间",
+    "暂时没有合适的活动",
   );
   await page.getByRole("button", { name: "自己组局", exact: true }).click();
   await expect(page.getByLabel("活动名称", { exact: true })).toHaveValue(
@@ -264,11 +264,11 @@ test("地点工具故障区别于空结果，保留手动恢复", async ({ page 
   const before = await saved(page);
   await understand(page);
   await expect(
-    page.getByTestId("companion-result").filter({ hasText: "search_places" }),
-  ).toContainText("工具失败");
+    page.locator('[data-testid="companion-result"][data-tool="search_places"]'),
+  ).toContainText("查询失败");
   await expect(
-    page.getByTestId("companion-result").filter({ hasText: "search_places" }),
-  ).not.toContainText("没有范围内候选");
+    page.locator('[data-testid="companion-result"][data-tool="search_places"]'),
+  ).not.toContainText("没找到合适地点");
   await expect(page.getByRole("link", { name: "手动发起活动" })).toBeVisible();
   expect(await saved(page)).toBe(before);
 });

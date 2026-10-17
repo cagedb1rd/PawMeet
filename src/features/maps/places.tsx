@@ -16,11 +16,11 @@ export function PlaceDetails({ place }: { place: PlaceRef }) {
       <p>{place.address || place.district}</p>
       <small>
         {place.source === "demo"
-          ? "虚构演示点"
+          ? "演示地点"
           : place.source === "amap"
-            ? "高德普通地点 / 地图选点"
-            : "手动填写，未核实"}{" "}
-        · 宠物准入未知
+            ? "高德地图"
+            : "手动地点"}{" "}
+        · 携宠信息待确认
       </small>
       {url ? (
         <a
@@ -127,10 +127,7 @@ export function PlaceExplorer({
   };
   return (
     <div className="place-explorer">
-      <p className="form-hint">
-        点击地图空白处选公共地点，或搜索参考位置 5km 内的普通
-        POI；准入须自行核实。
-      </p>
+      <p className="form-hint">搜索地点，或点击地图选点。</p>
       <input
         aria-label="搜索附近地点"
         maxLength={60}

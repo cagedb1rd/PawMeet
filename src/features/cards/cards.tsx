@@ -79,10 +79,7 @@ function CardView({ id }: { id: string }) {
             {c?.meetingAdvice || "先保持牵引和距离，由双方主人确认互动方式。"}
           </p>
         </section>
-        <p className="form-hint">
-          虚构宠物 · 偏好由主人描述，仅供沟通参考，不是专业行为诊断或安全保证。
-          {!current && "当前内容不可作为有效名片分享或用于偏好冲突判断。"}
-        </p>
+        {!current && <p className="form-hint">名片待主人确认</p>}
       </article>
       <div className="button-row">
         {mine && (
@@ -279,7 +276,7 @@ function Comparison({ target }: { target: string }) {
       <Title
         eyebrow="GET TO KNOW EACH OTHER"
         title="先了解彼此，再慢慢靠近。"
-        description="仅使用当前有效名片和明确性格标签识别偏好差异，不生成安全评分。"
+        description="看看它们的共同爱好和互动偏好。"
       />
       <div className="card form-card form-grid">
         {[
@@ -317,9 +314,6 @@ function Comparison({ target }: { target: string }) {
             ))}
           </div>
           <section className="card form-card">
-            <p className="form-hint">
-              社交适配采用确定性偏好规则，无需模型调用。
-            </p>
             <h2>明确的偏好冲突</h2>
             {result.conflicts.length ? (
               result.conflicts.map((t) => (
@@ -328,19 +322,16 @@ function Comparison({ target }: { target: string }) {
                 </p>
               ))
             ) : (
-              <p>未识别到明确词条冲突；这不代表适合互动或不存在风险。</p>
+              <p>未发现明显的偏好冲突。</p>
             )}
             {result.incomplete && (
-              <p className="conflict">
-                至少一份名片缺失或待重新确认，仅参考有效名片与档案中的明确标签；信息不足请先向主人核对。
-              </p>
+              <p className="conflict">部分名片信息待补充或确认。</p>
             )}
             <p>共同喜欢：{result.shared.join("、") || "尚无明确共同词条"}</p>
             <h3>谨慎的初见建议</h3>
             {result.advice.map((t) => (
               <p key={t}>{t}</p>
             ))}
-            <p className="form-hint">不是专业行为诊断或安全保证。</p>
           </section>
           <Link
             className="button"

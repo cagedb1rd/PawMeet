@@ -31,7 +31,6 @@ export function PetDetail({ id }: { id: string }) {
             image={p.photo}
             alt={p.name}
           />
-          <span className="photo-label">虚构宠物档案</span>
           <span className="pet-image-note">
             照片不可用时，请主人编辑档案补充照片。
           </span>
@@ -51,7 +50,7 @@ export function PetDetail({ id }: { id: string }) {
           </p>
           <p className="location">
             <MapPin size={16} />
-            {p.city} · {p.district} · 公共演示区域
+            {p.city} · {p.district}
           </p>
           <div className="owner-line">
             <PetImage image={owner.avatar} alt={owner.displayName} />

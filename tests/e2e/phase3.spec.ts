@@ -130,7 +130,9 @@ test("SDK mock：四类地点、空结果、失败、过时查询与地图选点
       .locator(".poi-results")
       .getByRole("button", { name: new RegExp(`测试${category}`) })
       .click();
-    await expect(page.locator(".place-details")).toContainText("宠物准入未知");
+    await expect(page.locator(".place-details")).toContainText(
+      "携宠信息待确认",
+    );
   }
   for (let attempt = 0; attempt < 2; attempt++) {
     await page.getByRole("button", { name: "公园", exact: true }).click();

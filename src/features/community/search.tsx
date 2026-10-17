@@ -53,7 +53,7 @@ function SearchResults({ initialQuery }: { initialQuery: string }) {
       <p className="form-hint" role="status">
         {term
           ? `找到 ${posts.length} 篇帖子、${users.length} 位用户`
-          : "搜索当前浏览器的演示内容"}
+          : "搜索帖子和宠友"}
       </p>
       {users.length > 0 && (
         <>
@@ -62,10 +62,7 @@ function SearchResults({ initialQuery }: { initialQuery: string }) {
             {users.map((u) => (
               <Link key={u.id} href={`/users/${u.id}`}>
                 <PetImage image={u.avatar} alt={u.displayName} />
-                <span>
-                  {u.displayName}
-                  <small>虚构社区用户</small>
-                </span>
+                <span>{u.displayName}</span>
                 <span>查看主页 →</span>
               </Link>
             ))}

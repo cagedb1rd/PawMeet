@@ -152,9 +152,7 @@ export function Me() {
           <ShieldCheck />
           <div>
             <h3>一台浏览器，一个小世界</h3>
-            <p>
-              模拟身份共享本地数据；另一浏览器或无痕窗口是独立副本。没有真实登录或跨设备数据同步；名片可导出图片分享。
-            </p>
+            <p>演示版数据保存在当前浏览器。</p>
           </div>
           <span className="pill">{writable ? "当前可编辑" : "只读模式"}</span>
         </div>
