@@ -109,6 +109,19 @@ test("活动状态随时间与名额展示，列表切换不换封面，约伴�
   page,
 }, info) => {
   await ready(page, "/activities");
+  const trigger = page.getByRole("button", {
+    name: "AI 智能约伴",
+    exact: true,
+  });
+  const region = page.getByRole("region", { name: "AI 智能约伴" });
+  await expect(region).toBeHidden();
+  await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  const triggerBox = await trigger.boundingBox();
+  const createBox = await page
+    .getByRole("link", { name: "发起活动", exact: true })
+    .boundingBox();
+  expect(triggerBox!.x + triggerBox!.width).toBeLessThanOrEqual(createBox!.x);
+  expect(Math.abs(triggerBox!.y - createBox!.y)).toBeLessThan(2);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: info.outputPath("activities-viewport.png"),
@@ -154,6 +167,12 @@ test("活动状态随时间与名额展示，列表切换不换封面，约伴�
   await expect(
     page.getByRole("button", { name: "重新开始", exact: true }),
   ).toHaveCount(0);
-  const region = page.getByRole("region", { name: "AI 智能约伴" });
+  await trigger.click();
+  await expect(region).toBeVisible();
+  await page.getByLabel("智能约伴需求").fill("周六下午一起散步");
+  await trigger.click();
+  await expect(region).toBeHidden();
+  await trigger.click();
+  await expect(page.getByLabel("智能约伴需求")).toHaveValue("周六下午一起散步");
   expect((await region.boundingBox())!.height).toBeLessThan(380);
 });

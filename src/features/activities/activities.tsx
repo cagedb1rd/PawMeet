@@ -1,7 +1,14 @@
 "use client";
 import Link from "next/link";
-import { CalendarDays, MapPin, Users, ArrowUpRight, Check } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  MapPin,
+  Users,
+  ArrowUpRight,
+  Check,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useDemo } from "@/features/demo/provider";
 import { useSearchParams } from "next/navigation";
 import {
@@ -15,6 +22,15 @@ import { PublishLink } from "@/components/shell";
 import { Companion } from "@/features/ai/companion";
 import { PlaceDetails } from "@/features/maps/places";
 import { activityStatus } from "./presentation";
+function subscribeCompanionHash(listener: () => void) {
+  window.addEventListener("hashchange", listener);
+  window.addEventListener("popstate", listener);
+  return () => {
+    window.removeEventListener("hashchange", listener);
+    window.removeEventListener("popstate", listener);
+  };
+}
+const companionHash = () => window.location.hash === "#companion";
 function useActivityClock() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -125,6 +141,13 @@ function ActivityList({ initialTab }: { initialTab: string }) {
   const { state } = useDemo();
   const now = useActivityClock();
   const [tab, setTab] = useState(initialTab);
+  const linkedCompanion = useSyncExternalStore(
+    subscribeCompanionHash,
+    companionHash,
+    () => false,
+  );
+  const [companionOverride, setCompanionOpen] = useState<boolean | null>(null);
+  const companionOpen = companionOverride ?? linkedCompanion;
   if (!state) return null;
   const activities =
     tab === "all"
@@ -141,9 +164,25 @@ function ActivityList({ initialTab }: { initialTab: string }) {
         eyebrow="MORE PAWS, MORE JOY"
         title="一起出发"
         description="一段散步、一片草地，和毛孩子一起积攒新回忆。"
-        action={<PublishLink href="/activities/new">发起活动</PublishLink>}
+        action={
+          <div className="activity-header-actions">
+            <button
+              type="button"
+              className="button secondary companion-trigger"
+              aria-expanded={companionOpen}
+              aria-controls="companion-panel"
+              onClick={() => setCompanionOpen(!companionOpen)}
+            >
+              <Sparkles size={17} />
+              AI 智能约伴
+            </button>
+            <PublishLink href="/activities/new">发起活动</PublishLink>
+          </div>
+        }
       />
-      <Companion />
+      <div id="companion-panel" hidden={!companionOpen}>
+        <Companion />
+      </div>
       <div className="tabs">
         <button
           className={tab === "all" ? "selected" : ""}

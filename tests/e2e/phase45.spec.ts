@@ -26,6 +26,7 @@ async function ready(page: Page) {
   await expect(
     page.getByRole("button", { name: "切换演示身份" }),
   ).toBeEnabled();
+  await page.getByRole("button", { name: "AI 智能约伴", exact: true }).click();
 }
 async function sdk(page: Page) {
   await page.route("**/api/maps/config", (r) =>
@@ -121,6 +122,12 @@ async function mock(
   return seen;
 }
 async function understand(page: Page) {
+  const trigger = page.getByRole("button", {
+    name: "AI 智能约伴",
+    exact: true,
+  });
+  if ((await trigger.getAttribute("aria-expanded")) === "false")
+    await trigger.click();
   await page
     .getByLabel("智能约伴需求")
     .fill(`${day}下午或晚上5公里内散步，最好有草坪`);

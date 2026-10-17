@@ -341,6 +341,17 @@ main {
   font-weight: 700;
 }
 /* Shared controls and task feedback. */
+.activity-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.companion-trigger[aria-expanded="true"] {
+  border-color: var(--green);
+  background: #eaf2e5;
+}
 .ai-companion {
   border: 1px solid #dce5d9;
   border-radius: 16px;

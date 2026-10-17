@@ -228,6 +228,8 @@ test("附近二级切换、我的记录与智能约伴预留入口", async ({ pa
   await expect(
     page.getByRole("button", { name: "我的活动", exact: true }),
   ).toHaveClass(/selected/);
+  await expect(page.getByRole("region", { name: "AI 智能约伴" })).toBeHidden();
+  await page.getByRole("button", { name: "AI 智能约伴", exact: true }).click();
   await expect(page.getByRole("region", { name: "AI 智能约伴" })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "手动发起活动" }),
