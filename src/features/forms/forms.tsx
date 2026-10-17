@@ -373,7 +373,7 @@ export function ActivityForm() {
 }
 export function ActivityEditor({
   initialInput,
-}: { initialInput?: ActivityInput } = {}) {
+}: { initialInput?: Partial<ActivityInput> } = {}) {
   const params = useSearchParams();
   const recommendedId = params.get("recommendedPetId");
   const [place, setPlace] = useState<PlaceRef>(
@@ -465,7 +465,7 @@ export function ActivityEditor({
                 aria-label="开始时间"
                 name="startAt"
                 defaultValue={
-                  initialInput
+                  initialInput?.startAt
                     ? new Date(Date.parse(initialInput.startAt) + 8 * 3600000)
                         .toISOString()
                         .slice(0, 16)
@@ -480,7 +480,7 @@ export function ActivityEditor({
                 aria-label="结束时间"
                 name="endAt"
                 defaultValue={
-                  initialInput
+                  initialInput?.endAt
                     ? new Date(Date.parse(initialInput.endAt) + 8 * 3600000)
                         .toISOString()
                         .slice(0, 16)

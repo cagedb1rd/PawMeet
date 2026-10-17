@@ -43,6 +43,7 @@ async function mock(
     radius?: 1 | 3 | 5 | 10;
     failPlaces?: boolean;
     loop?: boolean;
+    timeText?: string | null;
   } = {},
 ) {
   const seen: { stage: string; tool: string; result?: unknown }[] = [];
@@ -56,12 +57,15 @@ async function mock(
         match: { ...emptyMatch, radiusKm: options.radius ?? 5 },
         startAt: null,
         endAt: null,
-        timeText: "周六下午",
+        timeText:
+          options.timeText === undefined
+            ? `${day} 下午或晚上`
+            : options.timeText,
         activityType: "散步",
         placeQuery: options.failPlaces ? "失败" : "公园",
         preferences: ["最好有草坪"],
         hardRequirements: [],
-        clarifications: ["请确认具体日期和起止时间"],
+        clarifications: options.timeText === null ? ["想哪天一起玩？"] : [],
         warnings: [],
       }),
     }),
@@ -117,22 +121,21 @@ async function mock(
   return seen;
 }
 async function understand(page: Page) {
-  await page.getByLabel("智能约伴需求").fill("周六下午5公里内散步，最好有草坪");
-  await page.getByRole("button", { name: "理解约伴需求" }).click();
+  await page
+    .getByLabel("智能约伴需求")
+    .fill(`${day}下午或晚上5公里内散步，最好有草坪`);
+  await page.getByRole("button", { name: "帮我找活动" }).click();
   await expect(
-    page.getByRole("heading", { name: "复核约伴条件" }),
+    page.getByRole("heading", { name: "你的约伴计划" }),
   ).toBeVisible();
 }
-async function confirm(page: Page, create = false) {
-  await page.getByLabel("约伴开始时间").fill(`${day}T08:00`);
-  await page.getByLabel("约伴结束时间").fill(`${day}T20:00`);
-  await page
-    .getByRole("button", {
-      name: create ? "确认条件并自己组局" : "确认条件并查询已有活动",
-    })
-    .click();
+async function finished(page: Page, create = false) {
+  if (create)
+    await expect(page.getByLabel("活动名称", { exact: true })).toBeVisible();
+  else await expect(page.getByTestId("companion-result")).toBeVisible();
 }
-test("优先已有活动：显示实际卡片/差异/名额，不自动报名，复查后才查询", async ({
+
+test("优先已有活动：显示实际卡片/差异/名额，不自动报名，粗略时段自动查询", async ({
   page,
 }) => {
   const seen = await mock(page);
@@ -154,13 +157,13 @@ test("优先已有活动：显示实际卡片/差异/名额，不自动报名，
   await page.reload();
   const before = await saved(page);
   await understand(page);
-  expect(seen).toHaveLength(0);
-  await page.getByRole("button", { name: "确认条件并查询已有活动" }).click();
+  expect(seen.map((x) => x.tool)).toEqual(["search_activities"]);
   await expect(
-    page.getByRole("region", { name: "AI 智能约伴" }).getByRole("alert"),
-  ).toContainText("请确认具体日期");
-  expect(seen).toHaveLength(0);
-  await confirm(page);
+    page
+      .getByRole("region", { name: "AI 智能约伴" })
+      .locator('input[type="datetime-local"]'),
+  ).toHaveCount(0);
+  await finished(page);
   await expect(
     page
       .getByTestId("companion-result")
@@ -188,7 +191,7 @@ test("无活动转组局：原生多工具、规则比较、可编辑草稿及�
   await page.reload();
   const before = await saved(page);
   await understand(page);
-  await confirm(page);
+  await finished(page);
   await expect(page.getByTestId("companion-result")).toContainText(
     "没有满足时间",
   );
@@ -215,6 +218,10 @@ test("无活动转组局：原生多工具、规则比较、可编辑草稿及�
   expect(JSON.stringify(seen)).not.toContain('"photo"');
   expect(await saved(page)).toBe(before);
   await page.getByLabel("活动名称", { exact: true }).fill("主人确认的散步");
+  await expect(page.getByLabel("开始时间", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("结束时间", { exact: true })).toHaveValue("");
+  await page.getByLabel("开始时间", { exact: true }).fill(`${day}T14:00`);
+  await page.getByLabel("结束时间", { exact: true }).fill(`${day}T15:00`);
   await page.getByRole("button", { name: "确认创建活动", exact: true }).click();
   await page.reload();
   await expect(
@@ -228,7 +235,7 @@ test("明确自己创建：跳过活动查询，未确认不写入", async ({ pa
   await ready(page);
   const before = await saved(page);
   await understand(page);
-  await confirm(page, true);
+  await finished(page, true);
   await expect(page.getByLabel("活动名称", { exact: true })).toBeVisible();
   expect(seen.some((x) => x.tool === "search_activities")).toBe(false);
   expect(await saved(page)).toBe(before);
@@ -237,19 +244,17 @@ test("扩大到5公里保留日期和偏好，仅重查当前阶段", async ({ p
   const seen = await mock(page, { radius: 3 });
   await ready(page);
   await understand(page);
-  await confirm(page);
+  await finished(page);
   await expect(page.getByTestId("companion-result")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "理解约伴需求" }),
-  ).toBeEnabled();
+  await expect(page.getByRole("button", { name: "帮我找活动" })).toBeEnabled();
   await page.getByLabel("智能约伴需求").fill("扩大到5公里");
-  await page.getByRole("button", { name: "理解约伴需求" }).click();
+  await page.getByRole("button", { name: "帮我找活动" }).click();
   await expect.poll(() => seen.length).toBe(2);
   expect(seen.map((x) => x.tool)).toEqual([
     "search_activities",
     "search_activities",
   ]);
-  await expect(page.getByLabel("约伴开始时间")).toHaveValue(`${day}T08:00`);
+  await expect(page.getByLabel("约伴日期")).toHaveValue(day);
   await expect(page.getByText(/最好有草坪/).first()).toBeVisible();
 });
 test("地点工具故障区别于空结果，保留手动恢复", async ({ page }) => {
@@ -258,7 +263,6 @@ test("地点工具故障区别于空结果，保留手动恢复", async ({ page 
   await ready(page);
   const before = await saved(page);
   await understand(page);
-  await confirm(page, true);
   await expect(
     page.getByTestId("companion-result").filter({ hasText: "search_places" }),
   ).toContainText("工具失败");
@@ -273,7 +277,6 @@ test("工具循环有界且取消清空旧结果", async ({ page }) => {
   await ready(page);
   const before = await saved(page);
   await understand(page);
-  await confirm(page, true);
   await expect(page.getByText(/已达4轮模型上限/)).toBeVisible();
   expect(seen.length).toBe(3);
   expect(await saved(page)).toBe(before);
@@ -293,7 +296,7 @@ test("API 限流显示错误和请求号，手动创建仍可达", async ({ page
   );
   await ready(page);
   await page.getByLabel("智能约伴需求").fill("散步");
-  await page.getByRole("button", { name: "理解约伴需求" }).click();
+  await page.getByRole("button", { name: "帮我找活动" }).click();
   await expect(
     page.getByRole("region", { name: "AI 智能约伴" }).getByRole("alert"),
   ).toContainText("mock-limited");
@@ -309,7 +312,7 @@ test("身份切换清除约伴上下文和旧草稿", async ({ page }) => {
     .getByRole("dialog")
     .getByRole("button", { name: /陈一一/ })
     .click();
-  await expect(page.getByRole("heading", { name: "复核约伴条件" })).toHaveCount(
+  await expect(page.getByRole("heading", { name: "你的约伴计划" })).toHaveCount(
     0,
   );
   await expect(page.getByLabel("智能约伴需求")).toHaveValue("");
@@ -343,15 +346,33 @@ test("取消在途需求提取后旧响应不会重现", async ({ page }) => {
   const before = await saved(page);
   await page.getByLabel("智能约伴需求").fill("散步");
   const request = page.waitForRequest("**/api/ai/companion-intent");
-  await page.getByRole("button", { name: "理解约伴需求" }).click();
+  await page.getByRole("button", { name: "帮我找活动" }).click();
   await request;
   await page.getByRole("button", { name: "取消查询" }).click();
   release();
-  await expect(
-    page.getByRole("button", { name: "理解约伴需求" }),
-  ).toBeEnabled();
-  await expect(page.getByRole("heading", { name: "复核约伴条件" })).toHaveCount(
+  await expect(page.getByRole("button", { name: "帮我找活动" })).toBeEnabled();
+  await expect(page.getByRole("heading", { name: "你的约伴计划" })).toHaveCount(
     0,
   );
   expect(await saved(page)).toBe(before);
+});
+
+test("缺少日期只问日期与时段，不要求分钟", async ({ page }) => {
+  const seen = await mock(page, { timeText: null });
+  await ready(page);
+  await page
+    .getByLabel("智能约伴需求")
+    .fill("想找好相处的狗狗一起玩，时间还没定");
+  await page.getByRole("button", { name: "帮我找活动" }).click();
+  await expect(page.getByLabel("约伴日期")).toBeVisible();
+  expect(seen).toHaveLength(0);
+  await page.getByLabel("约伴日期").fill(day);
+  await page.getByLabel("下午", { exact: true }).check();
+  await page.getByRole("button", { name: "按这个时段找活动" }).click();
+  await finished(page);
+  expect(seen.some((x) => x.tool === "search_activities")).toBe(true);
+  await expect(page.locator('input[type="datetime-local"]')).toHaveCount(0);
+  await expect(page.getByTestId("availability-label")).toContainText(
+    "查询范围",
+  );
 });

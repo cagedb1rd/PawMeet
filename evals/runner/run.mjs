@@ -16,8 +16,10 @@ if (suite === "companion" && mode !== "live")
     "companion is an explicitly approved live-only smoke; use ordinary unit tests for offline coverage",
   );
 const max = Number(option("--max-calls", mode === "live" ? "3" : "55"));
-if (mode === "live" && max > 3)
-  throw Error("Phase 4.5 首次真实验证最多3次传输（含重试），不得扩大预算。");
+if (mode === "live" && max > (suite === "companion" ? 6 : 3))
+  throw Error(
+    "真实验证超出套件传输上限（companion最多6次，其余最多3次），必须另行批准。",
+  );
 if (!Number.isInteger(max) || max < 1 || max > 100)
   throw Error("--max-calls must be 1..100");
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
@@ -36,7 +38,7 @@ if (args.includes("--dry-run")) {
         steps:
           suite === "companion"
             ? [
-                "companion-intent",
+                "three-varied-companion-intents",
                 "native-search_activities",
                 "actual-tool-feedback",
               ]

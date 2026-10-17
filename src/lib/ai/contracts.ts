@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { availabilitySchema } from "./availability";
 import {
   interests,
   temperaments,
@@ -99,6 +100,7 @@ export const companionIntentSchema = z.strictObject({
 });
 export type CompanionIntent = z.infer<typeof companionIntentSchema>;
 export const companionContextSchema = z.strictObject({
+  availability: availabilitySchema.optional(),
   stage: z.enum(["search", "organize"]),
   intent: companionIntentSchema,
 });

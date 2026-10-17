@@ -12,7 +12,7 @@ import {
   CompanionCache,
   WorkflowPhase,
   WORKFLOW_LIMITS,
-  confirmedIntent,
+  queryIntent,
   radiusEdit,
   executeCompanionTool,
   activityInputFromDraft,
@@ -23,6 +23,7 @@ import {
   formatDistance,
 } from "@/domain/geo";
 import { PetCard, formatTime } from "@/components/ui";
+import { resolveAvailability } from "@/lib/ai/availability";
 import { ActivityInput, PlaceRef } from "@/domain/schemas";
 import { PlacePicker, PlaceDetails } from "@/features/maps/places";
 import { demoPlaces } from "@/data/seed";
@@ -45,13 +46,15 @@ function CompanionFlow() {
   const [intent, setIntent] = useState<CompanionIntent>();
   const [phase, setPhase] = useState<WorkflowPhase>("idle");
   const [error, setError] = useState("");
-  const [start, setStart] = useState(""),
-    [end, setEnd] = useState("");
+  const [day, setDay] = useState("");
+  const [periods, setPeriods] = useState<string[]>([]);
+  const [timeEdited, setTimeEdited] = useState(false);
+  const [timeLabel, setTimeLabel] = useState("");
   const [results, setResults] = useState<
     { name: string; result: ToolResult }[]
   >([]);
   const [queriedPlaces, setQueriedPlaces] = useState<PlaceRef[]>([]);
-  const [draft, setDraft] = useState<ActivityInput>();
+  const [draft, setDraft] = useState<Partial<ActivityInput>>();
   const [stage, setStage] = useState<"search" | "organize">("search");
   const cache = useRef<CompanionCache>({});
   const controller = useRef<AbortController | null>(null);
@@ -85,17 +88,19 @@ function CompanionFlow() {
     setError("");
     setStage(next);
     try {
-      confirmedIntent(i);
+      queryIntent(i);
+      const availability = resolveAvailability(i);
+      setTimeLabel(availability.label);
       if (!reference.location)
         throw Error("参考地点缺少坐标，请重新选择公共参考点");
       setPhase(next === "search" ? "searching" : "organizing");
       let req: AssistantRequest = {
         text:
           next === "search"
-            ? "按已确认条件优先查询已有活动。"
+            ? "按用户的大概时间和偏好优先查询已有活动，不要求精确分钟。"
             : "用户已选择自己组局，按已确认条件查询必要宠友与地点并生成活动草稿。",
         pets: pets.filter((p) => p.id === ownId).map(petSummary),
-        workflow: { stage: next, intent: i },
+        workflow: { stage: next, intent: i, availability },
       };
       let calls = 0,
         queried = false;
@@ -191,10 +196,27 @@ function CompanionFlow() {
         abort.signal,
       );
       if (abort.signal.aborted) return;
-      setIntent(response.data);
-      setStart("");
-      setEnd("");
-      setPhase("clarifying");
+      const extracted = response.data;
+      setIntent(extracted);
+      setTimeEdited(false);
+      setTimeLabel("");
+      setPeriods([...(extracted.timeText?.match(/上午|下午|晚上/g) ?? [])]);
+      try {
+        const availability = resolveAvailability(extracted);
+        setDay(
+          new Date(Date.parse(availability.windows[0].startAt) + 8 * 3600000)
+            .toISOString()
+            .slice(0, 10),
+        );
+        queryIntent(extracted);
+        await query(
+          extracted,
+          extracted.mode === "create" ? "organize" : "search",
+        );
+      } catch {
+        setDay("");
+        setPhase("clarifying");
+      }
     } catch (e) {
       if (!abort.signal.aborted) {
         setError(e instanceof Error ? e.message : "需求提取失败");
@@ -257,7 +279,7 @@ function CompanionFlow() {
             disabled={!text.trim() || !ownId}
             onClick={understand}
           >
-            理解约伴需求
+            帮我找活动
           </button>
           <Link href="/activities/new" className="text-link">
             手动发起活动
@@ -267,9 +289,9 @@ function CompanionFlow() {
       <p role="status">
         {
           {
-            idle: "请输入需求，查询前会请你复核条件。",
+            idle: "说个大概计划就能先找活动，创建时再确认具体时间。",
             extracting: "正在理解需求…",
-            clarifying: "请补齐具体时间并复核条件。",
+            clarifying: "补充哪天或大概时段就行，不用精确到分钟。",
             searching: "正在优先查询已有活动…",
             recommendations: "已有活动查询完成，可进入详情自行报名。",
             organizing: "正在寻找宠友与地点，整理组局草稿…",
@@ -280,7 +302,7 @@ function CompanionFlow() {
       </p>
       {intent && !busy && (
         <div className="card form-card">
-          <h3>复核约伴条件</h3>
+          <h3>你的约伴计划</h3>
           <p>
             {intent.timeText ?? "未提供时间"} · {intent.match.radiusKm ?? 5}{" "}
             公里（未指定默认5公里） · {intent.activityType ?? "活动类型未提供"}
@@ -316,47 +338,75 @@ function CompanionFlow() {
           ].map((t, i) => (
             <p key={i}>{t}</p>
           ))}
-          <p>
-            日期和时间必须由你确认；模型提议不会自动执行。其他条件有误请修改描述重新提取。只改距离可说“扩大到5公里”，其他已确认条件会保留。
+          <p data-testid="availability-label">
+            {timeLabel || "还需要一个大概日期"}
           </p>
-          <label className="field">
-            计划开始（北京时间）
-            <input
-              aria-label="约伴开始时间"
-              type="datetime-local"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            计划结束（北京时间）
-            <input
-              aria-label="约伴结束时间"
-              type="datetime-local"
-              value={end}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </label>
-          <button
-            className="button secondary"
-            onClick={() => {
-              try {
-                const i = confirmedIntent({
-                  ...intent,
-                  startAt: start
-                    ? new Date(`${start}:00+08:00`).toISOString()
-                    : null,
-                  endAt: end ? new Date(`${end}:00+08:00`).toISOString() : null,
-                });
-                setIntent(i);
-                void query(i, i.mode === "create" ? "organize" : "search");
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "请填写时间");
-              }
-            }}
-          >
-            确认条件并{intent.mode === "create" ? "自己组局" : "查询已有活动"}
-          </button>
+          <p className="form-hint">
+            宽时段仅用于找活动：上午6–12点、下午12–18点、晚上18–24点，不是替你定好活动时间。只改距离可说“扩大到5公里”。
+          </p>
+          <details open={phase === "clarifying"}>
+            <summary>调整日期与时段</summary>
+            <label className="field">
+              哪一天
+              <input
+                aria-label="约伴日期"
+                type="date"
+                value={day}
+                onChange={(e) => {
+                  setDay(e.target.value);
+                  setTimeEdited(true);
+                }}
+              />
+            </label>
+            <div className="button-row">
+              {["上午", "下午", "晚上"].map((p) => (
+                <label className="check-line" key={p}>
+                  <input
+                    type="checkbox"
+                    checked={periods.includes(p)}
+                    onChange={() => {
+                      setPeriods((old) =>
+                        old.includes(p)
+                          ? old.filter((v) => v !== p)
+                          : [...old, p],
+                      );
+                      setTimeEdited(true);
+                    }}
+                  />
+                  {p}
+                </label>
+              ))}
+            </div>
+            <button
+              className="button secondary"
+              onClick={() => {
+                const adjusted = timeEdited
+                  ? {
+                      ...intent,
+                      startAt: null,
+                      endAt: null,
+                      timeText: day
+                        ? `${day} ${periods.join("或") || "当天"}`
+                        : null,
+                    }
+                  : intent;
+                try {
+                  queryIntent(adjusted);
+                  setIntent(adjusted);
+                  void query(
+                    adjusted,
+                    adjusted.mode === "create" ? "organize" : "search",
+                  );
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : "选个大概日期就行");
+                }
+              }}
+            >
+              {intent.mode === "create"
+                ? "按这个时段自己组局"
+                : "按这个时段找活动"}
+            </button>
+          </details>
         </div>
       )}
       {error && (

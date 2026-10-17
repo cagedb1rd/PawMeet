@@ -16,6 +16,7 @@ import {
   nativeToolSchemas,
   ToolName,
 } from "@/lib/ai/contracts";
+import { resolveAvailability } from "@/lib/ai/availability";
 import { executeCompanionTool } from "@/lib/ai/companion";
 import { stateSchema } from "@/domain/schemas";
 import { DEFAULT_REFERENCE } from "@/domain/geo";
@@ -40,15 +41,15 @@ type Transmission = {
   request?: unknown;
 };
 /** Explicitly selected live suite only. Ordinary Vitest and Playwright never include it. */
-it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
+it("approved Phase 4.5 bounded Qwen availability regression smoke", async () => {
   if (
     process.env.AI_EVAL_MODE !== "live" ||
     process.env.PAWMEET_ALLOW_LIVE_AI !== "approved"
   )
     throw Error("Explicit live approval is required");
   const max = Number(process.env.AI_EVAL_MAX_CALLS);
-  if (!Number.isInteger(max) || max < 1 || max > 3)
-    throw Error("Budget must be 1..3 actual transmissions");
+  if (!Number.isInteger(max) || max < 1 || max > 6)
+    throw Error("Budget must be 1..6 actual transmissions");
   const runId = process.env.AI_EVAL_RUN_ID!;
   const reportPath = process.env.AI_EVAL_REPORT!;
   process.env.QUOTA_STORE_PATH = path.resolve(
@@ -58,10 +59,22 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
   process.env.AI_MAX_DAILY_TOKENS = "60000";
   process.env.AI_ENABLED = "true";
   const now = new Date();
-  const text =
-    "周六下午想带史宾格找3公里内性格温和的狗狗一起散步，不要大型犬，最好附近有草坪。";
+  const samples = [
+    {
+      id: "colloquial-or",
+      text: "这周六下午或者晚上想找附近的狗狗玩伴，最好好相处一点",
+    },
+    { id: "hard-exclusions", text: "下周日想散步，不要大型犬，3公里内就好" },
+    {
+      id: "missing-day",
+      text: "想找附近小伙伴一起遛弯，性格随和一点，时间还没定",
+    },
+  ];
+  const selectedCase = process.env.AI_EVAL_CASE || "";
+  if (selectedCase && !samples.some((s) => s.id === selectedCase))
+    throw Error("Unknown companion extraction case");
   const cases: CaseResult[] = [
-    { id: "extract", status: "not_run" },
+    ...samples.map((s) => ({ id: s.id, status: "not_run" as const })),
     { id: "native-selection", status: "not_run" },
     { id: "tool-feedback", status: "not_run" },
   ];
@@ -83,8 +96,9 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
     scope:
       "Real Qwen service smoke with a fresh browser's actual localStorage snapshot. Read-only executor runs the same shared business function in Node; this is not an end-to-end live UI or organization evaluation.",
     confirmation:
-      "User explicitly approved the recorded first three-request validation plan.",
-    text,
+      "User authorized necessary real API validation; predeclared varied extraction and native query smoke, max six transmissions including retries.",
+    samples,
+    selectedCase: selectedCase || null,
     cases,
     transmissions,
     actualProviderCalls: 0,
@@ -246,63 +260,91 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
     const own = state.pets.find(
       (p) => p.ownerId === state.activeUserId && !p.archivedAt,
     )!;
-    try {
-      const result = await generateTask(
-        "companion-intent",
-        {
-          text,
-          context: {
-            pets: [
-              {
-                id: own.id,
-                name: own.name,
-                revision: own.revision,
-                temperamentTags: own.temperamentTags,
-                activityTags: own.activityTags,
-                socialNotes: own.socialNotes,
-              },
-            ],
+    for (const [index, sample] of samples.entries()) {
+      if (selectedCase && sample.id !== selectedCase) {
+        cases[index].reason = "Outside selected extraction case";
+        continue;
+      }
+      if (transmissions.length >= max) {
+        cases[index].reason = "Budget exhausted";
+        continue;
+      }
+      activeCase = sample.id;
+      try {
+        const result = await generateTask(
+          "companion-intent",
+          {
+            text: sample.text,
+            context: {
+              pets: [
+                {
+                  id: own.id,
+                  name: own.name,
+                  revision: own.revision,
+                  temperamentTags: own.temperamentTags,
+                  activityTags: own.activityTags,
+                  socialNotes: own.socialNotes,
+                },
+              ],
+            },
           },
-        },
-        "phase45-approved",
-        crypto.randomUUID(),
-        now,
-        model,
-      );
-      const i = result.data as CompanionIntent;
-      const checks = {
-        radius: i.match.radiusKm === 3,
-        noBreedInvention: i.match.breeds.length === 0,
-        excludedLarge: i.match.excludedSizes.includes("large"),
-        vagueTimeNotInvented: i.startAt === null && i.endAt === null,
-        timeRetained: !!i.timeText?.includes("周六"),
-        walk: i.activityType === "散步",
-        softTemperament:
-          i.match.temperaments.includes("温和") ||
-          i.preferences.some((t) => t.includes("温和")),
-        grassPreference: i.preferences.some((t) => t.includes("草坪")),
-        asksForTime: i.clarifications.length > 0,
-      };
-      cases[0] = {
-        id: "extract",
-        status: Object.values(checks).every(Boolean) ? "pass" : "fail",
-        checks,
-        data: i,
-      };
-    } catch (e) {
-      cases[0] = { id: "extract", status: "error", error: errorData(e) };
+          "phase45-approved",
+          crypto.randomUUID(),
+          now,
+          model,
+        );
+        const i = result.data as CompanionIntent;
+        const checks: Record<string, boolean> = {
+          noGuessedMinutes: i.startAt === null && i.endAt === null,
+          noInventedBreed: i.match.breeds.length === 0,
+        };
+        if (sample.id === "missing-day")
+          checks.asksDay = i.clarifications.length > 0;
+        else {
+          checks.searchableRoughTime =
+            i.clarifications.length === 0 &&
+            i.match.clarifications.length === 0;
+          try {
+            checks.resolvable = resolveAvailability(i, now).windows.length > 0;
+          } catch {
+            checks.resolvable = false;
+          }
+        }
+        if (sample.id === "hard-exclusions") {
+          checks.radius = i.match.radiusKm === 3;
+          checks.excludedLarge = i.match.excludedSizes.includes("large");
+          checks.noComplement = i.match.sizes.length === 0;
+        }
+        const t = transmissions.filter((t) => t.caseId === sample.id).at(-1);
+        let raw: unknown;
+        try {
+          raw = JSON.parse(
+            (t?.response as { choices?: { message: { content: string } }[] })
+              ?.choices?.[0]?.message.content ?? "null",
+          );
+        } catch {}
+        cases[index] = {
+          id: sample.id,
+          status: Object.values(checks).every(Boolean) ? "pass" : "fail",
+          checks,
+          data: {
+            validated: i,
+            rawDiffersFromValidated: JSON.stringify(raw) !== JSON.stringify(i),
+            note: "Validated behavior includes deterministic recovery; raw provider output retained in transmissions. Not raw model accuracy.",
+          },
+        };
+      } catch (e) {
+        cases[index] = { id: sample.id, status: "error", error: errorData(e) };
+      }
+      await persist();
     }
-    await persist();
     // Independent, predeclared confirmed input; never substitute a mock extraction after failure.
-    const day = new Date(now.getTime() + 8 * 3600000 + 86400000)
-      .toISOString()
-      .slice(0, 10);
     const intent: CompanionIntent = {
       mode: "search",
       match: { ...emptyMatch, radiusKm: 3, excludedSizes: ["large"] },
-      startAt: new Date(`${day}T14:00:00+08:00`).toISOString(),
-      endAt: new Date(`${day}T17:00:00+08:00`).toISOString(),
-      timeText: "用户复核的独立评测时段",
+      startAt: null,
+      endAt: null,
+      timeText: "下周六下午或晚上",
       activityType: "散步",
       placeQuery: null,
       preferences: ["性格温和", "附近有草坪"],
@@ -310,7 +352,8 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
       clarifications: [],
       warnings: [],
     };
-    if (transmissions.length < max) {
+    const availability = resolveAvailability(intent, now);
+    if (!selectedCase && transmissions.length < max) {
       activeCase = "native-selection";
       try {
         const first = await assistantStep(
@@ -326,7 +369,7 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
                 socialNotes: own.socialNotes,
               },
             ],
-            workflow: { stage: "search", intent },
+            workflow: { stage: "search", intent, availability },
           },
           "phase45-approved",
           crypto.randomUUID(),
@@ -345,8 +388,10 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
                 const a = JSON.parse(c.function.arguments);
                 return (
                   a.radiusKm === 3 &&
-                  Date.parse(a.startAfter) === Date.parse(intent.startAt!) &&
-                  Date.parse(a.startBefore) === Date.parse(intent.endAt!) &&
+                  Date.parse(a.startAfter) ===
+                    Date.parse(availability.windows[0].startAt) &&
+                  Date.parse(a.startBefore) ===
+                    Date.parse(availability.windows.at(-1)!.endAt) &&
                   !a.district
                 );
               } catch {
@@ -365,7 +410,7 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
               }
             }),
         };
-        cases[1] = {
+        cases[3] = {
           id: "native-selection",
           status: Object.values(checks).every(Boolean) ? "pass" : "fail",
           checks,
@@ -427,7 +472,7 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
                   returnedIds.includes(id),
                 ),
             };
-            cases[2] = {
+            cases[4] = {
               id: "tool-feedback",
               status: Object.values(checks).every(Boolean) ? "pass" : "fail",
               checks,
@@ -438,7 +483,7 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
               },
             };
           } catch (e) {
-            cases[2] = {
+            cases[4] = {
               id: "tool-feedback",
               status: "error",
               error: errorData(e),
@@ -446,20 +491,24 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
             };
           }
         } else
-          cases[2].reason = calls.length
+          cases[4].reason = calls.length
             ? "Transmission budget used by retries/repair"
             : "No native tool call to execute";
       } catch (e) {
-        cases[1] = {
+        cases[3] = {
           id: "native-selection",
           status: "error",
           error: errorData(e),
         };
-        cases[2].reason = "Native selection failed";
+        cases[4].reason = "Native selection failed";
       }
     } else {
-      cases[1].reason = "Budget exhausted during extraction";
-      cases[2].reason = "Budget exhausted";
+      cases[3].reason = selectedCase
+        ? "Outside selected extraction case"
+        : "Budget exhausted during extraction";
+      cases[4].reason = selectedCase
+        ? "Outside selected extraction case"
+        : "Budget exhausted";
     }
     report.businessUnchanged =
       before ===
@@ -471,7 +520,10 @@ it("approved Phase 4.5 three-transmission Qwen smoke", async () => {
   }
   expect(transmissions.length).toBeLessThanOrEqual(max);
   expect(report.businessUnchanged).toBe(true);
-  expect(cases.map((c) => ({ id: c.id, status: c.status }))).toEqual(
-    cases.map((c) => ({ id: c.id, status: "pass" })),
+  const assessed = selectedCase
+    ? cases.filter((c) => c.id === selectedCase)
+    : cases;
+  expect(assessed.map((c) => ({ id: c.id, status: c.status }))).toEqual(
+    assessed.map((c) => ({ id: c.id, status: "pass" })),
   );
-}, 180000);
+}, 240000);

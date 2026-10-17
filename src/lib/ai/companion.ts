@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { resolveAvailability } from "./availability";
 import {
   DemoState,
   PlaceRef,
@@ -44,6 +45,13 @@ export function confirmedIntent(input: CompanionIntent, now = new Date()) {
     throw Error("请先澄清无法识别或冲突的筛选条件");
   return i;
 }
+export function queryIntent(input: CompanionIntent, now = new Date()) {
+  const i = companionIntentSchema.parse(input);
+  if (i.match.clarifications.length || i.match.unmappedTerms.length)
+    throw Error("还有硬条件需要确认，请修改下方条件或需求描述");
+  resolveAvailability(i, now);
+  return i;
+}
 /** A radius-only edit is explicit consent; every other confirmed condition is retained. */
 export function radiusEdit(
   text: string,
@@ -69,8 +77,9 @@ export function activityRecommendations(
   intent: CompanionIntent,
   now = new Date(),
 ): ToolResult {
-  const i = confirmedIntent(intent, now),
+  const i = queryIntent(intent, now),
     f = i.match;
+  const availability = resolveAvailability(i, now);
   const rows = state.activities
     .filter(
       (a) => a.status === "scheduled" && Date.parse(a.startAt) > now.getTime(),
@@ -90,8 +99,11 @@ export function activityRecommendations(
         !remaining ||
         distanceM === null ||
         distanceM > (f.radiusKm ?? 5) * 1000 ||
-        Date.parse(a.startAt) < Date.parse(i.startAt!) ||
-        Date.parse(a.endAt) > Date.parse(i.endAt!) ||
+        !availability.windows.some(
+          (w) =>
+            Date.parse(a.startAt) >= Date.parse(w.startAt) &&
+            Date.parse(a.endAt) <= Date.parse(w.endAt),
+        ) ||
         (f.district && a.place.district !== f.district) ||
         participants.some(
           (p) =>
@@ -110,12 +122,16 @@ export function activityRecommendations(
       )
         return [];
       const content = `${a.title}\n${a.description}`;
+      const walkingType =
+        i.activityType &&
+        /^(?:散步|散散步|遛狗|遛遛狗|遛弯)$/.test(i.activityType);
+      const activityMatches =
+        !i.activityType ||
+        (walkingType
+          ? /散(?:散)?步|遛(?:遛)?狗|遛弯/.test(content)
+          : content.includes(i.activityType));
       // Unverifiable explicit hard constraints never become a partial recommendation.
-      if (
-        (i.activityType && !content.includes(i.activityType)) ||
-        i.hardRequirements.length > 0
-      )
-        return [];
+      if (!activityMatches || i.hardRequirements.length > 0) return [];
       if (f.sizes.length && participants.some((p) => !f.sizes.includes(p.size)))
         return [];
       if (
@@ -189,7 +205,7 @@ export async function executeCompanionTool(
   places = searchPlaces,
 ): Promise<ToolResult> {
   try {
-    confirmedIntent(intent, now);
+    queryIntent(intent, now);
     if (
       !state.pets.some(
         (p) =>
@@ -352,17 +368,27 @@ export function activityInputFromDraft(
   intent: CompanionIntent,
   ownId: string,
 ) {
-  confirmedIntent(intent);
+  queryIntent(intent);
   if (!cache.draft || !cache.places?.[cache.draft.placeIndex])
     throw Error("没有经过查询的活动草稿");
-  return activityInputSchema.parse({
+  const {
+    startAt: _start,
+    endAt: _end,
+    ...draftShape
+  } = activityInputSchema.shape;
+  void _start;
+  void _end;
+  const base = z.strictObject(draftShape).parse({
     title: cache.draft.title,
     description: cache.draft.description,
     organizerPetId: ownId,
     recommendedPetIds: cache.draft.petIds,
     place: cache.places[cache.draft.placeIndex],
-    startAt: intent.startAt,
-    endAt: intent.endAt,
     capacity: 6,
   });
+  return {
+    ...base,
+    ...(intent.startAt ? { startAt: intent.startAt } : {}),
+    ...(intent.endAt ? { endAt: intent.endAt } : {}),
+  };
 }

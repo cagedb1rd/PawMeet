@@ -1,3 +1,4 @@
+import { resolveAvailability } from "./availability";
 import {
   AiTask,
   TaskRequest,
@@ -6,7 +7,23 @@ import {
   MatchIntent,
 } from "./contracts";
 
-export const VALIDATION_VERSION = "pawmeet-validation-7";
+const matchTagEvidence: Record<string, RegExp> = {
+  温和: /温和|温顺|温柔|松弛/,
+  慢热: /慢热|需要.{0,6}熟悉/,
+  活泼: /活泼|活跃/,
+  亲人: /亲人|喜欢人|亲近人/,
+  独立: /独立/,
+  怕追逐: /(?:怕|不喜欢).{0,6}(?:追逐|追赶|奔跑|冲过来)/,
+  喜欢追逐: /(?:喜欢|爱).{0,5}追|会追/,
+  散步: /散步|慢慢走|遛弯/,
+  闻闻探索: /闻闻|嗅闻|闻一闻/,
+  接飞盘: /飞盘/,
+  晒太阳: /晒太阳/,
+  草地撒欢: /草地|撒欢/,
+  一起慢跑: /慢跑|跑步/,
+};
+
+export const VALIDATION_VERSION = "pawmeet-validation-8";
 export const genericCare = [
   "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
   "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
@@ -106,19 +123,155 @@ export function validateOutput<T extends AiTask>(
 ) {
   const data = outputSchemas[task].parse(raw);
   if (task === "companion-intent") {
-    const intent = outputSchemas["companion-intent"].parse(data);
-    for (const fact of [
-      ...intent.preferences,
-      ...intent.hardRequirements,
-      intent.activityType,
-      intent.placeQuery,
-      intent.timeText,
-    ].filter(Boolean))
-      if (!request.text.includes(fact!)) throw Error("约伴条件缺少原文依据");
-    intent.match = outputSchemas["match-intent"].parse(
-      validateOutput("match-intent", intent.match, request, now),
+    const intent = outputSchemas["companion-intent"].parse(data),
+      source = request.text;
+    const warnings = [...intent.warnings];
+    const originalPreferences = source
+      .split(/[，。；,\n]|(?=希望|最好)/)
+      .map((t) => t.trim())
+      .filter((t) => /希望|最好|性格|一起玩/.test(t) && t.length <= 80);
+    const sourcePreferences = intent.preferences.filter((t) =>
+      source.includes(t),
     );
-    // Times are proposals only; explicit UI confirmation is required before tools.
+    const missingPreferences = intent.preferences.filter(
+      (t) => !source.includes(t),
+    );
+    if (missingPreferences.some((t) => /允许|准入|认证|保证|安全|剂量/.test(t)))
+      throw Error("偏好包含无原文依据的准入或安全声明");
+    if (missingPreferences.length)
+      warnings.push(
+        "部分软偏好未能准确对应原文，已保留你的原话供核实，没有当作硬筛选。",
+      );
+    intent.preferences = [
+      ...new Set([
+        ...sourcePreferences,
+        ...(missingPreferences.length || !sourcePreferences.length
+          ? originalPreferences
+          : []),
+      ]),
+    ].slice(0, 8);
+    for (const fact of [...intent.hardRequirements, intent.placeQuery].filter(
+      Boolean,
+    ))
+      if (!source.includes(fact!)) throw Error("硬条件或地点缺少原文依据");
+    if (intent.activityType && !source.includes(intent.activityType)) {
+      if (
+        /散(?:散)?步|遛(?:遛)?狗|遛弯/.test(source) &&
+        /散步|遛狗/.test(intent.activityType)
+      )
+        intent.activityType = "散步";
+      else throw Error("活动类型缺少原文依据");
+    }
+    const distanceWords: Record<string, number> = {
+      一: 1,
+      两: 2,
+      二: 2,
+      三: 3,
+      五: 5,
+      十: 10,
+    };
+    const distances = [
+      ...source.matchAll(/(\d+(?:\.\d+)?|[一二两三五十])\s*(?:公里|千米|km)/gi),
+    ];
+    const limits = [
+      ...new Set(distances.map((m) => distanceWords[m[1]] ?? Number(m[1]))),
+    ];
+    const distanceQuestions: string[] = [];
+    if (limits.length) {
+      if (
+        limits.length !== 1 ||
+        ![1, 3, 5, 10].includes(limits[0]) ||
+        /(?:公里|千米|km)\s*(?:以外|之外|以上)/i.test(source)
+      )
+        distanceQuestions.push(
+          "距离条件暂不能明确执行，请确认 1、3、5 或 10 公里以内的上限。",
+        );
+      else {
+        if (intent.match.radiusKm !== limits[0])
+          warnings.push("搜索距离已按你原文的明确上限校正。");
+        intent.match.radiusKm = limits[0] as 1 | 3 | 5 | 10;
+      }
+    }
+    const hardUnmapped = intent.match.unmappedTerms.filter(
+      (t) =>
+        /必须|不要|不能|排除|别|拒绝|不得|禁止|不接受|只要|公里|千米|km/.test(
+          t,
+        ) ||
+        source
+          .split(/[，。；,\n]/)
+          .some(
+            (c) =>
+              /必须|不要|不能|排除|别|拒绝|不得|禁止|不接受|只要/.test(c) &&
+              c.includes(t),
+          ),
+    );
+    if (intent.match.unmappedTerms.some((t) => !hardUnmapped.includes(t)))
+      warnings.push(
+        "“一起玩”等自由偏好会在结果里保留，需向主人核实，不会阻止搜索。",
+      );
+    const match = outputSchemas["match-intent"].parse(
+      validateOutput(
+        "match-intent",
+        {
+          ...intent.match,
+          temperaments: [],
+          activities: [],
+          unmappedTerms: hardUnmapped,
+          clarifications: [],
+        },
+        request,
+        now,
+      ),
+    );
+    const keepSupportedSoft = <T extends string>(tags: T[]): T[] =>
+      tags.filter((tag) => {
+        if (matchTagEvidence[tag]?.test(source)) return true;
+        if (
+          tag === "温和" &&
+          /性格好(?:些|点|一点)?|好相处|友好|随和|脾气好/.test(source)
+        ) {
+          warnings.push(
+            "友好、好相处等描述暂按温和标签参与排序，实际互动偏好仍需向主人核实。",
+          );
+          return true;
+        }
+        warnings.push(
+          "有些性格或活动偏好暂不能对应已知标签，已保留原文，不据此排除候选。",
+        );
+        return false;
+      });
+    match.clarifications = [
+      ...new Set([...match.clarifications, ...distanceQuestions]),
+    ].slice(0, 12);
+    match.temperaments = keepSupportedSoft(intent.match.temperaments);
+    match.activities = keepSupportedSoft(intent.match.activities);
+    intent.match = match;
+    const timeIndex = source.search(
+      /20\d{2}[-年]|后天|明天|今天|今晚|(?:下下|上上|下|上|本|这)?(?:周|星期|礼拜)[一二三四五六日天末]/,
+    );
+    intent.timeText =
+      timeIndex >= 0
+        ? source.slice(Math.max(0, timeIndex - 8), timeIndex + 90).trim()
+        : intent.timeText && source.includes(intent.timeText)
+          ? intent.timeText
+          : null;
+    if (
+      !/(?:\d{1,2}[:：]\d{2}|[零一二两三四五六七八九十\d]+[点时])/.test(source)
+    ) {
+      if (intent.startAt || intent.endAt)
+        warnings.push("未采用模型猜测的具体时刻，按你的原文时段查询。");
+      intent.startAt = null;
+      intent.endAt = null;
+    }
+    intent.clarifications = [];
+    try {
+      resolveAvailability(intent, now);
+    } catch (e) {
+      intent.clarifications = [
+        e instanceof Error ? e.message : "请补充大概日期或时段",
+      ];
+    }
+    intent.warnings = [...new Set(warnings)].slice(0, 8);
     return intent;
   }
   const source = [
@@ -320,28 +473,13 @@ export function validateOutput<T extends AiTask>(
   }
   if (task === "match-intent") {
     const m = validateMatch(outputSchemas["match-intent"].parse(data));
-    const supported: Record<string, RegExp> = {
-      温和: /温和|温顺|温柔|松弛/,
-      慢热: /慢热|需要.{0,6}熟悉/,
-      活泼: /活泼|活跃/,
-      亲人: /亲人|喜欢人|亲近人/,
-      独立: /独立/,
-      怕追逐: /(?:怕|不喜欢).{0,6}(?:追逐|追赶|奔跑|冲过来)/,
-      喜欢追逐: /(?:喜欢|爱).{0,5}追|会追/,
-      散步: /散步|慢慢走|遛弯/,
-      闻闻探索: /闻闻|嗅闻|闻一闻/,
-      接飞盘: /飞盘/,
-      晒太阳: /晒太阳/,
-      草地撒欢: /草地|撒欢/,
-      一起慢跑: /慢跑|跑步/,
-    };
     for (const tag of [
       ...m.temperaments,
       ...m.excludedTemperaments,
       ...m.activities,
       ...m.excludedActivities,
     ])
-      if (!supported[tag]?.test(request.text))
+      if (!matchTagEvidence[tag]?.test(request.text))
         throw Error("筛选标签缺少用户描述依据");
     const sizeEvidence = {
       small: /小型|体型小/,

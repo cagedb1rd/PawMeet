@@ -66,7 +66,9 @@ export async function generateTask(
   } catch {
     throw new AiError(
       "AI_INVALID_OUTPUT",
-      "AI输出未通过结构与事实校验，请修改描述后重试",
+      task === "companion-intent"
+        ? "这次没能读准部分约伴条件。可以改写不确定的描述，或使用手动活动入口；大概日期和时段就足够搜索，不需要精确到分钟。"
+        : "AI输出未通过结构与事实校验，请修改描述后重试",
     );
   }
 }
