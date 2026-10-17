@@ -27,6 +27,7 @@ export function Discover() {
     useState("杭州滨江 · 沿江公共参考点（演示）");
   const [view, setView] = useState("list");
   const [picking, setPicking] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [selectedId, setSelectedId] = useState("");
   const [message, setMessage] = useState("");
   const [locating, setLocating] = useState(false);
@@ -80,92 +81,108 @@ export function Discover() {
   return (
     <>
       <NearbyTabs />
-      <Title
-        eyebrow="NICE TO MEET YOU"
-        title="附近宠友"
-        description="从一次散步开始，认识附近的毛孩子。"
-      />
-      <section className="card reference-panel">
-        <span className="eyebrow">从一处公共地点，认识附近的它</span>
-        <h3 data-testid="reference-label">{referenceLabel}</h3>
-        <div className="button-row">
+      <div className="nearby-page-title">
+        <Title
+          eyebrow="NICE TO MEET YOU"
+          title="附近宠友"
+          description="从一次散步开始，认识附近的毛孩子。"
+        />
+      </div>
+      <section className="card reference-panel compact-reference">
+        <div className="row-between">
+          <div>
+            <span className="small muted">参考位置</span>
+            <h3 data-testid="reference-label">{referenceLabel}</h3>
+          </div>
           <button
-            type="button"
-            className="button secondary"
-            onClick={() => {
-              ++locationRequest.current;
-              setLocating(false);
-              setPicking(!picking);
-            }}
+            className="text-link"
+            aria-expanded={locationOpen}
+            aria-controls="reference-controls"
+            onClick={() => setLocationOpen(!locationOpen)}
           >
-            手动选择参考位置
-          </button>
-          <button
-            type="button"
-            className="button secondary"
-            disabled={locating}
-            onClick={async () => {
-              const id = ++locationRequest.current;
-              setLocating(true);
-              setMessage("正在获取当前位置…");
-              try {
-                const position = await currentPosition();
-                if (id !== locationRequest.current) return;
-                const point = await normalizeGps({
-                  lng: position.coords.longitude,
-                  lat: position.coords.latitude,
-                  crs: "WGS84",
-                });
-                if (id === locationRequest.current) {
-                  setReference(point);
-                  setSelectedId("");
-                  setReferenceLabel("浏览器定位参考点（本页临时使用）");
-                  setMessage("参考位置已更新，距离已重新计算。");
-                }
-              } catch (e) {
-                if (id === locationRequest.current)
-                  setMessage(
-                    e instanceof Error
-                      ? e.message
-                      : "定位失败，参考点保持不变。",
-                  );
-              } finally {
-                if (id === locationRequest.current) setLocating(false);
-              }
-            }}
-          >
-            {locating ? "定位处理中…" : "使用当前位置"}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              ++locationRequest.current;
-              setLocating(false);
-              setReference(DEFAULT_REFERENCE);
-              setSelectedId("");
-              setReferenceLabel("杭州滨江 · 沿江公共参考点（演示）");
-              setMessage("");
-            }}
-          >
-            恢复滨江默认位置
+            {locationOpen ? "收起位置" : "调整位置"}
           </button>
         </div>
-        {message && <p role="status">{message}</p>}
-        {picking && (
-          <PlaceExplorer
-            center={reference}
-            onChoose={(p) => {
-              if (p.location) {
+        <div id="reference-controls" hidden={!locationOpen}>
+          <div className="button-row">
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
                 ++locationRequest.current;
-                setReference(p.location);
+                setLocating(false);
+                setPicking(!picking);
+              }}
+            >
+              手动选择参考位置
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              disabled={locating}
+              onClick={async () => {
+                const id = ++locationRequest.current;
+                setLocating(true);
+                setMessage("正在获取当前位置…");
+                try {
+                  const position = await currentPosition();
+                  if (id !== locationRequest.current) return;
+                  const point = await normalizeGps({
+                    lng: position.coords.longitude,
+                    lat: position.coords.latitude,
+                    crs: "WGS84",
+                  });
+                  if (id === locationRequest.current) {
+                    setReference(point);
+                    setSelectedId("");
+                    setReferenceLabel("浏览器定位参考点（本页临时使用）");
+                    setMessage("参考位置已更新，距离已重新计算。");
+                  }
+                } catch (e) {
+                  if (id === locationRequest.current)
+                    setMessage(
+                      e instanceof Error
+                        ? e.message
+                        : "定位失败，参考点保持不变。",
+                    );
+                } finally {
+                  if (id === locationRequest.current) setLocating(false);
+                }
+              }}
+            >
+              {locating ? "定位处理中…" : "使用当前位置"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                ++locationRequest.current;
+                setLocating(false);
+                setReference(DEFAULT_REFERENCE);
                 setSelectedId("");
-                setReferenceLabel(p.name);
-                setPicking(false);
-                setMessage("已切换参考位置，按大致直线距离重新筛选。");
-              }
-            }}
-          />
-        )}
+                setReferenceLabel("杭州滨江 · 沿江公共参考点（演示）");
+                setMessage("");
+              }}
+            >
+              恢复滨江默认位置
+            </button>
+          </div>
+          {message && <p role="status">{message}</p>}
+          {picking && (
+            <PlaceExplorer
+              center={reference}
+              onChoose={(p) => {
+                if (p.location) {
+                  ++locationRequest.current;
+                  setReference(p.location);
+                  setSelectedId("");
+                  setReferenceLabel(p.name);
+                  setPicking(false);
+                  setMessage("已切换参考位置，按大致直线距离重新筛选。");
+                }
+              }}
+            />
+          )}
+        </div>
       </section>
       <section className="card discover-filters" aria-label="宠友筛选">
         <input
@@ -178,7 +195,16 @@ export function Discover() {
           }
         />
         <fieldset className="discover-filter">
-          <legend>范围 · 大致直线距离</legend>
+          <legend className="filter-range-heading">
+            <span>范围 · 大致直线距离</span>
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => setFilters({ ...defaultFilters })}
+            >
+              清除筛选
+            </button>
+          </legend>
           <div className="filter-tags">
             {([1, 3, 5, 10] as const).map((km) => (
               <button
@@ -210,19 +236,34 @@ export function Discover() {
           {filterGroup("activities", "活动偏好", interests)}
           <p className="form-hint">同类条件可多选。</p>
         </details>
-        <button type="button" onClick={() => setFilters({ ...defaultFilters })}>
-          清除筛选
-        </button>
+        <div className="active-filters" aria-label="已选筛选条件">
+          {(["breeds", "sizes", "temperaments", "activities"] as const).flatMap(
+            (key) =>
+              filters[key].map((value) => (
+                <button
+                  key={`${key}-${value}`}
+                  type="button"
+                  aria-label={`移除条件：${sizeLabels[value as keyof typeof sizeLabels] ?? value}`}
+                  onClick={() => toggle(key, value)}
+                >
+                  {sizeLabels[value as keyof typeof sizeLabels] ?? value}
+                  <span aria-hidden="true"> ×</span>
+                </button>
+              )),
+          )}
+        </div>
       </section>
       <div className="tabs">
         <button
           className={view === "list" ? "selected" : ""}
+          aria-pressed={view === "list"}
           onClick={() => setView("list")}
         >
           宠友列表
         </button>
         <button
           className={view === "map" ? "selected" : ""}
+          aria-pressed={view === "map"}
           onClick={() => setView("map")}
         >
           宠友地图

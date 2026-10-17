@@ -59,8 +59,15 @@ test("mock AI 档案：生成与填入均不写入，编辑确认后持久化", 
   await expect(page.getByLabel("宠物名字", { exact: true })).toHaveValue(
     "AI年糕",
   );
+  await expect(page.getByLabel("宠物名字", { exact: true })).toHaveAttribute(
+    "data-ai-filled",
+    "true",
+  );
   expect(await saved(page)).toBe(before);
   await page.getByLabel("宠物名字", { exact: true }).fill("主人改过的名字");
+  await expect(
+    page.getByLabel("宠物名字", { exact: true }),
+  ).not.toHaveAttribute("data-ai-filled", "true");
   await page.getByRole("button", { name: "确认保存档案" }).click();
   await expect(page).toHaveURL("/me");
   await page.reload();
@@ -140,7 +147,7 @@ test("mock AI 互助：模糊时间保持空，地点需重新确认", async ({ 
   await page.getByLabel("结束时间（北京时间）").fill(`${day}T14:30`);
   await page.getByLabel("我已复核 AI 草稿中的宠物、时间与特别要求").check();
   await page.getByRole("button", { name: "确认发布求助" }).click();
-  await expect(page.locator("p[role=alert]")).toContainText("地点选择器");
+  await expect(page.locator("form").getByRole("alert")).toContainText("地点选择器");
   expect(await saved(page)).toBe(before);
   await page.getByRole("button", { name: "文字地点", exact: true }).click();
   await page.getByLabel("文字地点名称").fill("滨江公园公共东门");
@@ -159,7 +166,13 @@ test("合并后的原生工具入口默认不自动请求模型", async ({ page 
   await expect(page.getByLabel("智能约伴需求")).toBeVisible();
   expect(calls).toBe(0);
   const before = await saved(page);
-  await page.getByRole("button", { name: "重新开始", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "重新开始", exact: true }),
+  ).toHaveCount(0);
+  await page.locator(".companion-settings > summary").click();
+  await expect(page.getByLabel("约伴参考宠物", { exact: true })).toBeVisible();
+  await page.locator(".companion-settings > summary").click();
+  expect(calls).toBe(0);
   expect(await saved(page)).toBe(before);
 });
 test("mock API 失败和身份切换：真实错误可见，旧草稿不能跨身份保存", async ({

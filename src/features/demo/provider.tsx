@@ -56,10 +56,6 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
         setProblem(e instanceof Error ? e.message : "读取失败");
         if (e instanceof StorageProblem) setRaw(e.raw);
       }
-      if (!canWrite)
-        notify(
-          "当前为只读模式：另一标签页持有编辑权，或浏览器不支持 Web Locks。关闭其他页面后刷新。",
-        );
     };
     if (navigator.locks) {
       void navigator.locks
@@ -73,9 +69,6 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
         .catch(() => {
           if (mounted) {
             load(false);
-            notify(
-              "无法获得安全写锁，当前只读。请使用新版 Chrome / Edge 并刷新。",
-            );
           }
         });
     } else load(false);

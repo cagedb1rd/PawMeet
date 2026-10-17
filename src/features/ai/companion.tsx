@@ -24,7 +24,7 @@ import {
 } from "@/domain/geo";
 import { PetCard, formatTime } from "@/components/ui";
 import { resolveAvailability } from "@/lib/ai/availability";
-import { ActivityInput, PlaceRef } from "@/domain/schemas";
+import { ActivityInput, PlaceRef, sizeLabels } from "@/domain/schemas";
 import { PlacePicker, PlaceDetails } from "@/features/maps/places";
 import { demoPlaces } from "@/data/seed";
 import { ActivityEditor } from "@/features/forms/forms";
@@ -225,28 +225,44 @@ function CompanionFlow() {
     }
   }
   return (
-    <section className="ai-companion" aria-label="AI 智能约伴" id="companion">
-      <h2>AI 智能约伴</h2>
+    <section
+      className="ai-companion"
+      aria-label="AI 智能约伴"
+      id="companion"
+      aria-busy={busy}
+    >
+      <div className="companion-heading">
+        <h2>AI 智能约伴</h2>
+        {phase !== "idle" && (
+          <button type="button" className="text-link" onClick={reset}>
+            {busy ? "取消查询" : "重新开始"}
+          </button>
+        )}
+      </div>
       <fieldset disabled={busy}>
-        <label className="field">
-          <span>参考宠物</span>
-          <select
-            aria-label="约伴参考宠物"
-            value={ownId}
-            onChange={(e) => {
-              reset();
-              setOwn(e.target.value);
-            }}
-          >
-            {pets.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <details>
-          <summary>参考地点：{reference.name}</summary>
+        <details className="companion-settings">
+          <summary>
+            {pets.find((p) => p.id === ownId)?.name ?? "选择参考宠物"} ·{" "}
+            {reference.name}
+            <span className="settings-edit">调整</span>
+          </summary>
+          <label className="field">
+            <span>参考宠物</span>
+            <select
+              aria-label="约伴参考宠物"
+              value={ownId}
+              onChange={(e) => {
+                reset();
+                setOwn(e.target.value);
+              }}
+            >
+              {pets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <PlacePicker
             label="约伴参考地点"
             value={reference}
@@ -261,7 +277,7 @@ function CompanionFlow() {
           <textarea
             aria-label="智能约伴需求"
             maxLength={1500}
-            rows={3}
+            rows={2}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="周六下午带史宾格找3公里内温和的狗狗散步，最好有草坪。"
@@ -269,7 +285,7 @@ function CompanionFlow() {
         </label>
         <div className="button-row">
           <button
-            className="button secondary"
+            className="button"
             disabled={!text.trim() || !ownId}
             onClick={understand}
           >
@@ -279,9 +295,14 @@ function CompanionFlow() {
             手动发起活动
           </Link>
         </div>
+        {!pets.length && (
+          <Link className="text-link" href="/me/pets/new">
+            先添加宠物档案 →
+          </Link>
+        )}
       </fieldset>
       {!["idle", "recommendations", "draft", "error"].includes(phase) && (
-        <p role="status">
+        <p role="status" className="workflow-status">
           {
             {
               idle: "",
@@ -297,7 +318,7 @@ function CompanionFlow() {
         </p>
       )}
       {intent && !busy && (
-        <div className="card form-card">
+        <div className="card form-card companion-plan">
           <h3>你的约伴计划</h3>
           <p>
             {intent.timeText ?? "未提供时间"} · {intent.match.radiusKm ?? 5}{" "}
@@ -315,11 +336,11 @@ function CompanionFlow() {
             硬约束：
             {[
               ...intent.hardRequirements,
-              ...intent.match.excludedSizes.map((t) => `排除${t}`),
+              ...intent.match.excludedSizes.map((t) => `排除${sizeLabels[t]}`),
               ...intent.match.excludedBreeds.map((t) => `排除${t}`),
               ...intent.match.excludedTemperaments.map((t) => `排除${t}`),
               ...intent.match.excludedActivities.map((t) => `排除${t}`),
-              ...intent.match.sizes,
+              ...intent.match.sizes.map((t) => sizeLabels[t]),
               ...intent.match.breeds,
               intent.match.district,
             ]
@@ -409,7 +430,7 @@ function CompanionFlow() {
       )}
       {results.map(({ name, result }) => (
         <div
-          className="card form-card"
+          className="card form-card companion-result"
           key={name}
           data-testid="companion-result"
           data-tool={name}
@@ -431,7 +452,7 @@ function CompanionFlow() {
             <>
               {!result.rows.length && <p>暂时没有合适的活动，试试自己组局。</p>}
               {result.rows.map((r) => (
-                <article key={r.id}>
+                <article className="companion-activity" key={r.id}>
                   <Link href={`/activities/${r.id}`}>{r.title} · 查看详情</Link>
                   <p>
                     {formatTime(r.startAt)} ·{" "}
@@ -441,7 +462,11 @@ function CompanionFlow() {
                     · 剩余{r.remaining}位
                   </p>
                   <p>{r.reasons?.join("；")}</p>
-                  <p>待确认：{r.differences?.join("；")}</p>
+                  {!!r.differences?.length && (
+                    <p className="result-difference">
+                      待确认：{r.differences.join("；")}
+                    </p>
+                  )}
                 </article>
               ))}
             </>
@@ -501,9 +526,15 @@ function CompanionFlow() {
         )}
       {!busy && intent && phase === "error" && (
         <div className="button-row">
-          <button onClick={() => query(intent, stage)}>重试当前阶段</button>
+          <button
+            className="button secondary"
+            onClick={() => query(intent, stage)}
+          >
+            重试当前阶段
+          </button>
           {stage === "organize" && (
             <button
+              className="button secondary"
               onClick={() => {
                 cache.current.places = demoPlaces
                   .filter(
@@ -525,9 +556,6 @@ function CompanionFlow() {
         </div>
       )}
       {draft && <ActivityEditor initialInput={draft} />}
-      <button type="button" onClick={reset}>
-        {busy ? "取消查询" : "重新开始"}
-      </button>
     </section>
   );
 }

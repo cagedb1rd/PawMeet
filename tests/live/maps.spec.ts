@@ -47,6 +47,7 @@ test("真实高德地图、四类 POI 与选点（无 SDK mock）", async ({ pag
     fullPage: true,
   });
   await page.getByRole("button", { name: "宠友列表", exact: true }).click();
+  await page.getByRole("button", { name: "调整位置", exact: true }).click();
   await page.getByRole("button", { name: "手动选择参考位置" }).click();
   await expect(page.locator(".map-status")).toHaveCount(0, { timeout: 20000 });
   for (const category of ["公园", "宠物医院", "宠物店", "咖啡店"]) {

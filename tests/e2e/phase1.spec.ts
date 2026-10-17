@@ -122,6 +122,7 @@ test("发布含照片动态、点赞切换与重置", async ({ page }) => {
     .click();
   expect((await snapshot(page)).posts[0].likedByUserIds).toHaveLength(1);
   await page.goto("/me");
+  await page.getByText("演示与本地数据", { exact: true }).click();
   await page.getByRole("button", { name: "重置演示数据", exact: true }).click();
   await page.getByRole("button", { name: "确认重置" }).click();
   await expect(
@@ -302,12 +303,14 @@ test("第二标签只读，释放写锁后刷新可编辑", async ({ page, conte
   await ready(page);
   const second = await context.newPage();
   await ready(second, "/me");
+  await second.getByText("演示与本地数据", { exact: true }).click();
   await expect(second.getByText("只读模式", { exact: true })).toBeVisible();
   await expect(
     second.getByRole("button", { name: "重置演示数据", exact: true }),
   ).toBeDisabled();
   await page.close();
   await second.reload();
+  await second.getByText("演示与本地数据", { exact: true }).click();
   await expect(second.getByText("当前可编辑", { exact: true })).toBeVisible();
 });
 

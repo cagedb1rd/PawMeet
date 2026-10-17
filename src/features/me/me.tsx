@@ -84,7 +84,7 @@ export function Me() {
       </div>
       <div className="pet-grid my-pets">
         {pets.map((p) => (
-          <PetCard key={p.id} pet={p} />
+          <PetCard key={p.id} pet={p} own />
         ))}
       </div>
       {!pets.length && (
@@ -144,54 +144,56 @@ export function Me() {
           )}
         </Dialog>
       )}
-      <div className="section-heading">
-        <h2>演示与本地数据</h2>
-      </div>
-      <div className="settings-card card">
-        <div className="setting-row">
-          <ShieldCheck />
-          <div>
-            <h3>一台浏览器，一个小世界</h3>
-            <p>演示版数据保存在当前浏览器。</p>
+      <details className="settings-disclosure">
+        <summary>演示与本地数据</summary>
+        <div className="settings-card card">
+          <div className="setting-row">
+            <ShieldCheck />
+            <div>
+              <h3>一台浏览器，一个小世界</h3>
+              <p>
+                宠友、位置与互动均为虚构演示，数据仅保存在当前浏览器。切换身份不代表登录。
+              </p>
+            </div>
+            <span className="pill">{writable ? "当前可编辑" : "只读模式"}</span>
           </div>
-          <span className="pill">{writable ? "当前可编辑" : "只读模式"}</span>
-        </div>
-        <div className="setting-row">
-          <HardDrive />
-          <div>
-            <h3>清理未引用照片</h3>
-            <p>移除未保存或已替换的上传照片，已保存记录使用的照片会保留。</p>
+          <div className="setting-row">
+            <HardDrive />
+            <div>
+              <h3>清理未引用照片</h3>
+              <p>移除未保存或已替换的上传照片，已保存记录使用的照片会保留。</p>
+            </div>
+            <button
+              className="button secondary"
+              disabled={!writable || busy}
+              onClick={async () => {
+                setBusy(true);
+                await clean();
+                setBusy(false);
+              }}
+            >
+              清理照片
+            </button>
           </div>
-          <button
-            className="button secondary"
-            disabled={!writable || busy}
-            onClick={async () => {
-              setBusy(true);
-              await clean();
-              setBusy(false);
-            }}
-          >
-            清理照片
-          </button>
-        </div>
-        <div className="setting-row">
-          <RotateCcw />
-          <div>
-            <h3>重新开始演示</h3>
-            <p>
-              恢复 25 个宠物档案、12 条动态、6
-              场活动和默认身份，清除本地修改与上传照片。
-            </p>
+          <div className="setting-row">
+            <RotateCcw />
+            <div>
+              <h3>重新开始演示</h3>
+              <p>
+                恢复 25 个宠物档案、12 条动态、6
+                场活动和默认身份，清除本地修改与上传照片。
+              </p>
+            </div>
+            <button
+              className="button danger-outline"
+              disabled={!writable}
+              onClick={() => setConfirm(true)}
+            >
+              重置演示数据
+            </button>
           </div>
-          <button
-            className="button danger-outline"
-            disabled={!writable}
-            onClick={() => setConfirm(true)}
-          >
-            重置演示数据
-          </button>
         </div>
-      </div>
+      </details>
       {confirm && (
         <Dialog title="重置当前浏览器的数据？" close={() => setConfirm(false)}>
           <p>

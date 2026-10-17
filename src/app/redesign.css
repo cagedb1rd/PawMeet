@@ -340,20 +340,82 @@ main {
   border-color: var(--green);
   font-weight: 700;
 }
-.discovery-ai,
+/* Shared controls and task feedback. */
 .ai-companion {
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border: 1px solid #dce5d9;
+  border-radius: 16px;
   background: white;
-  padding: 4px 16px;
-  margin-bottom: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
 }
-.discovery-ai > summary,
-.ai-companion > summary {
+.companion-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.companion-heading h2 {
+  font-size: 20px;
+}
+.companion-heading .text-link {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.companion-settings {
+  margin: 6px 0 14px;
+}
+.companion-settings > summary {
+  min-height: 44px;
+  padding-block: 12px;
   cursor: pointer;
-  min-height: 48px;
-  padding-block: 14px;
-  font-size: 14px;
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.settings-edit {
+  margin-left: 10px;
+  color: var(--green);
+  font-weight: 600;
+}
+.ai-companion > fieldset > .field {
+  margin: 12px 0;
+}
+.ai-companion > fieldset > .button-row {
+  margin-top: 12px;
+  align-items: center;
+}
+.ai-companion > .form-card {
+  padding: 20px;
+  margin-block: 16px;
+}
+.ai-companion .form-card h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+.ai-companion .companion-plan {
+  background: #f6f8f3;
+  border-color: #e3e9de;
+}
+.workflow-status {
+  padding: 14px;
+  background: #eef3eb;
+  border-radius: 10px;
+  margin-top: 16px;
+}
+.companion-activity {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.companion-activity > a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--green-dark);
+  font-size: 16px;
+  font-weight: 650;
+}
+.companion-activity .result-difference {
+  color: #835c31;
 }
 .ai-companion p {
   line-height: 1.8;
@@ -497,6 +559,247 @@ main {
   outline: 2px solid var(--green);
   outline-offset: 4px;
 }
+/* Keep legacy detail pages on the same readable scale as the community. */
+.page-title p,
+.form-hint,
+.field small {
+  color: var(--muted);
+}
+.button,
+.button.small {
+  min-height: 44px;
+  font-size: 14px;
+}
+.text-link,
+.back-link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.button:disabled {
+  transform: none;
+}
+.field {
+  font-size: 14px;
+}
+.field input,
+.field select,
+.field textarea,
+.signup-panel select {
+  font-size: 16px;
+  color: var(--ink);
+}
+.field small {
+  font-size: 13px;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #70796e;
+}
+.global-search input:not([type="checkbox"], [type="file"]) {
+  font-size: 14px;
+}
+.form-card h3 {
+  font-size: 16px;
+}
+.form-card .form-section-title {
+  grid-column: 1 / -1;
+  font-size: 18px;
+  margin: 28px 0 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.form-errors strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.form-errors ul {
+  padding-left: 20px;
+  list-style: disc;
+}
+.form-errors button {
+  min-height: 44px;
+  text-align: left;
+  text-decoration: underline;
+}
+[aria-invalid="true"] {
+  border-color: #ad5441;
+}
+[data-ai-filled="true"] {
+  border-left: 4px solid var(--green);
+  background: #f0f5ed;
+}
+.detail-padding > p,
+.detail-facts p,
+.signup-panel p,
+.pet-detail-info > p.muted {
+  font-size: 15px;
+  line-height: 1.85;
+}
+.detail-facts small,
+.participants small,
+.owner-line small {
+  font-size: 12px;
+}
+.signup-panel label,
+.participants b,
+.owner-line b,
+.pet-subtitle {
+  font-size: 14px;
+}
+.pet-detail-info h3 {
+  font-size: 16px;
+}
+.detail-padding h1 {
+  overflow-wrap: anywhere;
+}
+.help-next-step {
+  padding: 18px 20px;
+  border: 1px solid #dce5d9;
+  border-radius: 16px;
+  background: #f0f4ed;
+}
+.help-next-step p {
+  margin-top: 8px;
+  line-height: 1.8;
+}
+#care-checklist {
+  scroll-margin-top: 24px;
+}
+.status-green {
+  color: #31543b;
+  background: #eaf2e5;
+}
+.status-warm {
+  color: #815325;
+  background: #fbefd9;
+}
+.status-neutral {
+  color: #626b64;
+  background: #eef0ec;
+}
+.activity-card .activity-photo > .image-fallback {
+  height: 100%;
+  min-height: 220px;
+}
+.activity-body h3 {
+  overflow-wrap: anywhere;
+}
+.compact-reference {
+  padding: 14px 18px;
+  margin-bottom: 12px;
+}
+.compact-reference > .row-between {
+  align-items: center;
+  gap: 14px;
+}
+.compact-reference h3 {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+.compact-reference > .row-between > div {
+  min-width: 0;
+}
+.compact-reference > .row-between > button {
+  flex-shrink: 0;
+}
+.discover-filters {
+  padding: 16px 18px;
+}
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.active-filters > button {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: #f1f4ed;
+  color: var(--green-dark);
+}
+.active-filters > .text-link {
+  background: transparent;
+  margin-left: auto;
+}
+.filter-range-heading {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.filter-range-heading .text-link {
+  font-size: 13px;
+  font-weight: 400;
+}
+.active-filters:empty {
+  display: none;
+}
+.discover-filters .discover-filter {
+  padding: 8px 0;
+}
+.discover-filters details {
+  margin-block: 0;
+}
+.read-only-status {
+  border: 1px solid #e4d7b9;
+  background: #fff9ec;
+  border-radius: 12px;
+  padding: 0 16px;
+  margin-bottom: 16px;
+  color: #715733;
+  font-size: 14px;
+}
+.read-only-status summary {
+  min-height: 44px;
+  padding-block: 12px;
+  cursor: pointer;
+}
+.read-only-status p {
+  line-height: 1.8;
+}
+.settings-disclosure {
+  margin-top: 28px;
+}
+.settings-disclosure > summary {
+  font-size: 18px;
+  min-height: 52px;
+  padding-block: 14px;
+  cursor: pointer;
+}
+.history-disclosure {
+  margin-top: 24px;
+}
+.history-disclosure > summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 8px;
+}
+.history-disclosure > summary h2 {
+  display: inline;
+  margin: 0;
+  font-size: 18px;
+}
+.dialog-head {
+  position: sticky;
+  top: -22px;
+  background: white;
+  z-index: 1;
+  padding-block: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
 @media (min-width: 1024px) {
   .community-home {
     padding-inline: 16px;
@@ -529,12 +832,6 @@ main {
   }
   .sidebar {
     display: none;
-  }
-  .demo-banner {
-    font-size: 10px;
-    min-height: 26px;
-    height: auto;
-    padding: 6px 8px;
   }
   .topbar {
     height: 58px;
@@ -627,9 +924,66 @@ main {
   .note-detail .post-actions {
     font-size: 13px;
   }
+  .page-title {
+    gap: 14px;
+  }
   .page-title h1 {
     font-size: 26px;
   }
+  .page-title p {
+    margin-top: 6px;
+  }
+  .ai-companion {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .ai-companion > .form-card {
+    padding: 16px;
+  }
+  .companion-heading h2 {
+    font-size: 19px;
+  }
+  .companion-settings > summary {
+    font-size: 12px;
+  }
+  .compact-reference {
+    padding: 12px 14px;
+  }
+  .compact-reference h3 {
+    font-size: 13px;
+  }
+  .compact-reference > .row-between {
+    gap: 8px;
+  }
+  .compact-reference .text-link {
+    font-size: 13px;
+  }
+  .discover-filters {
+    padding: 14px;
+  }
+  .discover-filters > input {
+    font-size: 16px;
+  }
+  .tabs {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .tabs-right {
+    margin-left: auto;
+  }
+  .form-card .meeting-note {
+    margin-inline: 0;
+  }
+  .help-next-step {
+    padding: 16px;
+  }
+  .detail-padding > p,
+  .detail-facts p,
+  .signup-panel p,
+  .pet-detail-info > p.muted {
+    font-size: 15px;
+  }
+
   .page-title p {
     font-size: 14px;
     margin-top: 8px;
@@ -641,7 +995,16 @@ main {
     min-height: 44px;
   }
   .nearby-tabs {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+  }
+  .nearby-page-title .page-title {
+    margin: 0 0 12px;
+  }
+  .nearby-page-title .page-title h1 {
+    font-size: 22px;
+  }
+  .nearby-page-title .page-title p {
+    display: none;
   }
   .reference-panel h3 {
     line-height: 1.7;

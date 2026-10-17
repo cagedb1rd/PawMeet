@@ -26,6 +26,7 @@ import { checklistCurrent } from "@/domain/phase2";
 import { demoPlaces } from "@/data/seed";
 import { shanghaiTime } from "@/features/forms/forms";
 import { PlaceDetails, PlacePicker } from "@/features/maps/places";
+import { FormError, clearAiMarker } from "@/features/forms/feedback";
 
 const statuses = {
   open: "等待帮助",
@@ -102,12 +103,14 @@ function HelpList({ initialTab }: { initialTab: string }) {
       <div className="filter-tags help-tabs">
         <button
           className={tab === "all" ? "selected" : ""}
+          aria-pressed={tab === "all"}
           onClick={() => setTab("all")}
         >
           全部需求
         </button>
         <button
           className={tab === "mine" ? "selected" : ""}
+          aria-pressed={tab === "mine"}
           onClick={() => setTab("mine")}
         >
           我的互助记录
@@ -194,6 +197,41 @@ function Detail({ id }: { id: string }) {
         ← 返回互助
       </Link>
       <Title eyebrow="A LITTLE TRUST" title={h.title} />
+      <section className="help-next-step" aria-label="互助进度">
+        <span className="pill">
+          {mine ? "我是求助人" : h.helperId === uid ? "我是帮助者" : "我来帮忙"}
+        </span>
+        <p>
+          {h.status === "cancelled"
+            ? "求助已取消，历史记录保留。"
+            : h.status === "completed"
+              ? "双方已确认完成，可查看交接与历史记录。"
+              : h.status === "helper_done"
+                ? mine
+                  ? "帮助者已标记完成，请核实后确认完成。"
+                  : "已提交完成记录，等待求助人确认。"
+                : h.status === "assigned"
+                  ? !current
+                    ? "交接资料已变更，需由求助人重新确认清单。"
+                    : h.helperId === uid
+                      ? "按交接清单提供帮助，结束后标记完成。"
+                      : "帮助者已确认，等待其完成帮助。"
+                  : Date.parse(h.startAt) <= now
+                    ? "求助已过期，不再接受申请。"
+                    : mine
+                      ? current
+                        ? "清单已确认，可在申请人列表中选择帮助者。"
+                        : "请先确认交接清单，再选择帮助者。"
+                      : myActive
+                        ? "申请已提交，等待求助人选择。"
+                        : "查看需求和宠物资料后，可以申请帮助。"}
+        </p>
+        {mine && ["open", "assigned"].includes(h.status) && !current && (
+          <a className="text-link" href="#care-checklist">
+            前往交接清单 →
+          </a>
+        )}
+      </section>
       <div className="help-detail-grid">
         <section className="card form-card">
           <span className="pill" data-testid="help-status">
@@ -349,7 +387,7 @@ function Detail({ id }: { id: string }) {
           )}
         </section>
       </div>
-      <section className="card form-card">
+      <section className="card form-card" id="care-checklist">
         <h2>宠物照看交接清单</h2>
         <p className={current ? "form-hint" : "conflict"}>
           {current
@@ -412,8 +450,10 @@ function Detail({ id }: { id: string }) {
         )}
       </section>
       {(mine || apps.some((a) => a.applicantId === uid)) && (
-        <section className="card form-card">
-          <h2>互助历史记录</h2>
+        <details className="card form-card history-disclosure">
+          <summary>
+            <h2>互助历史记录</h2>
+          </summary>
           <ol className="help-timeline">
             {state!.helpEvents
               .filter((e) => e.helpId === id)
@@ -430,7 +470,7 @@ function Detail({ id }: { id: string }) {
           {!state!.helpEvents.some((e) => e.helpId === id) && (
             <p>种子需求尚无操作记录。</p>
           )}
-        </section>
+        </details>
       )}
     </>
   );
@@ -608,7 +648,7 @@ function HelpEditor({
     router = useRouter();
   const h = state!.helpRequests.find((h) => h.id === id);
   const [place, setPlace] = useState<PlaceRef>(h?.place ?? demoPlaces[0]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<Error | null>(null);
   const [aiDraft, setAiDraft] = useState<HelpDraft | undefined>(initialDraft);
   const [needsPlace, setNeedsPlace] = useState(!!initialDraft);
   const { setDirty } = useUnsaved();
@@ -639,12 +679,16 @@ function HelpEditor({
       <form
         ref={form}
         className="card form-card"
-        onChange={() => setDirty(true)}
+        onChange={() => {
+          setDirty(true);
+          setError(null);
+        }}
+        onInputCapture={clearAiMarker}
         onSubmit={(e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget);
           if (needsPlace) {
-            setError("请通过下方地点选择器明确确认公共交接地点");
+            setError(new Error("请通过下方地点选择器明确确认公共交接地点"));
             return;
           }
           try {
@@ -668,9 +712,11 @@ function HelpEditor({
               setDirty(false);
               router.push(id ? `/help/${id}` : "/help");
             }
-          } catch {
+          } catch (error) {
             setError(
-              "请检查标题、需求说明和起止时间；结束时间必须晚于开始时间。",
+              error instanceof Error
+                ? error
+                : new Error("请检查标题、需求说明和起止时间"),
             );
           }
         }}
@@ -713,6 +759,7 @@ function HelpEditor({
               </label>
             </div>
           )}
+          <h2 className="form-section-title">求助内容</h2>
           <label className="field">
             <span>求助标题</span>
             <input
@@ -746,6 +793,7 @@ function HelpEditor({
                 <option value="feed">简单喂食</option>
               </select>
             </label>
+            <h2 className="form-section-title">时间与交接地点</h2>
             <label className="field">
               <span>开始时间（北京时间）</span>
               <input
@@ -785,11 +833,7 @@ function HelpEditor({
               defaultValue={h?.details}
             />
           </label>
-          {error && (
-            <p role="alert" className="field-error">
-              {error}
-            </p>
-          )}
+          {error && <FormError error={error} />}
           <button className="button form-submit" disabled={!pets.length}>
             {h ? "确认保存求助" : "确认发布求助"}
           </button>

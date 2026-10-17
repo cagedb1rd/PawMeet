@@ -36,6 +36,8 @@ flowchart LR
   PROXY --> AMAP[高德服务]
 ```
 
+搜索条件使用 URL 查询参数与 Next History 集成，页内更新使用 replaceState，不为每次输入创建历史项；顶部搜索读取同一参数，浏览器返回恢复条件。活动展示状态由 [presentation](../src/features/activities/presentation.ts) 按原业务时间与名额派生，不替代命令校验。
+
 SSR 只输出公共页面壳与稳定骨架。浏览器 `DemoProvider` 挂载后读取 / 校验状态再显示个人数据，避免 hydration mismatch；服务端组件、API Route 无法读取 localStorage。业务新增 / 修改不发送服务端持久化接口。状态中的身份仅用于演示逻辑，不作为服务端鉴权或额度依据。
 
 ## 2. 实现目录与扩展边界
@@ -75,7 +77,7 @@ tests/unit/ai*.test.ts            # Qwen mock、工具协议、限额与规则
 evals/{cases,runner,reports}/      # 35核心+11对抗+8工具；分开报告live/mock
 ```
 
-当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒。名片、两宠比较和 PNG 导出位于 `features/cards`；地点选择器位于 `features/maps`，嵌入表单并只更新内存草稿；筛选使用可折叠区域。AI 草稿复核位于 features/ai/draft.tsx，智能约伴位于 /activities，/assistant 重定向到活动页。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
+当前业务组件通过 Provider 的 `run` 调用纯命令和 Repository；`PetImage` 管理上传图 object URL 的创建 / 回收，原生 dialog 提供焦点与 Esc 关闭，表单包含未保存提醒；[feedback](../src/features/forms/feedback.tsx) 将 Schema 错误映射为中文、关联输入并定位，清除错误时还原 ARIA 属性。AI 填入标记只属于 DOM 展示状态，不进入持久化。名片、两宠比较和 PNG 导出位于 `features/cards`；地点选择器位于 `features/maps`，嵌入表单并只更新内存草稿；筛选使用可折叠区域。AI 草稿复核位于 features/ai/draft.tsx，智能约伴位于 /activities，/assistant 重定向到活动页。地图适配器不含业务排序逻辑；AI 组件不能直接写 Repository。
 
 ## 3. 数据契约
 

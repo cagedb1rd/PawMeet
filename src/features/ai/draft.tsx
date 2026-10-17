@@ -23,8 +23,11 @@ export function fillForm(
       field instanceof HTMLInputElement ||
       field instanceof HTMLTextAreaElement ||
       field instanceof HTMLSelectElement
-    )
+    ) {
       field.value = value == null ? "" : String(value);
+      if (field.value) field.dataset.aiFilled = "true";
+      else delete field.dataset.aiFilled;
+    }
   }
 }
 const labels: Record<string, string> = {
@@ -225,6 +228,11 @@ export function AiDraft<T extends AiTask>({
               丢弃草稿
             </button>
           </div>
+          {applied && (
+            <p className="form-hint" role="status">
+              已填入的字段已标记。请补齐必填项，检查后再确认保存。
+            </p>
+          )}
         </div>
       )}
     </section>

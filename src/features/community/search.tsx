@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search as SearchIcon } from "lucide-react";
 import { useDemo } from "@/features/demo/provider";
@@ -10,15 +9,14 @@ import { PostFeed } from "./community";
 
 export function Search() {
   const params = useSearchParams();
-  return (
-    <SearchResults
-      key={params.get("q") ?? ""}
-      initialQuery={(params.get("q") ?? "").slice(0, 100)}
-    />
-  );
-}
-function SearchResults({ initialQuery }: { initialQuery: string }) {
-  const [query, setQuery] = useState(initialQuery);
+  const query = (params.get("q") ?? "").slice(0, 100);
+  function setQuery(value: string) {
+    window.history.replaceState(
+      null,
+      "",
+      value ? `/search?q=${encodeURIComponent(value)}` : "/search",
+    );
+  }
   const { state } = useDemo();
   if (!state) return null;
   const term = query.trim().toLocaleLowerCase();

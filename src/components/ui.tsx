@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { ImagePlus, X, PawPrint, ArrowUpRight, MapPin } from "lucide-react";
 import { ImageRef, Pet, sizeLabels } from "@/domain/schemas";
 import {
@@ -78,14 +78,23 @@ export function Dialog({
   close: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
+  const titleId = useId();
+  useLayoutEffect(() => {
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     ref.current?.showModal();
     const d = ref.current;
-    return () => d?.close();
+    return () => {
+      d?.close();
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
   }, []);
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
         close();
@@ -93,7 +102,7 @@ export function Dialog({
       className="dialog"
     >
       <div className="dialog-head">
-        <h2>{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button aria-label="关闭弹窗" className="icon-button" onClick={close}>
           <X />
         </button>
@@ -152,11 +161,13 @@ export function PetCard({
   distance,
   selected,
   onSelect,
+  own = false,
 }: {
   pet: Pet;
   distance?: string;
   selected?: boolean;
   onSelect?: () => void;
+  own?: boolean;
 }) {
   return (
     <article
@@ -208,21 +219,31 @@ export function PetCard({
       </Link>
       <div className="pet-actions">
         <Link href={`/pets/${pet.id}`}>档案</Link>
-        <Link href={`/activities/new?recommendedPetId=${pet.id}`}>
-          发起约伴
-        </Link>
+        {own ? (
+          <Link href={`/me/pets/${pet.id}/edit`}>编辑档案</Link>
+        ) : (
+          <Link href={`/activities/new?recommendedPetId=${pet.id}`}>
+            发起约伴
+          </Link>
+        )}
         {onSelect && (
           <button type="button" onClick={onSelect}>
             {selected ? "地图已选中" : "在地图查看"}
           </button>
         )}
       </div>
-      <Link
-        className="pet-compare-link"
-        href={`/discover/compare?petId=${pet.id}`}
-      >
-        比较社交偏好 ↗
-      </Link>
+      {own ? (
+        <Link className="pet-compare-link" href={`/pets/${pet.id}/card`}>
+          查看社交名片 →
+        </Link>
+      ) : (
+        <Link
+          className="pet-compare-link"
+          href={`/discover/compare?petId=${pet.id}`}
+        >
+          比较社交偏好 ↗
+        </Link>
+      )}
     </article>
   );
 }

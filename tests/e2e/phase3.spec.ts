@@ -122,6 +122,7 @@ test("SDK mock：四类地点、空结果、失败、过时查询与地图选点
 }) => {
   await mockSDK(page);
   await ready(page);
+  await page.getByRole("button", { name: "调整位置", exact: true }).click();
   await page.getByRole("button", { name: "手动选择参考位置" }).click();
   await expect(page.locator(".map-status")).toHaveCount(0);
   for (const category of ["公园", "宠物医院", "宠物店", "咖啡店"]) {
@@ -176,6 +177,8 @@ test("拒绝定位及 SDK 加载失败保留默认参考点和本地筛选", asy
   await page.route("https://webapi.amap.com/maps?**", (route) => route.abort());
   await ready(page);
   const original = await ids(page);
+  if (await page.getByRole("button", { name: "调整位置", exact: true }).count())
+    await page.getByRole("button", { name: "调整位置", exact: true }).click();
   await page.getByRole("button", { name: "使用当前位置" }).click();
   await expect(page.getByText(/定位权限已拒绝/)).toBeVisible();
   await expect(page.getByTestId("reference-label")).toContainText("杭州滨江");
@@ -202,6 +205,8 @@ test("SDK mock：主动定位只做一次官方转换且不持久化", async ({ 
   const before = await page.evaluate(() =>
     localStorage.getItem("pawmeet:state:v1"),
   );
+  if (await page.getByRole("button", { name: "调整位置", exact: true }).count())
+    await page.getByRole("button", { name: "调整位置", exact: true }).click();
   await page.getByRole("button", { name: "使用当前位置" }).click();
   await expect(page.getByTestId("reference-label")).toContainText(
     "浏览器定位参考点",
@@ -225,6 +230,8 @@ test("SDK mock：主动定位只做一次官方转换且不持久化", async ({ 
       );
     };
   });
+  if (await page.getByRole("button", { name: "调整位置", exact: true }).count())
+    await page.getByRole("button", { name: "调整位置", exact: true }).click();
   await page.getByRole("button", { name: "使用当前位置" }).click();
   await page.getByRole("button", { name: "恢复滨江默认位置" }).click();
   await page.evaluate(() =>

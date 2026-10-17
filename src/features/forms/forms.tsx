@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { AiDraft, fillForm } from "@/features/ai/draft";
-import { z } from "zod";
+import { FormError, clearAiMarker } from "./feedback";
 import { useDemo } from "@/features/demo/provider";
 import {
   Empty,
@@ -24,13 +24,6 @@ import {
 import { demoPlaces } from "@/data/seed";
 import { PlacePicker } from "@/features/maps/places";
 
-function errorMessage(e: unknown) {
-  return e instanceof z.ZodError
-    ? e.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("；")
-    : e instanceof Error
-      ? e.message
-      : "请检查表单";
-}
 function Field({
   label,
   children,
@@ -68,7 +61,7 @@ function PetEditor({ id }: { id?: string }) {
     router = useRouter();
   const pet = state!.pets.find((p) => p.id === id);
   const draft = usePhotoDraft(pet ? [pet.photo] : []),
-    [error, setError] = useState(""),
+    [error, setError] = useState<Error | null>(null),
     { setDirty } = useUnsaved();
   const [traits, setTraits] = useState<string[]>(pet?.temperamentTags ?? []),
     [likes, setLikes] = useState<string[]>(pet?.activityTags ?? []);
@@ -89,10 +82,14 @@ function PetEditor({ id }: { id?: string }) {
       <form
         ref={form}
         className="card form-card"
-        onChange={() => setDirty(true)}
+        onChange={() => {
+          setDirty(true);
+          setError(null);
+        }}
+        onInputCapture={clearAiMarker}
         onSubmit={(e) => {
           e.preventDefault();
-          setError("");
+          setError(null);
           const f = new FormData(e.currentTarget);
           try {
             const input = petInputSchema.parse({
@@ -120,7 +117,7 @@ function PetEditor({ id }: { id?: string }) {
               router.push("/me");
             }
           } catch (e) {
-            setError(errorMessage(e));
+            setError(e instanceof Error ? e : new Error("请检查表单内容"));
           }
         }}
       >
@@ -249,11 +246,7 @@ function PetEditor({ id }: { id?: string }) {
               placeholder="例如：慢热，需要一点时间熟悉。不要填写手机号、微信号或住址。"
             />
           </Field>
-          {error && (
-            <p role="alert" className="field-error">
-              {error}
-            </p>
-          )}
+          {error && <FormError error={error} />}
           <button type="submit" className="button form-submit">
             {draft.busy ? "照片处理中…" : "确认保存档案"}
           </button>
@@ -270,7 +263,7 @@ function PostEditor() {
   const { state, run, writable, notify } = useDemo(),
     router = useRouter();
   const draft = usePhotoDraft(),
-    [error, setError] = useState(""),
+    [error, setError] = useState<Error | null>(null),
     { setDirty } = useUnsaved(),
     [text, setText] = useState("");
   const pets = state!.pets.filter(
@@ -288,10 +281,14 @@ function PostEditor() {
       />
       <form
         className="card form-card"
-        onChange={() => setDirty(true)}
+        onChange={() => {
+          setDirty(true);
+          setError(null);
+        }}
+        onInputCapture={clearAiMarker}
         onSubmit={(e) => {
           e.preventDefault();
-          setError("");
+          setError(null);
           const f = new FormData(e.currentTarget);
           try {
             const input = postInputSchema.parse({
@@ -307,7 +304,7 @@ function PostEditor() {
               router.push("/");
             }
           } catch (e) {
-            setError(errorMessage(e));
+            setError(e instanceof Error ? e : new Error("请检查表单内容"));
           }
         }}
       >
@@ -323,6 +320,7 @@ function PostEditor() {
           <Field label="今天发生了什么？ *">
             <textarea
               aria-label="动态内容"
+              name="text"
               required
               maxLength={1000}
               rows={6}
@@ -345,11 +343,7 @@ function PostEditor() {
           </div>
           <h3>加几张可爱照片</h3>
           <PhotoPicker draft={draft} max={3} />
-          {error && (
-            <p role="alert" className="field-error">
-              {error}
-            </p>
-          )}
+          {error && <FormError error={error} />}
           <button type="submit" className="button form-submit">
             确认发布动态
           </button>
@@ -378,7 +372,7 @@ export function ActivityEditor({
   );
   const { state, run, writable, notify } = useDemo(),
     router = useRouter(),
-    [error, setError] = useState(""),
+    [error, setError] = useState<Error | null>(null),
     { setDirty } = useUnsaved();
   const pets = state!.pets.filter(
     (p) => p.ownerId === state!.activeUserId && !p.archivedAt,
@@ -395,10 +389,14 @@ export function ActivityEditor({
       />
       <form
         className="card form-card"
-        onChange={() => setDirty(true)}
+        onChange={() => {
+          setDirty(true);
+          setError(null);
+        }}
+        onInputCapture={clearAiMarker}
         onSubmit={(e) => {
           e.preventDefault();
-          setError("");
+          setError(null);
           const f = new FormData(e.currentTarget);
           try {
             const input = activityInputSchema.parse({
@@ -419,7 +417,7 @@ export function ActivityEditor({
               router.push("/activities");
             }
           } catch (e) {
-            setError(errorMessage(e));
+            setError(e instanceof Error ? e : new Error("请检查表单内容"));
           }
         }}
       >
@@ -455,6 +453,7 @@ export function ActivityEditor({
               ))}
             </select>
           </Field>
+          <h2 className="form-section-title">时间与集合地点</h2>
           <div className="form-grid">
             <Field label="开始时间 *" hint="北京时间 UTC+8">
               <input
@@ -507,20 +506,18 @@ export function ActivityEditor({
               required
             />
           </Field>
+          <h2 className="form-section-title">补充说明</h2>
           <Field label="活动说明">
             <textarea
               name="description"
               defaultValue={initialInput?.description}
+              data-ai-filled={initialInput ? "true" : undefined}
               maxLength={500}
               rows={4}
               placeholder="活动安排、需要带的物品、初次见面的注意事项…"
             />
           </Field>
-          {error && (
-            <p role="alert" className="field-error">
-              {error}
-            </p>
-          )}
+          {error && <FormError error={error} />}
           <button
             type="submit"
             className="button form-submit"

@@ -44,7 +44,7 @@ export function UserProfile({ id }: { id: string }) {
       <h2 className="subheading">毛孩子档案</h2>
       <div className="pet-grid my-pets">
         {pets.map((p) => (
-          <PetCard key={p.id} pet={p} />
+          <PetCard key={p.id} pet={p} own={p.ownerId === state.activeUserId} />
         ))}
       </div>
       <h2 className="subheading">日常分享 · {posts.length}</h2>

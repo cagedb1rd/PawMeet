@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CalendarDays,
   Compass,
@@ -13,7 +13,7 @@ import {
   X,
   Search,
 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useDemo } from "@/features/demo/provider";
 import { Dialog, PetImage } from "./ui";
 
@@ -24,14 +24,44 @@ const nav = [
   { href: "/activities", name: "活动", sub: "一起去撒欢", icon: CalendarDays },
   { href: "/me", name: "我的", sub: "我和毛孩子", icon: UserRound },
 ];
+function GlobalSearch() {
+  const params = useSearchParams();
+  return (
+    <SearchForm
+      key={params.get("q") ?? ""}
+      initialQuery={(params.get("q") ?? "").slice(0, 100)}
+    />
+  );
+}
+function SearchForm({ initialQuery }: { initialQuery: string }) {
+  const [query, setQuery] = useState(initialQuery);
+  const router = useRouter();
+  return (
+    <form
+      className="global-search"
+      onSubmit={(e) => {
+        e.preventDefault();
+        router.push(`/search?q=${encodeURIComponent(query)}`);
+      }}
+    >
+      <Search size={17} />
+      <input
+        aria-label="搜索帖子与用户"
+        placeholder="搜索帖子、宠友昵称"
+        maxLength={100}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      <kbd>↵</kbd>
+    </form>
+  );
+}
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { state, writable, problem, raw, notice, run, reset, notify } =
       useDemo(),
-    path = usePathname(),
-    router = useRouter();
+    path = usePathname();
   const [switcher, setSwitcher] = useState(false),
-    [resetting, setResetting] = useState(false),
-    [query, setQuery] = useState("");
+    [resetting, setResetting] = useState(false);
   const active = state?.users.find((u) => u.id === state.activeUserId);
   const activeNav = (href: string) =>
     href === "/"
@@ -93,26 +123,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <MapPin size={16} />
               <b>杭州 · 滨江</b>
             </div>
-            <form
-              className="global-search"
-              onSubmit={(e) => {
-                e.preventDefault();
-                router.push(`/search?q=${encodeURIComponent(query)}`);
-              }}
-            >
-              <Search size={17} />
-              <input
-                aria-label="搜索帖子与用户"
-                placeholder="搜索帖子、宠友昵称"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <kbd>↵</kbd>
-            </form>
+            <Suspense fallback={null}>
+              <GlobalSearch />
+            </Suspense>
             <button
               className="identity"
               disabled={!state}
-              onClick={() => setSwitcher(true)}
+              onClick={(event) => {
+                event.currentTarget.focus();
+                setSwitcher(true);
+              }}
               aria-label="切换演示身份"
             >
               {active && (
@@ -126,6 +146,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </header>
           <main id="main-content">
+            {state && !writable && (
+              <details className="read-only-status">
+                <summary>当前页面只读 · 查看原因</summary>
+                <p>
+                  另一个标签页正在编辑，或浏览器无法提供安全写入。关闭其他
+                  PawMeet 页面后刷新；如仍只读，请使用支持 Web Locks 的新版
+                  Chrome / Edge。
+                </p>
+                <button className="text-link" onClick={() => location.reload()}>
+                  重新读取
+                </button>
+              </details>
+            )}
             {problem ? (
               <div className="recovery card">
                 <h1>需要先处理本地数据</h1>

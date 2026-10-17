@@ -14,12 +14,21 @@ import { Dialog, Empty, PetImage, Title, formatTime } from "@/components/ui";
 import { PublishLink } from "@/components/shell";
 import { Companion } from "@/features/ai/companion";
 import { PlaceDetails } from "@/features/maps/places";
+import { activityStatus } from "./presentation";
+function useActivityClock() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, []);
+  return now;
+}
 function ActivityCard({
   activity: a,
-  index,
+  now,
 }: {
   activity: Activity;
-  index: number;
+  now: number;
 }) {
   const { state } = useDemo();
   if (!state) return null;
@@ -27,11 +36,12 @@ function ActivityCard({
     (s) => s.activityId === a.id && s.status === "joined",
   );
   const me = joined.some((s) => s.userId === state.activeUserId);
+  const status = activityStatus(a, joined.length, now);
   return (
     <Link href={`/activities/${a.id}`} className="activity-card card">
       <div className="activity-photo">
         <PetImage
-          image={{ kind: "static", path: `/images/dog-${(index % 6) + 1}.jpg` }}
+          image={state.pets.find((p) => p.id === a.organizerPetId)!.photo}
           alt={a.title}
         />
 
@@ -52,15 +62,13 @@ function ActivityCard({
       </div>
       <div className="activity-body">
         <div className="row-between">
-          <span className="pill">
-            {a.status === "cancelled" ? "已取消" : me ? "已报名" : "线下相遇"}
-          </span>
+          <span className={`pill status-${status.tone}`}>{status.label}</span>
           <ArrowUpRight size={18} />
         </div>
         <h3>{a.title}</h3>
         <p>
           <CalendarDays size={15} />
-          {formatTime(a.startAt)}
+          {formatTime(a.startAt)} — {formatTime(a.endAt)}
         </p>
         <p>
           <MapPin size={15} />
@@ -77,6 +85,11 @@ function ActivityCard({
         <div className="tags">
           <span>宠友约伴</span>
           <span>{a.place.district}</span>
+          {me && (
+            <span>
+              {a.organizerId === state.activeUserId ? "我发起的" : "已报名"}
+            </span>
+          )}
         </div>
         <div className="activity-bottom">
           <div className="avatar-stack">
@@ -90,6 +103,8 @@ function ActivityCard({
           </div>
           <span>
             {joined.length}/{a.capacity} 位主人
+            {status.tone === "green" &&
+              ` · 余 ${a.capacity - joined.length} 位`}
           </span>
           <b>{me ? "查看报名" : "活动详情"} →</b>
         </div>
@@ -108,6 +123,7 @@ export function Activities() {
 }
 function ActivityList({ initialTab }: { initialTab: string }) {
   const { state } = useDemo();
+  const now = useActivityClock();
   const [tab, setTab] = useState(initialTab);
   if (!state) return null;
   const activities =
@@ -131,12 +147,14 @@ function ActivityList({ initialTab }: { initialTab: string }) {
       <div className="tabs">
         <button
           className={tab === "all" ? "selected" : ""}
+          aria-pressed={tab === "all"}
           onClick={() => setTab("all")}
         >
           全部活动
         </button>
         <button
           className={tab === "mine" ? "selected" : ""}
+          aria-pressed={tab === "mine"}
           onClick={() => setTab("mine")}
         >
           我的活动
@@ -144,8 +162,8 @@ function ActivityList({ initialTab }: { initialTab: string }) {
         <span className="tabs-right">时间均为北京时间</span>
       </div>
       <div className="activity-grid">
-        {activities.map((a, i) => (
-          <ActivityCard key={a.id} activity={a} index={i} />
+        {activities.map((a) => (
+          <ActivityCard key={a.id} activity={a} now={now} />
         ))}
       </div>
       {!activities.length && (
@@ -161,12 +179,8 @@ function ActivityList({ initialTab }: { initialTab: string }) {
 export function ActivityDetail({ id }: { id: string }) {
   const { state, run, writable, notify } = useDemo();
   const [petId, setPetId] = useState(""),
-    [confirm, setConfirm] = useState<"leave" | "cancel" | null>(null),
-    [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 15000);
-    return () => clearInterval(t);
-  }, []);
+    [confirm, setConfirm] = useState<"leave" | "cancel" | null>(null);
+  const now = useActivityClock();
   if (!state) return null;
   const a = state.activities.find((a) => a.id === id);
   if (!a)
@@ -185,6 +199,7 @@ export function ActivityDetail({ id }: { id: string }) {
     ),
     closed = a.status === "cancelled" || Date.parse(a.startAt) <= now;
   const selected = pets.some((p) => p.id === petId) ? petId : pets[0]?.id;
+  const status = activityStatus(a, joined.length, now);
   return (
     <>
       <Link href="/activities" className="back-link">
@@ -199,13 +214,7 @@ export function ActivityDetail({ id }: { id: string }) {
             />
           </div>
           <div className="detail-padding">
-            <span className="pill">
-              {a.status === "cancelled"
-                ? "已取消"
-                : closed
-                  ? "已开始 / 已结束"
-                  : "报名开放中"}
-            </span>
+            <span className={`pill status-${status.tone}`}>{status.label}</span>
             <h1>{a.title}</h1>
             <div className="detail-facts">
               <p>
@@ -278,7 +287,7 @@ export function ActivityDetail({ id }: { id: string }) {
             <div className="unavailable">
               {a.status === "cancelled"
                 ? "活动已取消，保留历史报名"
-                : "活动已开始，报名操作已关闭"}
+                : `${status.label}，报名操作已关闭`}
             </div>
           ) : own ? (
             <>
