@@ -88,7 +88,7 @@ evals/{cases,lib,runner,reports}/  # cases.v3 41条多模型runner+分模型额�
 | DemoUser | displayName、avatar ImageRef、isSwitchable；共 25 条，5 条可切换 |
 | Pet | ownerId、species=`dog`、name(1–20)、breed(1–30，可“未知”)、ageMonths(null 或 0–360)、size=`small/medium/large/unknown`、city、district、photo ImageRef、temperamentTags、activityTags、socialNotes(≤500)、demoLocation、isFictional=true |
 | SocialCard | petId、petRevision、traits / likes / dislikes / cautions（各 ≤6 项、单项 ≤60 字）、meetingAdvice(≤300 字)、source=`manual`、confirmedAt、confirmedBy；空数组表示未知，不能当作没有风险 |
-| Post | authorId、petIds(≤3)、title(0–60，旧数据缺省空串)、text(1–1000)、images(≤3)、likedByUserIds（去重 ID） |
+| Post | authorId、petIds(≤3)、title(0–60，旧数据缺省空串)、text(1–1000)、tags(0–5 个话题标签，不含 #，每个 ≤12 字且只含中文 / 字母 / 数字 / 下划线、不重复，旧数据缺省空数组)、images(≤3)、likedByUserIds（去重 ID） |
 | Follow（信封内关系） | followerId / followingId，只允许可切换身份关注存在的其他主人；有向关系去重，不允许自己关注自己 |
 | Activity | organizerId、organizerPetId、recommendedPetIds(≤5，仅推荐)、title(1–40)、description(≤500)、place PlaceRef、startAt、endAt、capacity(2–12)、status=`scheduled/cancelled` |
 | ActivitySignup | activityId、userId、petId、status=`joined/cancelled`；每活动每身份最多一个 joined；组织者自动 joined |
@@ -149,7 +149,7 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 
 [Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)（[SSE 解析](../src/server/ai/sse.ts)、[模型白名单](../src/server/ai/models.ts)）。密钥、Prompt、模型配置与额度模块使用 server-only。模型只来自服务端白名单（见 [AGENTS](../AGENTS.md#ai-与模型)）：文本组由 AI_MODEL 选择（默认 qwen3.8-flash），视觉组由 AI_VISION_MODEL 选择（默认 qwen3.8-omni-flash）；名称须精确匹配所在组，否则返回 AI_MODEL_NOT_APPROVED，无自动回退。callModel 的 `model` 覆盖参数只供服务端 / 评测调用，同样受白名单约束；Route 不读取浏览器传入的模型字段（多余字段按 strict Schema 拒绝）。白名单 Qwen 5 个型号名经百炼模型列表、gemini-3.5-flash-lite / gemini-3.8-flash 经 Gemini 模型列表核实存在（见 [AI_EVAL](AI_EVAL.md#模型名核实2026-10-18) 与第 6b 步）。每个型号的 profile 指定 provider：dashscope 用 DASHSCOPE_API_KEY 与下述百炼端点；gemini 用 GEMINI_API_KEY 与固定的 `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`（不可配置）。取舍见 [DECISIONS D024](DECISIONS.md)。callModel 另有评测专用 `reserve` 钩子，以独立评测账本替代产品额度账本，Route 从不传入。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
-POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling；pet-photo 只接受 {image}（见下文“拍照建档”）。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
+POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling；pet-photo 只接受 {image}（见下文“拍照建档”）；post-meta 只接受 {text, image?}、post-safety 只接受 {title, text, tags}（见下文“社区 AI”）。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
 
 | 场景 | 最少上下文与结果 |
 | --- | --- |
@@ -157,12 +157,14 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 | help-intent | 描述 + 最多3只本人宠物摘要；类型、宠物、起止、时长、原始时间与公共地点线索；缺失信息及地点复核沿用原表单校验 |
 | companion-intent | 描述 + 选中本人宠物摘要；match 包含 / 排斥条件、日期时间提议、活动类型、地点关键词、软偏好、其他硬要求、澄清；不返回实体 |
 | pet-photo | 仅一张浏览器重新编码的 JPEG 缩略图（≤512px、无 EXIF）；输出是否为狗、多只狗、品种、体型、毛色、可见特征及各自置信度，经程序审核后返回草稿 |
+| post-meta | 帖子正文，可选一张同规格缩略图；有图走视觉组模型，否则文本组；输出标题 / 标签 / 提示，经程序审核后返回草稿 |
+| post-safety | 本帖标题、正文、标签（不含图片与其他数据），文本组模型；输出通过 / 建议修改及问题类别、原文片段、理由 |
 
 成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；失败 {ok:false,requestId,error:{code,message,retryable}}。400 输入 / 协议 / 模型能力不符、413 超量、403 来源、429 本地额度、499 客户端取消、503 配置 / 账本、502 上游 / 非法输出 / 流中断、504 超时。失败不返回上游原始正文或思考过程。
 
 浏览器请求带 `Accept: application/x-ndjson` 时，Route 在模型开始返回（或进入自动重试）后改为 NDJSON：若干 `{type:"progress",stage:"waiting"|"receiving"|"retrying",attempt,chars}`，最后一行 `{type:"result",body:<成功信封>}` 或 `{type:"error",status,body:<失败信封>}`。在此之前发生的失败（来源、输入、额度、配置、上游 HTTP 错误）仍是普通 JSON 和真实 HTTP 状态。进度只含阶段与已接收字符数，不推送模型原文；结果仍在服务端整体解析并通过 Zod / 业务校验后才下发。[浏览器客户端](../src/lib/ai/client.ts) 兼容两种响应，界面在等待时显示已等待秒数，接收中显示字符数，重试时提示。
 
-请求流上限48KB（pet-photo 为170KB），描述1500字、摘要至多3宠；上游请求文本30000字节（图片不计 base64 长度，按下述图片 Token 规则估算）。Qwen：max_tokens=1400、temperature=0.1，文本模型发送 enable_thinking=false。Gemini：不发送 temperature 与 enable_thinking，发送 reasoning_effort（3.5-flash-lite 为 minimal、3.8-flash 为 low），max_tokens=4096（含思考 Token）；tool_calls 上的 `extra_content.google.thought_signature` 原样保存在签名上下文并在续传时回传，流式 tool_calls 缺 index 时按 id 归并。回答修复指令以 user 角色追加。
+请求流上限48KB（pet-photo、post-meta 为170KB），描述1500字、摘要至多3宠；上游请求文本30000字节（图片不计 base64 长度，按下述图片 Token 规则估算）。Qwen：max_tokens=1400、temperature=0.1，文本模型发送 enable_thinking=false。Gemini：不发送 temperature 与 enable_thinking，发送 reasoning_effort（3.5-flash-lite 为 minimal、3.8-flash 为 low），max_tokens=4096（含思考 Token）；tool_calls 上的 `extra_content.google.thought_signature` 原样保存在签名上下文并在续传时回传，流式 tool_calls 缺 index 时按 id 归并。回答修复指令以 user 角色追加。
 
 - 流式：默认 `stream:true` 并带 `stream_options.include_usage`，AI_STREAM=false 时走原非流式路径；只支持流式的模型（qwen3.5-omni-plus，见下文图片一条）强制流式。SSE 解析拼接 content 增量、按 index 拼接 tool_calls 片段（名称取首片段，arguments 连接），保留末尾 usage；原始流 ≤512000 字节、单行 ≤64000、文本 ≤16000 字符。未见 finish_reason 即断流为 AI_UPSTREAM_STREAM_INTERRUPTED，`length` 截断为 AI_UPSTREAM_INCOMPLETE，流内 error / 非法 JSON 显式失败。若上游忽略 stream 返回 JSON 信封，按非流式解析。
 - 输出：结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。流式与非流式都整体拼接后再走同一校验，不消费部分结果。格式错误最多一次无工具严格总结修复，计入4轮。
@@ -199,6 +201,13 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 [recognizePetPhoto](../src/server/ai/service.ts) 用视觉组模型（AI_VISION_MODEL，默认 qwen3.8-omni-flash）与 [petPhotoPrompt](../src/server/ai/prompts.ts)（pawmeet-photo-2）调用，抽取式任务可自动重试一次；输出先过 [petPhotoOutputSchema](../src/lib/ai/contracts.ts)（strict：dog、multipleDogs、breed、size、coatColor、features，各带 0–1 置信度，没有健康 / 年龄 / 性格字段），不合法为 AI_INVALID_OUTPUT。再由 [reviewPetPhoto](../src/lib/ai/photo.ts) 做业务审核：不是“确信是一只狗”（非狗、拿不准、多只狗）一律不填；每个字段置信度 ≥0.6 才可填入，unknown / 混血不填；看起来像诊断、年龄、性格或胖瘦评价的文字不论置信度一律移除并提示；提示语由程序生成，不回显模型原文。浏览器只收到审核后的草稿（petPhotoDraftSchema）。
 
 “填入表单（尚未保存）”只写入表单：品种、体型和“外观：毛色、特征”（追加到见面前的小提醒），沿用 `data-ai-filled` 标记，手改即清除；点击“确认保存档案”才走原 save-pet 命令。失败（未配置、超时、额度、Schema 不过）显示真实错误码，表单仍可完整手填。
+
+### 社区 AI（post-meta / post-safety）
+
+入口为发帖页的 [PostMetaAssist 与 PrecheckPanel](../src/features/community/compose-ai.tsx)，由 [PostEditor](../src/features/forms/forms.tsx) 组合；模型选择沿用配置（文本 AI_MODEL、视觉 AI_VISION_MODEL，均在白名单内），不写死厂商。
+
+- 标题 / 标签草稿：只有点击“AI 生成标题和标签”才调用；输入是正文，勾选“同时参考第一张照片”时附带 [makeThumbnail](../src/lib/ai/thumbnail.ts) 生成的缩略图（服务端同样经 thumbnailPart 复查）。[generatePostMeta](../src/server/ai/service.ts) 使用 postMetaPrompt（COMMUNITY_PROMPT_VERSION pawmeet-community-1），输出先过 strict [postMetaOutputSchema](../src/lib/ai/contracts.ts)，再由 [reviewPostMeta](../src/lib/ai/community.ts) 审核：标题去引号后须 1–20 字（不截断，超长即 AI_INVALID_OUTPUT）；标签去 #、去空白后须符合帖子标签格式，重复、超出 5 个、含正文没有出现过的健康 / 身份词（疫苗、过敏、兽医、认证、博主等）或命中个人信息 / 导流规则的被去掉并计数，剩余不足 3 个即失败；提示语同样过滤。草稿经 `fillForm` 写入标题与标签输入框并带 `data-ai-filled`，手改清除，点击发布才走原 publish-post 命令。
+- 发布前预检：点“确认发布动态”先过 postInputSchema，再执行 [rulePrecheck](../src/domain/moderation.ts)（纯函数，浏览器运行，全角数字 / 字母先按等长归一化，片段取用户原文）：手机号（含空格 / 横线 / +86）、座机、身份证、微信 / QQ 号、门牌级地址为个人信息（阻止）；外链与域名、加微信 / 扫码 / 进群、代购 / 宠物买卖、辱骂词、虐待动物、给宠物喂人用药或有毒食物为建议，后三类在同一分句内紧邻“别 / 不要 / 千万不”等否定时不报。有阻止项时不调用模型；否则调用 [precheckPost](../src/server/ai/service.ts)（postSafetyPrompt，strict [postSafetyOutputSchema](../src/lib/ai/contracts.ts)），[reviewPostSafety](../src/lib/ai/community.ts) 把 pass 但带问题的输出改为 revise、拒绝无原因的 revise，片段不是原文连续子串时去掉高亮只保留理由；AI 结论一律为非阻止建议。两层都未发现问题才直接发布；否则显示逐条结果（类别、来源、片段上下文高亮、理由），按 [D025](DECISIONS.md) 提供“去修改”“仍要发布”或“重试 AI 预检 / 不经 AI 预检发布”。结果以 [precheckKey](../src/domain/moderation.ts) 绑定所查内容，表单任一修改或 AI 填入即清除结果、中止进行中的预检，迟到结果丢弃；预检状态不持久化。
 
 ### 公开 Demo 保护
 
