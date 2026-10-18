@@ -25,8 +25,10 @@ export function answerRepairInstruction(
   refs: string[],
   allowed: readonly AssistantSummary[] = assistantSummaries,
 ): Message {
+  // A user turn, not system: Gemini lifts system messages out of the conversation and then
+  // rejects a request that ends with the model's own turn.
   return {
-    role: "system",
+    role: "user",
     content: `最终回答未通过校验。只返回单个JSON对象，恰好包含summary和references，不带说明或代码围栏。summary从${JSON.stringify(allowed)}逐字选择，依据实际工具结果如实报告成功、空结果、澄清或失败；互助草稿尚未发布。references只可选${JSON.stringify(refs)}，没有引用时用[]。不要请求工具或生成实体。`,
   };
 }

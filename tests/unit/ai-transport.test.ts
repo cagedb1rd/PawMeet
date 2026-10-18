@@ -345,6 +345,50 @@ describe("Gemini provider", () => {
       callModel(user, "s", "r", [], four, undefined, { retry: "none" }),
     ).rejects.toMatchObject({ code: "AI_UPSTREAM_RESPONSE_LIMIT" });
   });
+  it("sends the answer repair as a user turn so the request never ends on the model", async () => {
+    vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
+    const t = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        sse([
+          delta({
+            tool_calls: [
+              {
+                id: "tc1",
+                type: "function",
+                function: { name: "search_pets", arguments: "{}" },
+              },
+            ],
+          }),
+          delta({}, "tool_calls"),
+        ]),
+      )
+      .mockResolvedValueOnce(
+        ok(JSON.stringify({ summary: "随便写的", references: ["0"] })),
+      )
+      .mockResolvedValueOnce(
+        ok(
+          JSON.stringify({
+            summary: "没有符合条件的结果，请调整条件。",
+            references: [],
+          }),
+        ),
+      );
+    vi.stubGlobal("fetch", t);
+    const first = await assistantStep({ text: "找宠友" }, "s", "r");
+    await assistantStep(
+      {
+        continuation: first.data.continuation,
+        results: [{ toolCallId: "tc1", result: { kind: "pets", rows: [] } }],
+      },
+      "s",
+      "r",
+    );
+    expect(t).toHaveBeenCalledTimes(3);
+    const repair = bodyOf(t, 2).messages as Message[];
+    expect(repair.at(-2)?.role).toBe("assistant");
+    expect(repair.at(-1)?.role).toBe("user");
+  });
   it("echoes the thought signature unchanged on the continuation request", async () => {
     vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
     const signature = { google: { thought_signature: "c2lnLWI=" } };
