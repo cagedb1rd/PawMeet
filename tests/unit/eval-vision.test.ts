@@ -87,12 +87,12 @@ describe("eval budget: unsent attempts are released, everything else stays conse
     });
     expect(b.snapshot().unsent).toBe(0);
   });
-  it("vision caps are 50k per model and separate from the text caps", () => {
+  it("vision caps follow the approvals (Qwen 50k, Gemini rerun 60k) and are separate from the text caps", () => {
     expect(VISION_TOKEN_CAPS).toEqual({
       "qwen3.8-omni-flash": 50000,
       "qwen3.5-omni-plus": 50000,
-      "gemini-3.5-flash-lite": 50000,
-      "gemini-3.8-flash": 50000,
+      "gemini-3.5-flash-lite": 60000,
+      "gemini-3.8-flash": 60000,
     });
     expect(MODEL_TOKEN_CAPS["gemini-3.8-flash"]).toBe(300000);
   });
@@ -357,6 +357,16 @@ describe("vision runner", () => {
         "live",
         "--model",
         "gemini-3.8-flash",
+        "--token-limit",
+        "60001",
+      ]),
+    ).toThrow("60000");
+    expect(() =>
+      parseVisionConfig([
+        "--mode",
+        "live",
+        "--model",
+        "qwen3.8-omni-flash",
         "--token-limit",
         "50001",
       ]),

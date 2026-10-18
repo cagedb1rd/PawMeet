@@ -15,15 +15,17 @@ export const MODEL_TOKEN_CAPS: Record<string, number> = {
   "gemini-3.8-flash": 300000,
 };
 /**
- * Vision eval caps (AGENTS「AI 与模型」, step 7): each vision model ≤50k in its own ledger
- * (default .local/ai-eval/step7-vision-ledger.json). Gemini ids overlap the text whitelist, so
- * vision runs never read the text caps above.
+ * Vision eval caps (AGENTS「AI 与模型」). Qwen-Omni: ≤50k each in the step-7 ledger
+ * (.local/ai-eval/step7-vision-ledger.json, the default). Gemini: the user's follow-up approval
+ * of ≤60k each for one complete 16-image rerun in a new ledger
+ * (--ledger .local/ai-eval/step7b-vision-ledger.json); the step-7 Gemini budget is used up.
+ * Gemini ids overlap the text whitelist, so vision runs never read the text caps above.
  */
 export const VISION_TOKEN_CAPS: Record<string, number> = {
   "qwen3.8-omni-flash": 50000,
   "qwen3.5-omni-plus": 50000,
-  "gemini-3.5-flash-lite": 50000,
-  "gemini-3.8-flash": 50000,
+  "gemini-3.5-flash-lite": 60000,
+  "gemini-3.8-flash": 60000,
 };
 
 /**
