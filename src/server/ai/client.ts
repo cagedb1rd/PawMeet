@@ -3,7 +3,12 @@ import { z } from "zod";
 import { toolCallSchema, type AiProgress } from "@/lib/ai/contracts";
 import { AiError } from "./errors";
 import { reserveAiCall, withAiSlot } from "./quota";
-import { ModelKind, resolveModel, transportConfig } from "./models";
+import {
+  ModelKind,
+  PROVIDERS,
+  resolveModel,
+  transportConfig,
+} from "./models";
 import { readChatStream, type Usage } from "./sse";
 export type ContentPart =
   | { type: "text"; text: string }
@@ -50,7 +55,6 @@ export type CallOptions = {
    */
   reserve?: (worstTokens: number) => Promise<void> | void;
 };
-const MAX_OUTPUT_TOKENS = 1400;
 /** Conservative quota estimate for one ≤512px thumbnail, instead of counting base64 bytes. */
 const IMAGE_TOKEN_ESTIMATE = 1500;
 const RETRYABLE_STATUS = [429, 500, 502, 503, 504];
@@ -72,13 +76,24 @@ export function imagePart(dataUrl: string): ContentPart {
 }
 
 export function aiConfig(kind: ModelKind = "text", model?: string) {
-  if (process.env.AI_ENABLED !== "true" || !process.env.DASHSCOPE_API_KEY)
+  const profile = resolveModel(kind, model);
+  const provider = PROVIDERS[profile.provider];
+  const key = process.env[provider.keyEnv];
+  if (process.env.AI_ENABLED !== "true" || !key)
     throw new AiError(
       "AI_NOT_CONFIGURED",
-      "AI尚未配置：请在服务端设置DASHSCOPE_API_KEY并启用AI_ENABLED",
+      `AI尚未配置：请在服务端设置${provider.keyEnv}并启用AI_ENABLED`,
       503,
     );
-  const profile = resolveModel(kind, model);
+  // Gemini uses its fixed official endpoint; only the DashScope region is configurable.
+  if (profile.provider === "gemini")
+    return {
+      model: profile.id,
+      profile,
+      url: provider.url,
+      key,
+      ...transportConfig(),
+    };
   const base = new URL(
     process.env.AI_BASE_URL ||
       "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -105,7 +120,7 @@ export function aiConfig(kind: ModelKind = "text", model?: string) {
     model: profile.id,
     profile,
     url: `${base.origin}/compatible-mode/v1/chat/completions`,
-    key: process.env.DASHSCOPE_API_KEY,
+    key,
     ...transportConfig(),
   };
 }
@@ -154,7 +169,7 @@ async function readJson(response: Response) {
     length += part.value.length;
     if (length > 64000) {
       await reader.cancel();
-      throw new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制");
+      throw new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制");
     }
     chunks.push(part.value);
   }
@@ -208,8 +223,13 @@ export async function callModel(
     ...(profile.thinkingParams
       ? { enable_thinking: false, preserve_thinking: false }
       : {}),
-    temperature: 0.1,
-    max_tokens: MAX_OUTPUT_TOKENS,
+    ...(profile.reasoningEffort
+      ? { reasoning_effort: profile.reasoningEffort }
+      : {}),
+    ...(profile.temperature === null
+      ? {}
+      : { temperature: profile.temperature }),
+    max_tokens: profile.maxOutputTokens,
     stream,
     ...(stream ? { stream_options: { include_usage: true } } : {}),
     ...(profile.responseFormat
@@ -245,7 +265,7 @@ export async function callModel(
       400,
     );
   const worstTokens =
-    textBytes + MAX_OUTPUT_TOKENS + images.length * IMAGE_TOKEN_ESTIMATE;
+    textBytes + profile.maxOutputTokens + images.length * IMAGE_TOKEN_ESTIMATE;
   const maxAttempts = retry === "none" ? 1 : 2;
   const progress = options.onProgress;
   return withAiSlot(async () => {
@@ -310,17 +330,17 @@ export async function callModel(
           throw new AiError(
             `AI_UPSTREAM_HTTP_${response.status}`,
             response.status === 401 || response.status === 403
-              ? "Qwen认证或访问权限失败"
+              ? "模型认证或访问权限失败"
               : response.status === 429
-                ? "Qwen请求已受限，请稍后重试"
-                : "Qwen服务调用失败，请稍后重试",
+                ? "模型请求已受限，请稍后重试"
+                : "模型服务调用失败，请稍后重试",
             502,
             RETRYABLE_STATUS.includes(response.status),
             providerCode,
           );
         }
         if (!response.body)
-          throw new AiError("AI_UPSTREAM_EMPTY", "Qwen返回空响应");
+          throw new AiError("AI_UPSTREAM_EMPTY", "模型返回空响应");
         const sse =
           stream &&
           !response.headers.get("content-type")?.includes("application/json");
@@ -342,16 +362,16 @@ export async function callModel(
         if (!["stop", "tool_calls"].includes(result.finishReason ?? ""))
           throw new AiError(
             "AI_UPSTREAM_INCOMPLETE",
-            "Qwen输出未完整结束，不能使用该草稿",
+            "模型输出未完整结束，不能使用该草稿",
           );
         const toolCalls = z
           .array(toolCallSchema)
           .max(3)
           .parse(result.toolCalls.filter(Boolean));
         if (result.content.length > 16000)
-          throw new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制");
+          throw new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制");
         if (!result.content && !toolCalls.length)
-          throw new AiError("AI_UPSTREAM_EMPTY", "Qwen未返回内容或工具调用");
+          throw new AiError("AI_UPSTREAM_EMPTY", "模型未返回内容或工具调用");
         return {
           message: {
             role: "assistant" as const,
@@ -382,8 +402,8 @@ export async function callModel(
           throw new AiError(
             "AI_UPSTREAM_TIMEOUT",
             reason === "first-byte"
-              ? "Qwen长时间未开始响应，请手动重试"
-              : "Qwen请求超时，请手动重试",
+              ? "模型长时间未开始响应，请手动重试"
+              : "模型请求超时，请手动重试",
             504,
             true,
           );
@@ -391,7 +411,7 @@ export async function callModel(
         if (e instanceof SyntaxError || e instanceof z.ZodError)
           throw new AiError(
             "AI_UPSTREAM_INVALID_RESPONSE",
-            "Qwen返回非法结构或非JSON内容",
+            "模型返回非法结构或非JSON内容",
           );
         const networkCode = (e as { cause?: { code?: string } })?.cause?.code;
         const transient =
@@ -403,7 +423,7 @@ export async function callModel(
         }
         throw new AiError(
           "AI_UPSTREAM_NETWORK",
-          "Qwen网络连接失败，请手动重试",
+          "模型网络连接失败，请手动重试",
           502,
           true,
         );
@@ -414,6 +434,6 @@ export async function callModel(
         if (again) await sleep(backoff);
       }
     }
-    throw new AiError("AI_UPSTREAM_RETRY_LIMIT", "Qwen重试次数已达上限");
+    throw new AiError("AI_UPSTREAM_RETRY_LIMIT", "模型重试次数已达上限");
   });
 }

@@ -5,6 +5,7 @@
  * Results are labelled 模拟数据 and can never be merged with live reports.
  */
 import { resolveAvailability } from "../../src/lib/ai/availability";
+import { PROVIDERS } from "../../src/server/ai/models";
 import type { EvalCase, WorkflowCase } from "../cases/current";
 import { now } from "../cases/current";
 
@@ -244,7 +245,10 @@ export function createMockTransport(
   const seen = new Map<string, number>();
   return async (input, init) => {
     const url = String(input);
-    if (!url.startsWith(`${MOCK_HOST}/compatible-mode/v1/chat/completions`))
+    if (
+      !url.startsWith(`${MOCK_HOST}/compatible-mode/v1/chat/completions`) &&
+      url !== PROVIDERS.gemini.url
+    )
       throw Error(`mock transport refuses ${url}`);
     const c = ctx.current;
     if (!c) throw Error("mock transport has no active case");

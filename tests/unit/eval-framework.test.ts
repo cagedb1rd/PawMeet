@@ -138,7 +138,9 @@ describe("whitelist and config", () => {
         "--token-limit",
         String(MODEL_TOKEN_CAPS["qwen3.8-flash"] + 1),
       ]),
-    ).toThrow(/0–200000/);
+    ).toThrow(`0–${MODEL_TOKEN_CAPS["qwen3.8-flash"]}`);
+    expect(MODEL_TOKEN_CAPS["gemini-3.8-flash"]).toBe(300000);
+    expect(MODEL_TOKEN_CAPS["gemini-3.5-flash-lite"]).toBe(300000);
     expect(
       parseConfig([
         "--mode",

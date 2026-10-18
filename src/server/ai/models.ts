@@ -2,9 +2,27 @@ import "server-only";
 import { AiError } from "./errors";
 
 export type ModelKind = "text" | "vision";
+export type Provider = "dashscope" | "gemini";
+/** Server-only provider endpoints and key variables; never configurable from the browser. */
+export const PROVIDERS: Record<
+  Provider,
+  { label: string; keyEnv: string; url: string }
+> = {
+  dashscope: {
+    label: "Qwen",
+    keyEnv: "DASHSCOPE_API_KEY",
+    url: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  },
+  gemini: {
+    label: "Gemini",
+    keyEnv: "GEMINI_API_KEY",
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  },
+};
 export type ModelProfile = {
   id: string;
   kind: ModelKind;
+  provider: Provider;
   /** Provider only accepts stream=true (Qwen-Omni class; re-verify in docs before step 7). */
   streamOnly: boolean;
   /** Sends enable_thinking/preserve_thinking=false. */
@@ -13,28 +31,63 @@ export type ModelProfile = {
   responseFormat: boolean;
   /** Accepts image_url content parts. */
   images: boolean;
+  /** OpenAI reasoning_effort for models whose thinking cannot be turned off (Gemini 3). */
+  reasoningEffort?: "minimal" | "low";
+  /** null = provider default (Gemini 3 recommends keeping the default 1.0). */
+  temperature: number | null;
+  /** max_tokens; on Gemini 3 it includes thinking tokens, so it is set higher. */
+  maxOutputTokens: number;
 };
+const qwenText = (id: string): ModelProfile => ({
+  id,
+  kind: "text",
+  provider: "dashscope",
+  streamOnly: false,
+  thinkingParams: true,
+  responseFormat: true,
+  images: false,
+  temperature: 0.1,
+  maxOutputTokens: 1400,
+});
+const geminiText = (
+  id: string,
+  reasoningEffort: "minimal" | "low",
+): ModelProfile => ({
+  id,
+  kind: "text",
+  provider: "gemini",
+  streamOnly: false,
+  thinkingParams: false,
+  responseFormat: true,
+  images: false,
+  reasoningEffort,
+  temperature: null,
+  maxOutputTokens: 4096,
+});
 
 /**
- * Server whitelist (AGENTS「AI 与模型」). Names still pending step 5 verification against
- * the Model Studio list; changes require user approval. No automatic fallback.
+ * Server whitelist (AGENTS「AI 与模型」), names verified against each provider's model list;
+ * changes require user approval. No automatic fallback, across or within providers.
+ * Gemini thinking uses the lowest level each model supports (3.8 Flash cannot go below low).
  */
 export const MODEL_WHITELIST: Record<ModelKind, readonly ModelProfile[]> = {
-  text: ["qwen3.8-flash", "qwen3.8-max-0902", "qwen3.8-27b"].map((id) => ({
-    id,
-    kind: "text" as const,
-    streamOnly: false,
-    thinkingParams: true,
-    responseFormat: true,
-    images: false,
-  })),
+  text: [
+    qwenText("qwen3.8-flash"),
+    qwenText("qwen3.8-max-0902"),
+    qwenText("qwen3.8-27b"),
+    geminiText("gemini-3.5-flash-lite", "minimal"),
+    geminiText("gemini-3.8-flash", "low"),
+  ],
   vision: ["qwen3.8-omni-flash", "qwen3.5-omni-plus"].map((id) => ({
     id,
     kind: "vision" as const,
+    provider: "dashscope" as const,
     streamOnly: true,
     thinkingParams: false,
     responseFormat: false,
     images: true,
+    temperature: 0.1,
+    maxOutputTokens: 1400,
   })),
 };
 const DEFAULT_MODEL: Record<ModelKind, string> = {

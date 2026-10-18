@@ -136,10 +136,18 @@ export const petSummarySchema = z.strictObject({
   activityTags: z.array(z.enum(interests)).max(8),
   socialNotes: short(500),
 });
+/**
+ * Opaque provider metadata on a tool call that must be sent back unchanged on the next turn.
+ * Gemini 3 rejects a follow-up request whose function calls lack their thought signature.
+ */
+export const toolCallExtraSchema = z.strictObject({
+  google: z.strictObject({ thought_signature: short(8000).min(1) }),
+});
 export const toolCallSchema = z.strictObject({
   id: short(100).min(1),
   type: z.literal("function"),
   function: z.strictObject({ name: short(50).min(1), arguments: short(7000) }),
+  extra_content: toolCallExtraSchema.optional(),
 });
 export type ToolCall = z.infer<typeof toolCallSchema>;
 export const activitySearchSchema = z.strictObject({

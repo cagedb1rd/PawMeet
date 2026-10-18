@@ -17,7 +17,7 @@ vi.mock("@/server/ai/quota", async (original) => {
   return { ...real, reserveAiCall: reserve };
 });
 import { aiConfig, callModel, imagePart, Message } from "@/server/ai/client";
-import { MODEL_WHITELIST } from "@/server/ai/models";
+import { MODEL_WHITELIST, PROVIDERS } from "@/server/ai/models";
 import { assistantStep, generateTask } from "@/server/ai/service";
 import { POST } from "@/app/api/ai/[task]/route";
 import { NextRequest } from "next/server";
@@ -68,6 +68,7 @@ beforeEach(async () => {
   dir = await mkdtemp(path.join(tmpdir(), "paw-transport-"));
   vi.stubEnv("QUOTA_STORE_PATH", path.join(dir, "quota.json"));
   vi.stubEnv("DASHSCOPE_API_KEY", "unit-secret-never-expose");
+  vi.stubEnv("GEMINI_API_KEY", "unit-gemini-secret-never-expose");
   vi.stubEnv("AI_ENABLED", "true");
   vi.stubEnv("AI_MODEL", "");
   vi.stubEnv("AI_VISION_MODEL", "");
@@ -207,6 +208,187 @@ describe("vision / omni compatibility", () => {
       "data:image/png;base64," + "A".repeat(400000),
     ])
       expect(() => imagePart(bad)).toThrow("缩略图");
+  });
+});
+
+describe("Gemini provider", () => {
+  const headersOf = (t: ReturnType<typeof vi.fn<typeof fetch>>) =>
+    t.mock.calls[0][1]!.headers as Record<string, string>;
+  it("sends Gemini models to the fixed Gemini endpoint with their own key and thinking level", async () => {
+    for (const [id, effort] of [
+      ["gemini-3.8-flash", "low"],
+      ["gemini-3.5-flash-lite", "minimal"],
+    ]) {
+      vi.stubEnv("AI_MODEL", id);
+      const t = vi.fn<typeof fetch>().mockResolvedValue(ok("{}"));
+      await callModel(user, "s", "r", undefined, t);
+      expect(t.mock.calls[0][0]).toBe(PROVIDERS.gemini.url);
+      expect(headersOf(t).Authorization).toBe(
+        "Bearer unit-gemini-secret-never-expose",
+      );
+      const body = bodyOf(t);
+      expect(body.model).toBe(id);
+      expect(body.reasoning_effort).toBe(effort);
+      expect(body.max_tokens).toBe(4096);
+      expect(body).not.toHaveProperty("temperature");
+      expect(body).not.toHaveProperty("enable_thinking");
+      expect(body).not.toHaveProperty("preserve_thinking");
+    }
+  });
+  it("keeps Qwen requests unchanged and never sends the Gemini key to DashScope", async () => {
+    const t = vi.fn<typeof fetch>().mockResolvedValue(ok("{}"));
+    await callModel(user, "s", "r", undefined, t);
+    expect(String(t.mock.calls[0][0])).toBe(
+      "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    );
+    expect(headersOf(t).Authorization).toBe("Bearer unit-secret-never-expose");
+    const body = bodyOf(t);
+    expect(body.temperature).toBe(0.1);
+    expect(body.max_tokens).toBe(1400);
+    expect(body.enable_thinking).toBe(false);
+    expect(body).not.toHaveProperty("reasoning_effort");
+  });
+  it("a missing provider key blocks only that provider, before any request", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
+    const t = vi.fn<typeof fetch>().mockResolvedValue(ok("{}"));
+    await expect(callModel(user, "s", "r", undefined, t)).rejects.toMatchObject({
+      code: "AI_NOT_CONFIGURED",
+      message: expect.stringContaining("GEMINI_API_KEY"),
+    });
+    expect(t).not.toHaveBeenCalled();
+    vi.stubEnv("AI_MODEL", "qwen3.8-flash");
+    await callModel(user, "s", "r", undefined, t);
+    expect(t).toHaveBeenCalledTimes(1);
+  });
+  it("keeps a streamed thought signature on its tool call", async () => {
+    vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
+    const t = vi.fn<typeof fetch>().mockResolvedValue(
+      sse([
+        delta({
+          role: "assistant",
+          tool_calls: [
+            {
+              index: 0,
+              id: "call_g",
+              type: "function",
+              function: { name: "search_pets", arguments: '{"radius' },
+              extra_content: { google: { thought_signature: "c2lnLWE=" } },
+            },
+          ],
+        }),
+        delta({
+          tool_calls: [{ index: 0, function: { arguments: 'Km":3}' } }],
+        }),
+        delta({}, "tool_calls"),
+        { choices: [], usage },
+      ]),
+    );
+    const r = await callModel(user, "s", "r", [], t);
+    expect(r.message.tool_calls).toEqual([
+      {
+        id: "call_g",
+        type: "function",
+        function: { name: "search_pets", arguments: '{"radiusKm":3}' },
+        extra_content: { google: { thought_signature: "c2lnLWE=" } },
+      },
+    ]);
+  });
+  it("accepts Gemini tool-call chunks that omit index (one whole call per entry)", async () => {
+    vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
+    const whole = (id: string, name: string, args: string, sig: string) => ({
+      extra_content: { google: { thought_signature: sig } },
+      function: { arguments: args, name },
+      id,
+      type: "function",
+    });
+    const t = vi.fn<typeof fetch>().mockResolvedValue(
+      sse([
+        {
+          choices: [
+            {
+              delta: {
+                role: "assistant",
+                tool_calls: [
+                  whole("call_1", "search_places", '{"query":"公园"}', "c2lnLTE="),
+                  whole("call_2", "search_pets", "{}", "c2lnLTI="),
+                ],
+              },
+              index: 0,
+            },
+          ],
+          usage,
+        },
+        { choices: [{ delta: {}, finish_reason: "tool_calls", index: 0 }] },
+      ]),
+    );
+    const r = await callModel(user, "s", "r", [], t);
+    expect(r.message.tool_calls?.map((c) => [c.id, c.function.name])).toEqual([
+      ["call_1", "search_places"],
+      ["call_2", "search_pets"],
+    ]);
+    expect(r.message.tool_calls?.[1].extra_content).toEqual({
+      google: { thought_signature: "c2lnLTI=" },
+    });
+    expect(r.usage).toEqual(usage);
+    const four = vi.fn<typeof fetch>().mockResolvedValue(
+      sse([
+        delta({
+          tool_calls: ["a", "b", "c", "d"].map((id) =>
+            whole(id, "search_pets", "{}", "c2ln"),
+          ),
+        }),
+        delta({}, "tool_calls"),
+      ]),
+    );
+    await expect(
+      callModel(user, "s", "r", [], four, undefined, { retry: "none" }),
+    ).rejects.toMatchObject({ code: "AI_UPSTREAM_RESPONSE_LIMIT" });
+  });
+  it("echoes the thought signature unchanged on the continuation request", async () => {
+    vi.stubEnv("AI_MODEL", "gemini-3.8-flash");
+    const signature = { google: { thought_signature: "c2lnLWI=" } };
+    const t = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        sse([
+          delta({
+            tool_calls: [
+              {
+                index: 0,
+                id: "tc1",
+                type: "function",
+                function: { name: "search_pets", arguments: "{}" },
+                extra_content: signature,
+              },
+            ],
+          }),
+          delta({}, "tool_calls"),
+        ]),
+      )
+      .mockResolvedValueOnce(
+        ok(
+          JSON.stringify({
+            summary: "没有符合条件的结果，请调整条件。",
+            references: [],
+          }),
+        ),
+      );
+    vi.stubGlobal("fetch", t);
+    const first = await assistantStep({ text: "找宠友" }, "s", "r");
+    const final = await assistantStep(
+      {
+        continuation: first.data.continuation,
+        results: [{ toolCallId: "tc1", result: { kind: "pets", rows: [] } }],
+      },
+      "s",
+      "r",
+    );
+    expect(final.data.answer?.summary).toBe("没有符合条件的结果，请调整条件。");
+    const echoed = (bodyOf(t, 1).messages as Message[]).find(
+      (m) => m.role === "assistant" && m.tool_calls,
+    );
+    expect(echoed?.tool_calls?.[0].extra_content).toEqual(signature);
   });
 });
 
@@ -480,7 +662,7 @@ describe("timeouts", () => {
     }).finally(() => (settled = true));
     const assertion = expect(p).rejects.toMatchObject({
       code: "AI_UPSTREAM_TIMEOUT",
-      message: "Qwen请求超时，请手动重试",
+      message: "模型请求超时，请手动重试",
     });
     await vi.advanceTimersByTimeAsync(9999);
     expect(settled).toBe(false);

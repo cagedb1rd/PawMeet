@@ -18,7 +18,8 @@ const chunkSchema = z.object({
             tool_calls: z
               .array(
                 z.object({
-                  index: z.number().int().nonnegative().max(2),
+                  // Gemini omits index and sends each call whole in one fragment.
+                  index: z.number().int().nonnegative().max(2).optional(),
                   id: z.string().nullable().optional(),
                   type: z.string().nullable().optional(),
                   function: z
@@ -26,6 +27,17 @@ const chunkSchema = z.object({
                       name: z.string().nullable().optional(),
                       arguments: z.string().nullable().optional(),
                     })
+                    .optional(),
+                  // Gemini thought signature; other provider metadata is dropped.
+                  extra_content: z
+                    .object({
+                      google: z
+                        .object({
+                          thought_signature: z.string().nullable().optional(),
+                        })
+                        .optional(),
+                    })
+                    .nullable()
                     .optional(),
                 }),
               )
@@ -46,6 +58,7 @@ export type StreamResult = {
     id: string;
     type: string;
     function: { name: string; arguments: string };
+    extra_content?: { google: { thought_signature: string } };
   }[];
   finishReason: string | null;
   usage: Usage | null;
@@ -88,7 +101,7 @@ export async function readChatStream(
       const value = JSON.parse(data);
       if (value && typeof value === "object" && "error" in value)
         return fail(
-          new AiError("AI_UPSTREAM_STREAM_ERROR", "Qwen流式响应返回错误"),
+          new AiError("AI_UPSTREAM_STREAM_ERROR", "模型流式响应返回错误"),
         );
       chunk = chunkSchema.parse(value);
     } catch (e) {
@@ -96,7 +109,7 @@ export async function readChatStream(
       return fail(
         new AiError(
           "AI_UPSTREAM_INVALID_RESPONSE",
-          "Qwen返回非法结构或非JSON内容",
+          "模型返回非法结构或非JSON内容",
         ),
       );
     }
@@ -106,7 +119,21 @@ export async function readChatStream(
     const delta = choice.delta;
     if (delta?.content) result.content += delta.content;
     for (const part of delta?.tool_calls ?? []) {
-      const call = (result.toolCalls[part.index] ??= {
+      const known = part.id
+        ? result.toolCalls.findIndex((c) => c?.id === part.id)
+        : -1;
+      const slot =
+        part.index ??
+        (known >= 0
+          ? known
+          : part.id
+            ? result.toolCalls.length
+            : Math.max(0, result.toolCalls.length - 1));
+      if (slot > 2)
+        return fail(
+          new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制"),
+        );
+      const call = (result.toolCalls[slot] ??= {
         id: "",
         type: "function",
         function: { name: "", arguments: "" },
@@ -118,6 +145,9 @@ export async function readChatStream(
         call.function.name = part.function.name;
       if (part.function?.arguments)
         call.function.arguments += part.function.arguments;
+      const signature = part.extra_content?.google?.thought_signature;
+      if (signature)
+        call.extra_content = { google: { thought_signature: signature } };
     }
     if (choice.finish_reason) result.finishReason = choice.finish_reason;
     const size =
@@ -128,7 +158,7 @@ export async function readChatStream(
       );
     if (size > STREAM_LIMITS.text)
       return fail(
-        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制"),
+        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制"),
       );
     onDelta?.(size);
   };
@@ -141,7 +171,7 @@ export async function readChatStream(
     raw += part.value.length;
     if (raw > STREAM_LIMITS.rawBytes)
       return fail(
-        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制"),
+        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制"),
       );
     buffer += decoder.decode(part.value, { stream: true });
     let index: number;
@@ -152,7 +182,7 @@ export async function readChatStream(
     }
     if (buffer.length > STREAM_LIMITS.line)
       return fail(
-        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "Qwen响应超过限制"),
+        new AiError("AI_UPSTREAM_RESPONSE_LIMIT", "模型响应超过限制"),
       );
   }
   if (!done && buffer.trim()) await handle(buffer.replace(/\r$/, ""));
@@ -160,14 +190,14 @@ export async function readChatStream(
   if (!result.finishReason)
     throw new AiError(
       "AI_UPSTREAM_STREAM_INTERRUPTED",
-      "Qwen流式输出中途断开，未得到完整结果",
+      "模型流式输出中途断开，未得到完整结果",
       502,
       true,
     );
   if (result.toolCalls.some((c) => !c))
     throw new AiError(
       "AI_UPSTREAM_INVALID_RESPONSE",
-      "Qwen返回非法结构或非JSON内容",
+      "模型返回非法结构或非JSON内容",
     );
   return result;
 }

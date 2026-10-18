@@ -242,7 +242,7 @@ export async function assistantStep(
   )
     throw new AiError("AI_TOOL_PROTOCOL", "模型请求了当前阶段未开放的工具");
   if (new Set(calls.map((c) => c.id)).size !== calls.length)
-    throw new AiError("AI_TOOL_PROTOCOL", "Qwen返回重复工具调用ID");
+    throw new AiError("AI_TOOL_PROTOCOL", "模型返回重复工具调用ID");
   state.toolCount += calls.length;
   if (state.toolCount > 9)
     throw new AiError("AI_TOOL_CALL_LIMIT", "工具调用已达9次上限", 400);

@@ -16,6 +16,7 @@ import { createMockTransport, type MockContext } from "../lib/mock-transport";
 import { runEval } from "../lib/runner";
 import { reportStem, runMarkdown } from "../lib/report";
 import { PROMPT_VERSION } from "@/server/ai/prompts";
+import { PROVIDERS, resolveModel } from "@/server/ai/models";
 import { VALIDATION_VERSION } from "@/lib/ai/validation";
 
 // Vitest buffers console output of passing tests; progress goes straight to stdout.
@@ -64,7 +65,8 @@ it("PawMeet multi-model evaluation", async () => {
       throw Error(
         "真实评测默认关闭；获得用户批准后设置 PAWMEET_ALLOW_LIVE_AI=approved",
       );
-    if (!process.env.DASHSCOPE_API_KEY) throw Error("DASHSCOPE_API_KEY 未配置");
+    const keyEnv = PROVIDERS[resolveModel("text", config.model).provider].keyEnv;
+    if (!process.env[keyEnv]) throw Error(`${keyEnv} 未配置`);
     if (estimate > budget.remaining)
       console.warn(
         `预计 ${estimate} Token 超过剩余额度 ${budget.remaining}：到额即停，剩余用例记 not_run。`,

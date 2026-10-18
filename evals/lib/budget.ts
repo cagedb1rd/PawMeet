@@ -8,9 +8,11 @@ import { AiError } from "../../src/server/ai/errors";
  * them; 0 (the default) allows no real call. Vision / community smoke are not text evals here.
  */
 export const MODEL_TOKEN_CAPS: Record<string, number> = {
-  "qwen3.8-flash": 200000,
+  "qwen3.8-flash": 300000,
   "qwen3.8-max-0902": 300000,
   "qwen3.8-27b": 300000,
+  "gemini-3.5-flash-lite": 300000,
+  "gemini-3.8-flash": 300000,
 };
 
 const entrySchema = z.strictObject({

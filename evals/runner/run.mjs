@@ -24,6 +24,7 @@ if (live) {
   // Simulated / legacy runs never see a real key or a configurable upstream URL.
   delete env.AI_BASE_URL;
   env.DASHSCOPE_API_KEY = "simulated-key-not-a-secret";
+  env.GEMINI_API_KEY = "simulated-key-not-a-secret";
   env.DEMO_SESSION_SECRET = "simulated-session-secret";
   env.AI_STREAM = "true";
   env.AI_FIRST_BYTE_TIMEOUT_MS = "1000";
