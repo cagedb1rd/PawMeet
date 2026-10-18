@@ -1,0 +1,3752 @@
+{
+  "kind": "pawmeet-eval-run",
+  "schemaVersion": 2,
+  "simulated": true,
+  "dataLabel": "模拟数据（mock 传输，未调用真实模型）",
+  "runId": "2026-10-18T07-42-22-384Z",
+  "mode": "simulated",
+  "model": "qwen3.8-flash",
+  "provider": "mock",
+  "promptVersion": "pawmeet-6.3",
+  "validationVersion": "pawmeet-validation-9",
+  "caseVersion": "cases.v3",
+  "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+  "gitDirty": true,
+  "clock": "2026-10-17T02:00:00.000Z",
+  "startedAt": "2026-10-18T07:42:22.447Z",
+  "finishedAt": "2026-10-18T07:42:37.472Z",
+  "config": {
+    "repeat": 1,
+    "cases": [
+      "CI01",
+      "CI02",
+      "CI03",
+      "CI04",
+      "CI05",
+      "CI06",
+      "CI07",
+      "CI08",
+      "CI09",
+      "CI10",
+      "CI11",
+      "CI12",
+      "CI13",
+      "CI14",
+      "CI15",
+      "CI16",
+      "CT01",
+      "CT02",
+      "CT03",
+      "CT04",
+      "CT05",
+      "CT06",
+      "CT07",
+      "PP01",
+      "PP02",
+      "PP03",
+      "PP04",
+      "PP05",
+      "PP06",
+      "PP07",
+      "PP08",
+      "PP09",
+      "HI01",
+      "HI02",
+      "HI03",
+      "HI04",
+      "HI05",
+      "HI06",
+      "HI07",
+      "HI08",
+      "HI09"
+    ],
+    "tokenLimit": null,
+    "maxCalls": null,
+    "minIntervalMs": 0,
+    "mockFaults": true,
+    "ledger": "memory"
+  },
+  "budget": {
+    "model": "qwen3.8-flash",
+    "limit": null,
+    "chargedBefore": 0,
+    "chargedAfter": 107244,
+    "chargedThisRun": 107244,
+    "knownThisRun": 84511,
+    "conservativeThisRun": 22733,
+    "transmissionsThisRun": 54,
+    "stoppedBy": null
+  },
+  "retiredCases": [
+    {
+      "id": "C01",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C02",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C03",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C04",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C05",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C06",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "M01",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M02",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M03",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M04",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M05",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M06",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M07",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M08",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "L01",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L02",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L03",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L04",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L05",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L06",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L07",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "TC01",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC02",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC03",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC04",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC05",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC06",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC07",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC08",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    }
+  ],
+  "metrics": {
+    "attempts": {
+      "planned": 41,
+      "executed": 41,
+      "pass": 39,
+      "fail": 1,
+      "error": 1,
+      "notRun": 0
+    },
+    "passRate": 0.9512195121951219,
+    "schemaValidRate": 0.9803921568627451,
+    "businessValidRate": 0.9512195121951219,
+    "keyFieldAccuracy": 0.9545454545454546,
+    "completeTaskRate": 0.9512195121951219,
+    "calls": {
+      "total": 52,
+      "withResponse": 51,
+      "retries": 2,
+      "timeouts": 1,
+      "timedOutAttempts": 2,
+      "errors": {
+        "AI_UPSTREAM_TIMEOUT": 1
+      }
+    },
+    "latencyMs": {
+      "samples": 51,
+      "totalP50": 240,
+      "totalP95": 312,
+      "firstByteP50": 171,
+      "firstByteP95": 206
+    },
+    "tokens": {
+      "knownCalls": 51,
+      "unknownCalls": 1,
+      "prompt": 80740,
+      "completion": 3771,
+      "totalKnown": 84511,
+      "avgPerKnownCall": 1657.078431372549,
+      "charged": 107244
+    }
+  },
+  "byScenario": {
+    "companion-intent": {
+      "attempts": {
+        "planned": 16,
+        "executed": 16,
+        "pass": 16,
+        "fail": 0,
+        "error": 0,
+        "notRun": 0
+      },
+      "passRate": 1,
+      "schemaValidRate": 1,
+      "businessValidRate": 1,
+      "keyFieldAccuracy": 1,
+      "completeTaskRate": 1,
+      "calls": {
+        "total": 16,
+        "withResponse": 16,
+        "retries": 1,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 16,
+        "totalP50": 218,
+        "totalP95": 941,
+        "firstByteP50": 187,
+        "firstByteP95": 873
+      },
+      "tokens": {
+        "knownCalls": 16,
+        "unknownCalls": 0,
+        "prompt": 20420,
+        "completion": 2032,
+        "totalKnown": 22452,
+        "avgPerKnownCall": 1403.25,
+        "charged": 31995
+      }
+    },
+    "companion-tools": {
+      "attempts": {
+        "planned": 7,
+        "executed": 7,
+        "pass": 7,
+        "fail": 0,
+        "error": 0,
+        "notRun": 0
+      },
+      "passRate": 1,
+      "schemaValidRate": 1,
+      "businessValidRate": 1,
+      "keyFieldAccuracy": 1,
+      "completeTaskRate": 1,
+      "calls": {
+        "total": 18,
+        "withResponse": 18,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 18,
+        "totalP50": 256,
+        "totalP95": 312,
+        "firstByteP50": 181,
+        "firstByteP95": 192
+      },
+      "tokens": {
+        "knownCalls": 18,
+        "unknownCalls": 0,
+        "prompt": 44021,
+        "completion": 538,
+        "totalKnown": 44559,
+        "avgPerKnownCall": 2475.5,
+        "charged": 44559
+      }
+    },
+    "pet-profile": {
+      "attempts": {
+        "planned": 9,
+        "executed": 9,
+        "pass": 8,
+        "fail": 1,
+        "error": 0,
+        "notRun": 0
+      },
+      "passRate": 0.8888888888888888,
+      "schemaValidRate": 0.8888888888888888,
+      "businessValidRate": 0.8888888888888888,
+      "keyFieldAccuracy": 0.9032258064516129,
+      "completeTaskRate": 0.8888888888888888,
+      "calls": {
+        "total": 9,
+        "withResponse": 9,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 9,
+        "totalP50": 199,
+        "totalP95": 235,
+        "firstByteP50": 126,
+        "firstByteP95": 140
+      },
+      "tokens": {
+        "knownCalls": 9,
+        "unknownCalls": 0,
+        "prompt": 8645,
+        "completion": 635,
+        "totalKnown": 9280,
+        "avgPerKnownCall": 1031.111111111111,
+        "charged": 9280
+      }
+    },
+    "help-intent": {
+      "attempts": {
+        "planned": 9,
+        "executed": 9,
+        "pass": 8,
+        "fail": 0,
+        "error": 1,
+        "notRun": 0
+      },
+      "passRate": 0.8888888888888888,
+      "schemaValidRate": 1,
+      "businessValidRate": 0.8888888888888888,
+      "keyFieldAccuracy": 0.8857142857142857,
+      "completeTaskRate": 0.8888888888888888,
+      "calls": {
+        "total": 9,
+        "withResponse": 8,
+        "retries": 1,
+        "timeouts": 1,
+        "timedOutAttempts": 2,
+        "errors": {
+          "AI_UPSTREAM_TIMEOUT": 1
+        }
+      },
+      "latencyMs": {
+        "samples": 8,
+        "totalP50": 250,
+        "totalP95": 282,
+        "firstByteP50": 163,
+        "firstByteP95": 172
+      },
+      "tokens": {
+        "knownCalls": 8,
+        "unknownCalls": 1,
+        "prompt": 7654,
+        "completion": 566,
+        "totalKnown": 8220,
+        "avgPerKnownCall": 1027.5,
+        "charged": 21410
+      }
+    }
+  },
+  "cases": [
+    {
+      "caseId": "CI01",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 6,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 3,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周六下午在滨江散步，3公里内，想找性格温和的狗狗",
+        "activityType": "散步",
+        "placeQuery": "滨江",
+        "preferences": [
+          "想找性格温和的狗狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 1,
+          "caseId": "CI01",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 206,
+          "totalMs": 267,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1280,
+            "completion_tokens": 133,
+            "total_tokens": 1413
+          },
+          "reservedTokens": 9538,
+          "chargedTokens": 1413,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":\"滨江\",\"preferences\":[\"想找性格温和的狗狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI02",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周六下午或者晚上想找附近的狗狗玩伴，最好好相处一点",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "最好好相处一点"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“好相处”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 2,
+          "caseId": "CI02",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 2,
+          "retries": 1,
+          "firstByteMs": 873,
+          "totalMs": 941,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1282,
+            "completion_tokens": 127,
+            "total_tokens": 1409
+          },
+          "reservedTokens": 19086,
+          "chargedTokens": 10952,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"最好好相处一点\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI03",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天傍晚想带狗溜达溜达，找个随和点的伴",
+        "activityType": "溜达",
+        "placeQuery": null,
+        "preferences": [
+          "找个随和点的伴"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 3,
+          "caseId": "CI03",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 187,
+          "totalMs": 218,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1275,
+            "completion_tokens": 128,
+            "total_tokens": 1403
+          },
+          "reservedTokens": 9522,
+          "chargedTokens": 1403,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"溜达\",\"placeQuery\":null,\"preferences\":[\"找个随和点的伴\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI04",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "活泼"
+          ],
+          "activities": [
+            "草地撒欢"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周六上午想找好动的狗一起草地撒欢",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "想找好动的狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“好动”→活泼作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 4,
+          "caseId": "CI04",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 209,
+          "totalMs": 319,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1273,
+            "completion_tokens": 130,
+            "total_tokens": 1403
+          },
+          "reservedTokens": 9516,
+          "chargedTokens": 1403,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"想找好动的狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[\"草地撒欢\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI05",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 3,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [
+            "large"
+          ],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周日想散步，不要大型犬，3公里内就好",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 5,
+          "caseId": "CI05",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 205,
+          "totalMs": 283,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1274,
+            "completion_tokens": 122,
+            "total_tokens": 1396
+          },
+          "reservedTokens": 9520,
+          "chargedTokens": 1396,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[\"large\"],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI06",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [
+            "柯基"
+          ],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午找狗狗玩伴，不要柯基",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 6,
+          "caseId": "CI06",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 202,
+          "totalMs": 283,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1270,
+            "completion_tokens": 122,
+            "total_tokens": 1392
+          },
+          "reservedTokens": 9507,
+          "chargedTokens": 1392,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[\"柯基\"],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI07",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion",
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [
+            "活泼"
+          ],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周日上午遛弯，别找太活泼的",
+        "activityType": "遛弯",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 7,
+          "caseId": "CI07",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 198,
+          "totalMs": 283,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1270,
+            "completion_tokens": 123,
+            "total_tokens": 1393
+          },
+          "reservedTokens": 9507,
+          "chargedTokens": 1393,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"遛弯\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[\"活泼\"],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI08",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [
+            "必须是性格随和的狗"
+          ],
+          "clarifications": [
+            "存在未支持的筛选词，请改用已提供的标签"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午散步，必须是性格随和的狗",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [
+          "必须是性格随和的狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 8,
+          "caseId": "CI08",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 195,
+          "totalMs": 250,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1272,
+            "completion_tokens": 130,
+            "total_tokens": 1402
+          },
+          "reservedTokens": 9513,
+          "chargedTokens": 1402,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[\"必须是性格随和的狗\"],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI09",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": null,
+        "activityType": "遛弯",
+        "placeQuery": null,
+        "preferences": [
+          "性格随和一点"
+        ],
+        "hardRequirements": [],
+        "clarifications": [
+          "想哪天一起玩？说“周六下午或晚上”或选个日期就行，不用精确到分钟"
+        ],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 9,
+          "caseId": "CI09",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 193,
+          "totalMs": 250,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1280,
+            "completion_tokens": 135,
+            "total_tokens": 1415
+          },
+          "reservedTokens": 9537,
+          "chargedTokens": 1415,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"遛弯\",\"placeQuery\":null,\"preferences\":[\"性格随和一点\"],\"hardRequirements\":[],\"clarifications\":[\"请补充大概日期\"],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI10",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [
+            "仅支持1/3/5/10公里，请确认范围",
+            "距离条件暂不能明确执行，请确认 1、3、5 或 10 公里以内的上限。"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午找1.5公里内的狗狗一起散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 10,
+          "caseId": "CI10",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 68,
+          "totalMs": 160,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1271,
+            "completion_tokens": 128,
+            "total_tokens": 1399
+          },
+          "reservedTokens": 9513,
+          "chargedTokens": 1399,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[\"仅支持1/3/5/10公里\"],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI11",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [
+            "距离上下界需要澄清，当前只支持单一半径",
+            "距离条件暂不能明确执行，请确认 1、3、5 或 10 公里以内的上限。"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午散步，只要1公里以内，同时必须在5公里以外",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 11,
+          "caseId": "CI11",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 65,
+          "totalMs": 130,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1279,
+            "completion_tokens": 127,
+            "total_tokens": 1406
+          },
+          "reservedTokens": 9536,
+          "chargedTokens": 1406,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[\"距离条件矛盾\"],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI12",
+      "scenario": "companion-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "名字和距离。我想这周日下午找狗狗散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "不能编造宠友或距离"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 12,
+          "caseId": "CI12",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 62,
+          "totalMs": 127,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1292,
+            "completion_tokens": 130,
+            "total_tokens": 1422
+          },
+          "reservedTokens": 9573,
+          "chargedTokens": 1422,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[\"不能编造宠友或距离\"],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI13",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "create",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "我想自己组局，下周六下午找几只狗一起散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 13,
+          "caseId": "CI13",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 57,
+          "totalMs": 93,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1276,
+            "completion_tokens": 121,
+            "total_tokens": 1397
+          },
+          "reservedTokens": 9525,
+          "chargedTokens": 1397,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"create\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI14",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [
+            "闻闻探索"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "，想找温和的狗狗明天上午一起闻闻探索",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "想找温和的狗狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“闻闻”→闻闻探索作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 14,
+          "caseId": "CI14",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 81,
+          "totalMs": 195,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1283,
+            "completion_tokens": 134,
+            "total_tokens": 1417
+          },
+          "reservedTokens": 9546,
+          "chargedTokens": 1417,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"想找温和的狗狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[\"闻闻探索\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI15",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 10,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [
+            "晒太阳"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周六晚上十公里内，找喜欢晒太阳的狗",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 15,
+          "caseId": "CI15",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 79,
+          "totalMs": 165,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1274,
+            "completion_tokens": 122,
+            "total_tokens": 1396
+          },
+          "reservedTokens": 9519,
+          "chargedTokens": 1396,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":10,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[\"晒太阳\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI16",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 1,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "今天下午一公里以内遛狗就行",
+        "activityType": "遛狗",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 16,
+          "caseId": "CI16",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 75,
+          "totalMs": 162,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1269,
+            "completion_tokens": 120,
+            "total_tokens": 1389
+          },
+          "reservedTokens": 9504,
+          "chargedTokens": 1389,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"遛狗\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":1,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CT01",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal",
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 7,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_activities"
+          ],
+          "args": {
+            "search_activities": {
+              "radiusKm": 3,
+              "startAfter": "2026-10-24T04:00:00.000Z",
+              "startBefore": "2026-10-24T16:00:00.000Z"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "search_activities"
+          ]
+        },
+        "draft": {
+          "created": false
+        },
+        "final": {
+          "summary": "没有符合条件的结果，请调整条件。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 1
+      },
+      "calls": [
+        {
+          "seq": 17,
+          "caseId": "CT01",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 171,
+          "totalMs": 224,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1880,
+            "completion_tokens": 37,
+            "total_tokens": 1917
+          },
+          "reservedTokens": 7770,
+          "chargedTokens": 1917,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_iupmii",
+                "type": "function",
+                "function": {
+                  "name": "search_activities",
+                  "arguments": "{\"radiusKm\":3,\"startAfter\":\"2026-10-24T04:00:00.000Z\",\"startBefore\":\"2026-10-24T16:00:00.000Z\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 18,
+          "caseId": "CT01",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 171,
+          "totalMs": 243,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1616,
+            "completion_tokens": 25,
+            "total_tokens": 1641
+          },
+          "reservedTokens": 7514,
+          "chargedTokens": 1641,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"没有符合条件的结果，请调整条件。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT02",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_activities"
+          ],
+          "args": {
+            "search_activities": {
+              "district": "滨江区",
+              "startAfter": "2026-10-18T04:00:00.000Z",
+              "startBefore": "2026-10-18T10:00:00.000Z"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "search_activities"
+          ]
+        },
+        "draft": {
+          "created": false
+        },
+        "final": {
+          "summary": "没有符合条件的结果，请调整条件。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 1
+      },
+      "calls": [
+        {
+          "seq": 19,
+          "caseId": "CT02",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 169,
+          "totalMs": 226,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1865,
+            "completion_tokens": 41,
+            "total_tokens": 1906
+          },
+          "reservedTokens": 7719,
+          "chargedTokens": 1906,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_c7mwfo",
+                "type": "function",
+                "function": {
+                  "name": "search_activities",
+                  "arguments": "{\"district\":\"滨江区\",\"startAfter\":\"2026-10-18T04:00:00.000Z\",\"startBefore\":\"2026-10-18T10:00:00.000Z\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 20,
+          "caseId": "CT02",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 169,
+          "totalMs": 209,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1605,
+            "completion_tokens": 25,
+            "total_tokens": 1630
+          },
+          "reservedTokens": 7475,
+          "chargedTokens": 1630,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"没有符合条件的结果，请调整条件。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT03",
+      "scenario": "companion-tools",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_activities"
+          ],
+          "args": {
+            "search_activities": {
+              "radiusKm": 3,
+              "startAfter": "2026-10-24T04:00:00.000Z",
+              "startBefore": "2026-10-24T16:00:00.000Z"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "search_activities"
+          ]
+        },
+        "draft": {
+          "created": false
+        },
+        "final": {
+          "summary": "没有符合条件的结果，请调整条件。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 1
+      },
+      "calls": [
+        {
+          "seq": 21,
+          "caseId": "CT03",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 189,
+          "totalMs": 274,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1901,
+            "completion_tokens": 37,
+            "total_tokens": 1938
+          },
+          "reservedTokens": 7833,
+          "chargedTokens": 1938,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_iupmii",
+                "type": "function",
+                "function": {
+                  "name": "search_activities",
+                  "arguments": "{\"radiusKm\":3,\"startAfter\":\"2026-10-24T04:00:00.000Z\",\"startBefore\":\"2026-10-24T16:00:00.000Z\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 22,
+          "caseId": "CT03",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 166,
+          "totalMs": 209,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1637,
+            "completion_tokens": 25,
+            "total_tokens": 1662
+          },
+          "reservedTokens": 7577,
+          "chargedTokens": 1662,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"没有符合条件的结果，请调整条件。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT04",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 7,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_pets",
+            "search_places"
+          ],
+          "args": {
+            "search_pets": {
+              "radiusKm": 5
+            },
+            "search_places": {
+              "query": "公园"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "check_compatibility",
+            "create_activity_draft",
+            "search_pets",
+            "search_places"
+          ]
+        },
+        "draft": {
+          "created": true
+        },
+        "final": {
+          "summary": "已生成活动草稿，请编辑并确认，尚未创建。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 3
+      },
+      "calls": [
+        {
+          "seq": 23,
+          "caseId": "CT04",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 185,
+          "totalMs": 312,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2499,
+            "completion_tokens": 28,
+            "total_tokens": 2527
+          },
+          "reservedTokens": 9887,
+          "chargedTokens": 2527,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_zh7siq",
+                "type": "function",
+                "function": {
+                  "name": "search_pets",
+                  "arguments": "{\"radiusKm\":5}"
+                }
+              },
+              {
+                "id": "call_1_ccdxnw",
+                "type": "function",
+                "function": {
+                  "name": "search_places",
+                  "arguments": "{\"query\":\"公园\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 24,
+          "caseId": "CT04",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 189,
+          "totalMs": 282,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 3322,
+            "completion_tokens": 20,
+            "total_tokens": 3342
+          },
+          "reservedTokens": 12617,
+          "chargedTokens": 3342,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_19cxamz",
+                "type": "function",
+                "function": {
+                  "name": "check_compatibility",
+                  "arguments": "{\"petIds\":[\"pet-13\",\"pet-7\"]}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 25,
+          "caseId": "CT04",
+          "repeat": 1,
+          "step": 3,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 192,
+          "totalMs": 256,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 3612,
+            "completion_tokens": 38,
+            "total_tokens": 3650
+          },
+          "reservedTokens": 13563,
+          "chargedTokens": 3650,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_twrejj",
+                "type": "function",
+                "function": {
+                  "name": "create_activity_draft",
+                  "arguments": "{\"title\":\"周末散步约伴\",\"description\":\"\",\"petIds\":[\"pet-13\",\"pet-7\"],\"placeIndex\":0}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 26,
+          "caseId": "CT04",
+          "repeat": 1,
+          "step": 4,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 192,
+          "totalMs": 293,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2787,
+            "completion_tokens": 29,
+            "total_tokens": 2816
+          },
+          "reservedTokens": 11369,
+          "chargedTokens": 2816,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"已生成活动草稿，请编辑并确认，尚未创建。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT05",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool",
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_pets",
+            "search_places"
+          ],
+          "args": {
+            "search_pets": {
+              "radiusKm": 3,
+              "excludedSizes": [
+                "large"
+              ]
+            },
+            "search_places": {
+              "query": "草坪"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "check_compatibility",
+            "create_activity_draft",
+            "search_pets",
+            "search_places"
+          ]
+        },
+        "draft": {
+          "created": true
+        },
+        "final": {
+          "summary": "已生成活动草稿，请编辑并确认，尚未创建。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 3
+      },
+      "calls": [
+        {
+          "seq": 27,
+          "caseId": "CT05",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 183,
+          "totalMs": 273,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2499,
+            "completion_tokens": 35,
+            "total_tokens": 2534
+          },
+          "reservedTokens": 9890,
+          "chargedTokens": 2534,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_9xfsf3",
+                "type": "function",
+                "function": {
+                  "name": "search_pets",
+                  "arguments": "{\"radiusKm\":3,\"excludedSizes\":[\"large\"]}"
+                }
+              },
+              {
+                "id": "call_1_imv9ws",
+                "type": "function",
+                "function": {
+                  "name": "search_places",
+                  "arguments": "{\"query\":\"草坪\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 28,
+          "caseId": "CT05",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 187,
+          "totalMs": 256,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 3301,
+            "completion_tokens": 20,
+            "total_tokens": 3321
+          },
+          "reservedTokens": 12541,
+          "chargedTokens": 3321,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_dr38bh",
+                "type": "function",
+                "function": {
+                  "name": "check_compatibility",
+                  "arguments": "{\"petIds\":[\"pet-9\",\"pet-15\"]}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 29,
+          "caseId": "CT05",
+          "repeat": 1,
+          "step": 3,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 186,
+          "totalMs": 260,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 3591,
+            "completion_tokens": 38,
+            "total_tokens": 3629
+          },
+          "reservedTokens": 13485,
+          "chargedTokens": 3629,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_36wnrx",
+                "type": "function",
+                "function": {
+                  "name": "create_activity_draft",
+                  "arguments": "{\"title\":\"周末散步约伴\",\"description\":\"\",\"petIds\":[\"pet-9\",\"pet-15\"],\"placeIndex\":0}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 30,
+          "caseId": "CT05",
+          "repeat": 1,
+          "step": 4,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 192,
+          "totalMs": 294,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2765,
+            "completion_tokens": 29,
+            "total_tokens": 2794
+          },
+          "reservedTokens": 11291,
+          "chargedTokens": 2794,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"已生成活动草稿，请编辑并确认，尚未创建。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT06",
+      "scenario": "companion-tools",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_pets",
+            "search_places"
+          ],
+          "args": {
+            "search_pets": {
+              "radiusKm": 5
+            },
+            "search_places": {
+              "query": "散步"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "search_pets",
+            "search_places"
+          ]
+        },
+        "draft": {
+          "created": false
+        },
+        "final": {
+          "summary": "需要补充信息，请查看工具提示。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 1
+      },
+      "calls": [
+        {
+          "seq": 31,
+          "caseId": "CT06",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 181,
+          "totalMs": 279,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2488,
+            "completion_tokens": 28,
+            "total_tokens": 2516
+          },
+          "reservedTokens": 9855,
+          "chargedTokens": 2516,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_zh7siq",
+                "type": "function",
+                "function": {
+                  "name": "search_pets",
+                  "arguments": "{\"radiusKm\":5}"
+                }
+              },
+              {
+                "id": "call_1_ey1d59",
+                "type": "function",
+                "function": {
+                  "name": "search_places",
+                  "arguments": "{\"query\":\"散步\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 32,
+          "caseId": "CT06",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 181,
+          "totalMs": 278,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 2780,
+            "completion_tokens": 24,
+            "total_tokens": 2804
+          },
+          "reservedTokens": 10869,
+          "chargedTokens": 2804,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"需要补充信息，请查看工具提示。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT07",
+      "scenario": "companion-tools",
+      "tags": [
+        "tool-error"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "observed": {
+        "first": {
+          "names": [
+            "search_activities"
+          ],
+          "args": {
+            "search_activities": {
+              "radiusKm": 3,
+              "startAfter": "2026-10-24T04:00:00.000Z",
+              "startBefore": "2026-10-24T16:00:00.000Z"
+            }
+          }
+        },
+        "all": {
+          "names": [
+            "search_activities"
+          ]
+        },
+        "draft": {
+          "created": false
+        },
+        "final": {
+          "summary": "工具执行失败，请稍后重试。",
+          "references": [],
+          "referencesValid": true,
+          "truthful": true
+        },
+        "rounds": 1
+      },
+      "calls": [
+        {
+          "seq": 33,
+          "caseId": "CT07",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 176,
+          "totalMs": 221,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1880,
+            "completion_tokens": 37,
+            "total_tokens": 1917
+          },
+          "reservedTokens": 7770,
+          "chargedTokens": 1917,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": null,
+            "toolCalls": [
+              {
+                "id": "call_0_iupmii",
+                "type": "function",
+                "function": {
+                  "name": "search_activities",
+                  "arguments": "{\"radiusKm\":3,\"startAfter\":\"2026-10-24T04:00:00.000Z\",\"startBefore\":\"2026-10-24T16:00:00.000Z\"}"
+                }
+              }
+            ]
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        },
+        {
+          "seq": 34,
+          "caseId": "CT07",
+          "repeat": 1,
+          "step": 2,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 179,
+          "totalMs": 240,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1993,
+            "completion_tokens": 22,
+            "total_tokens": 2015
+          },
+          "reservedTokens": 8171,
+          "chargedTokens": 2015,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"summary\":\"工具执行失败，请稍后重试。\",\"references\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "PP01",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "name": "豆包",
+        "breed": "史宾格",
+        "ageMonths": 24,
+        "size": "medium",
+        "city": "杭州",
+        "district": "滨江",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "温和"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "喜欢散步"
+          }
+        ],
+        "likes": [],
+        "dislikes": [
+          "不喜欢突然被抱"
+        ],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 35,
+          "caseId": "PP01",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 124,
+          "totalMs": 201,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 975,
+            "completion_tokens": 95,
+            "total_tokens": 1070
+          },
+          "reservedTokens": 6700,
+          "chargedTokens": 1070,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"豆包\",\"breed\":\"史宾格\",\"ageMonths\":24,\"size\":\"medium\",\"city\":\"杭州\",\"district\":\"滨江\",\"temperamentTags\":[{\"value\":\"温和\",\"evidence\":\"温和\"}],\"activityTags\":[{\"value\":\"散步\",\"evidence\":\"喜欢散步\"}],\"likes\":[],\"dislikes\":[\"不喜欢突然被抱\"],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP02",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "name": null,
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请补充名字",
+          "请补充品种或明确未知",
+          "请补充城市",
+          "请补充地区"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 36,
+          "caseId": "PP02",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 118,
+          "totalMs": 164,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 944,
+            "completion_tokens": 55,
+            "total_tokens": 999
+          },
+          "reservedTokens": 6607,
+          "chargedTokens": 999,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":null,\"breed\":null,\"ageMonths\":null,\"size\":null,\"city\":null,\"district\":null,\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP03",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "name": "团子",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请确认月龄",
+          "请补充品种或明确未知",
+          "请补充城市",
+          "请补充地区"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 37,
+          "caseId": "PP03",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 117,
+          "totalMs": 166,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 955,
+            "completion_tokens": 62,
+            "total_tokens": 1017
+          },
+          "reservedTokens": 6640,
+          "chargedTokens": 1017,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"团子\",\"breed\":null,\"ageMonths\":null,\"size\":null,\"city\":null,\"district\":null,\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[\"请确认月龄\"],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP04",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "name": null,
+        "breed": "比熊",
+        "ageMonths": 6,
+        "size": "small",
+        "city": "杭州",
+        "district": "西湖",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请补充名字"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 38,
+          "caseId": "PP04",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 140,
+          "totalMs": 235,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 964,
+            "completion_tokens": 60,
+            "total_tokens": 1024
+          },
+          "reservedTokens": 6667,
+          "chargedTokens": 1024,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":null,\"breed\":\"比熊\",\"ageMonths\":6,\"size\":\"small\",\"city\":\"杭州\",\"district\":\"西湖\",\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP05",
+      "scenario": "pet-profile",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "fail",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [
+        "不怕≠喜欢",
+        "保留不爱追球",
+        "追球不映射飞盘"
+      ],
+      "error": "AI_INVALID_OUTPUT",
+      "calls": [
+        {
+          "seq": 39,
+          "caseId": "PP05",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 134,
+          "totalMs": 231,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 962,
+            "completion_tokens": 71,
+            "total_tokens": 1033
+          },
+          "reservedTokens": 6661,
+          "chargedTokens": 1033,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":null,\"breed\":null,\"ageMonths\":\"两岁\",\"size\":null,\"city\":null,\"district\":null,\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[\"不爱追球\"],\"cautions\":[\"怕突然冲过来的大狗\"],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": false,
+          "businessValid": false,
+          "keyFieldsCorrect": false
+        }
+      ]
+    },
+    {
+      "caseId": "PP06",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "observed": {
+        "name": "小黑",
+        "breed": null,
+        "ageMonths": 3,
+        "size": null,
+        "city": "杭州",
+        "district": "上城",
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请补充品种或明确未知"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 40,
+          "caseId": "PP06",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 131,
+          "totalMs": 199,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 959,
+            "completion_tokens": 59,
+            "total_tokens": 1018
+          },
+          "reservedTokens": 6652,
+          "chargedTokens": 1018,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"小黑\",\"breed\":null,\"ageMonths\":3,\"size\":null,\"city\":\"杭州\",\"district\":\"上城\",\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP07",
+      "scenario": "pet-profile",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "name": "七七",
+        "breed": null,
+        "ageMonths": null,
+        "size": null,
+        "city": null,
+        "district": null,
+        "temperamentTags": [],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [
+          "请补充品种或明确未知",
+          "请补充城市",
+          "请补充地区"
+        ],
+        "warnings": [
+          "不能写入未核实的认证"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 41,
+          "caseId": "PP07",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 131,
+          "totalMs": 201,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 963,
+            "completion_tokens": 67,
+            "total_tokens": 1030
+          },
+          "reservedTokens": 6664,
+          "chargedTokens": 1030,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"七七\",\"breed\":null,\"ageMonths\":null,\"size\":null,\"city\":null,\"district\":null,\"temperamentTags\":[],\"activityTags\":[],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[],\"warnings\":[\"不能写入未核实的认证\"]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP08",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "name": "可乐",
+        "breed": "柯基",
+        "ageMonths": 36,
+        "size": null,
+        "city": "杭州",
+        "district": "余杭",
+        "temperamentTags": [
+          {
+            "value": "温和",
+            "evidence": "性格随和"
+          }
+        ],
+        "activityTags": [
+          {
+            "value": "散步",
+            "evidence": "爱溜达"
+          }
+        ],
+        "likes": [],
+        "dislikes": [],
+        "cautions": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 42,
+          "caseId": "PP08",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 126,
+          "totalMs": 197,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 962,
+            "completion_tokens": 86,
+            "total_tokens": 1048
+          },
+          "reservedTokens": 6661,
+          "chargedTokens": 1048,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"可乐\",\"breed\":\"柯基\",\"ageMonths\":36,\"size\":null,\"city\":\"杭州\",\"district\":\"余杭\",\"temperamentTags\":[{\"value\":\"温和\",\"evidence\":\"性格随和\"}],\"activityTags\":[{\"value\":\"散步\",\"evidence\":\"爱溜达\"}],\"likes\":[],\"dislikes\":[],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "PP09",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "name": "毛毛",
+        "breed": null,
+        "ageMonths": 12,
+        "size": null,
+        "city": "杭州",
+        "district": "拱墅",
+        "temperamentTags": [
+          {
+            "value": "活泼",
+            "evidence": "很好动"
+          }
+        ],
+        "activityTags": [],
+        "likes": [],
+        "dislikes": [
+          "不喜欢被陌生人摸"
+        ],
+        "cautions": [],
+        "clarifications": [
+          "请补充品种或明确未知"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 43,
+          "caseId": "PP09",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 122,
+          "totalMs": 165,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 961,
+            "completion_tokens": 80,
+            "total_tokens": 1041
+          },
+          "reservedTokens": 6658,
+          "chargedTokens": 1041,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"name\":\"毛毛\",\"breed\":null,\"ageMonths\":12,\"size\":null,\"city\":\"杭州\",\"district\":\"拱墅\",\"temperamentTags\":[{\"value\":\"活泼\",\"evidence\":\"很好动\"}],\"activityTags\":[],\"likes\":[],\"dislikes\":[\"不喜欢被陌生人摸\"],\"cautions\":[],\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI01",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 6,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "observed": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-17T18:00:00+08:00",
+        "endAt": "2026-10-17T18:30:00+08:00",
+        "durationMinutes": 30,
+        "timeText": null,
+        "district": null,
+        "locationQuery": "滨江某公园东门",
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 44,
+          "caseId": "HI01",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 163,
+          "totalMs": 250,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 960,
+            "completion_tokens": 76,
+            "total_tokens": 1036
+          },
+          "reservedTokens": 6644,
+          "chargedTokens": 1036,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"walk\",\"petId\":\"pa\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-17T18:00:00+08:00\",\"endAt\":\"2026-10-17T18:30:00+08:00\",\"durationMinutes\":30,\"timeText\":null,\"district\":null,\"locationQuery\":\"滨江某公园东门\",\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI02",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "type": "feed",
+        "petId": "pb",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-18T08:00:00+08:00",
+        "endAt": "2026-10-18T08:30:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "请补充并确认公共交接地点"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 45,
+          "caseId": "HI02",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 161,
+          "totalMs": 252,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 949,
+            "completion_tokens": 71,
+            "total_tokens": 1020
+          },
+          "reservedTokens": 6612,
+          "chargedTokens": 1020,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"feed\",\"petId\":\"pb\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-18T08:00:00+08:00\",\"endAt\":\"2026-10-18T08:30:00+08:00\",\"durationMinutes\":null,\"timeText\":null,\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI03",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "error",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [
+        "遛狗",
+        "两只狗不擅选",
+        "不猜时刻",
+        "须澄清"
+      ],
+      "error": "AI_UPSTREAM_TIMEOUT:Qwen长时间未开始响应，请手动重试",
+      "calls": [
+        {
+          "seq": 46,
+          "caseId": "HI03",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 2,
+          "retries": 1,
+          "firstByteMs": null,
+          "totalMs": 2502,
+          "httpStatus": null,
+          "errorCode": "AI_UPSTREAM_TIMEOUT",
+          "usage": null,
+          "reservedTokens": 13190,
+          "chargedTokens": 13190,
+          "timedOutAttempts": 2,
+          "response": null,
+          "schemaValid": null,
+          "businessValid": null,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "HI04",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "observed": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-17T09:00:00+08:00",
+        "endAt": "2026-10-17T10:00:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "开始时间已过，请重新确认日期",
+          "请补充并确认公共交接地点"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 47,
+          "caseId": "HI04",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 153,
+          "totalMs": 217,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 947,
+            "completion_tokens": 71,
+            "total_tokens": 1018
+          },
+          "reservedTokens": 6604,
+          "chargedTokens": 1018,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"walk\",\"petId\":\"pa\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-17T09:00:00+08:00\",\"endAt\":\"2026-10-17T10:00:00+08:00\",\"durationMinutes\":null,\"timeText\":null,\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI05",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "type": "feed",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-18T20:00:00+08:00",
+        "endAt": "2026-10-18T19:00:00+08:00",
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "结束必须晚于开始，请确认是否跨天",
+          "请补充并确认公共交接地点"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 48,
+          "caseId": "HI05",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 151,
+          "totalMs": 191,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 948,
+            "completion_tokens": 71,
+            "total_tokens": 1019
+          },
+          "reservedTokens": 6608,
+          "chargedTokens": 1019,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"feed\",\"petId\":\"pa\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-18T20:00:00+08:00\",\"endAt\":\"2026-10-18T19:00:00+08:00\",\"durationMinutes\":null,\"timeText\":null,\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI06",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "type": "feed",
+        "petId": null,
+        "title": "互助草稿",
+        "details": "",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": null,
+        "timeText": null,
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "请选择本人的宠物",
+          "请补充明确的北京时间起止，模糊时段不能直接发布",
+          "请补充并确认公共交接地点"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 49,
+          "caseId": "HI06",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 172,
+          "totalMs": 282,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 953,
+            "completion_tokens": 58,
+            "total_tokens": 1011
+          },
+          "reservedTokens": 6622,
+          "chargedTokens": 1011,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"feed\",\"petId\":null,\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":null,\"timeText\":null,\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI07",
+      "scenario": "help-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "不能松牵引绳",
+        "startAt": null,
+        "endAt": null,
+        "durationMinutes": 30,
+        "timeText": "明天下午",
+        "district": null,
+        "locationQuery": null,
+        "clarifications": [
+          "请补充明确的北京时间起止，模糊时段不能直接发布",
+          "请补充并确认公共交接地点"
+        ],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 50,
+          "caseId": "HI07",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 171,
+          "totalMs": 251,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 976,
+            "completion_tokens": 67,
+            "total_tokens": 1043
+          },
+          "reservedTokens": 6693,
+          "chargedTokens": 1043,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"walk\",\"petId\":\"pa\",\"title\":\"互助草稿\",\"details\":\"不能松牵引绳\",\"startAt\":null,\"endAt\":null,\"durationMinutes\":30,\"timeText\":\"明天下午\",\"district\":null,\"locationQuery\":null,\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI08",
+      "scenario": "help-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "type": "feed",
+        "petId": "pb",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-19T12:00:00+08:00",
+        "endAt": "2026-10-19T12:30:00+08:00",
+        "durationMinutes": 30,
+        "timeText": null,
+        "district": null,
+        "locationQuery": "西湖文化广场南门",
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 51,
+          "caseId": "HI08",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 168,
+          "totalMs": 254,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 963,
+            "completion_tokens": 77,
+            "total_tokens": 1040
+          },
+          "reservedTokens": 6653,
+          "chargedTokens": 1040,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"feed\",\"petId\":\"pb\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-19T12:00:00+08:00\",\"endAt\":\"2026-10-19T12:30:00+08:00\",\"durationMinutes\":30,\"timeText\":null,\"district\":null,\"locationQuery\":\"西湖文化广场南门\",\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "HI09",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "type": "walk",
+        "petId": "pa",
+        "title": "互助草稿",
+        "details": "",
+        "startAt": "2026-10-18T19:00:00+08:00",
+        "endAt": "2026-10-18T20:00:00+08:00",
+        "durationMinutes": 60,
+        "timeText": null,
+        "district": null,
+        "locationQuery": "滨江公园北门",
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 52,
+          "caseId": "HI09",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 165,
+          "totalMs": 221,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 958,
+            "completion_tokens": 75,
+            "total_tokens": 1033
+          },
+          "reservedTokens": 6638,
+          "chargedTokens": 1033,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"type\":\"walk\",\"petId\":\"pa\",\"title\":\"互助草稿\",\"details\":\"\",\"startAt\":\"2026-10-18T19:00:00+08:00\",\"endAt\":\"2026-10-18T20:00:00+08:00\",\"durationMinutes\":60,\"timeText\":null,\"district\":null,\"locationQuery\":\"滨江公园北门\",\"clarifications\":[],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    }
+  ]
+}

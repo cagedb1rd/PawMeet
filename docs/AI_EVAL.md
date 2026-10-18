@@ -1,42 +1,102 @@
 # AI 评测方案与记录
 
-状态：2026-10-18。真实评测只用 qwen3.8-flash；当前约伴 Prompt pawmeet-6.3 / validation-9（尚未真实评测，第 6 步测）；以下真实结果均为更早版本。核心 35 条最近一次完整真实评测为 31/35，未达门槛；最新约伴 6 次获批传输中 2 次超时。不同版本、mock 与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
+状态：2026-10-18。第 5 步已把评测升级为多模型 runner（[cases.v3](../evals/cases/current.ts) 41 条，对齐 Prompt pawmeet-6.3 / validation-9），只做了模拟传输的工程验证，**尚无任何 cases.v3 真实结果**（第 6 步）。白名单 5 个型号名已经百炼模型列表核实存在。以下真实结果均为更早版本、只用 qwen3.8-flash：核心 35 条最近一次完整真实评测 31/35，未达门槛；约伴 6 次获批传输中 2 次超时。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
 
 ## 1. 测试层次与 mock / 真实区分
 
 | 类型 | 目标 | 能证明 / 不能证明 |
 | --- | --- | --- |
-| Vitest 规则 / mock 单测 | Schema、Prompt 组装、日期 / 引用校验、错误映射、限流、业务不误写 | 代码按给定响应正确工作；不能证明真实模型产生正确响应 |
-| mock 评测（54 条） | 35 核心 + 11 对抗 + 8 工具的 fixture 回归，`--mode mock` | 契约与防线；真实提供方调用 0，不算模型准确率 |
+| Vitest 规则 / mock 单测 | Schema、Prompt 组装、日期 / 引用校验、错误映射、限流、业务不误写；评测框架自身（[eval-framework](../tests/unit/eval-framework.test.ts)） | 代码按给定响应正确工作；不能证明真实模型产生正确响应 |
+| 模拟评测（cases.v3，`--mode simulated`） | 41 条当前用例经 mock SSE 传输走完生产 client / 校验 / 工具链；可注入 503、超时、错误形状 | runner、预算、报告与故障路径；数值全部合成，标“模拟数据” |
+| 旧版 mock 回归（core.v2，`eval:ai -- legacy`） | 35 核心 + 11 对抗 + 8 工具 fixture | 校验层契约回归；含已停用场景，不计入当前结果 |
 | Playwright mock E2E | 草稿复核、取消、确认、身份切换、错误 UI | 固定响应下的 UI 流程；普通服务 `AI_ENABLED=false` |
-| live 模型评测 | 同一模型 / Prompt 对真实输入的结构、语义、忠实性、延迟 / usage | 每例保存实际响应与判定，失败也保留 |
-| live 页面冒烟 | 真实页面 → Next API → 模型 → 确认 → 本地命令 | 不替代核心评测 |
+| live 模型评测（`--mode live`） | 同一用例集对白名单模型的结构、语义、延迟 / usage | 每次调用保存原始响应与判定，失败也保留 |
+| live 页面冒烟（`test:ai:live`） | 真实页面 → Next API → 模型 → 确认 → 本地命令 | 不替代模型评测；另需单独批准 |
 
-模拟数据评测的文件名须带 `-mock` / `-simulated`，报告标注“模拟”，不与真实数据合并（见 [AGENTS](../AGENTS.md#ai-与模型)）。
+模拟数据评测的文件名带 `-simulated`（旧版为 `-mock`），报告顶部与每张表标注“模拟数据”，汇总代码拒绝与真实数据合并（见 [AGENTS](../AGENTS.md#ai-与模型)）。
 
-## 2. 固定条件与判定
+## 2. 多模型评测框架（cases.v3）
 
-- 实现：[runner](../evals/runner/evaluate.test.ts)、[命令入口](../evals/runner/run.mjs)、[用例](../evals/cases/core.ts)、[约伴 live 入口](../evals/runner/companion-live.test.ts)。报告写入 `evals/reports/<runId>.json`，含 runId、模式、模型、Prompt / validation / 用例版本、Git HEAD 与 gitDirty、冻结时钟、实际传输数、usage、每例原始输出 / 错误 / 时长 / 断言与指标；只用虚构 fixture，不存密钥、reasoning_content 或真实位置。
-- 固定评测时刻 `2026-10-17T02:00:00Z`（中国 10:00），时区 Asia/Shanghai；只有本地评测入口可注入 clock。
-- fixture：help-intent 提供本人宠物 pa 豆包 / pb 团子；pet-profile / match-intent 不附加其他档案；C06 提供“怕追逐”；工具任务使用 createSeed 冻结快照，本人宠物为年糕。
-- 每例状态 `not_run / pass / fail / error`；网络 / 额度失败记 error，不从分母删除；有 not_run 时不能宣称整套通过。
-- 指标：Schema 通过率（模型原始实例 / 原生参数，规范化后的成功不计入）、关键字段准确率、工具选择正确率、工具参数准确率、工具执行成功率、完整任务成功率；对抗拦截率单列。不使用另一个 LLM 当裁判，建议文字另按人工 rubric。
-- 交付门槛：35 条各至少 1 次，语义通过 ≥95%（≥34/35）、原始 Schema ≥95%；进入 UI 的成功结果 100% 通过输出与语义防线；不存在实体 / 编造距离 / 未确认写入 / 危险照看建议为 0。关键风险失败须修复或禁用对应能力，不被总分抵消。
-- 稳定性：C03、C05、M03、M05、M07、H03、H04、H06、L03、L06 各额外跑 2 次（风险套件 20 次），单次成功不当作稳定保证。
-- 预算保护：`--max-calls` 在 fetch 前限制实际传输（含重试）；单次输出 ≤1400 Token；独立评测额度账本，产品账本不重置；下列历史报告在旧传输下生成（非流式、429 / 503 与受控连接错误最多重试一次、20 秒总超时不重试）；当前流式、可配超时与分级重试见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务)，其效果尚无真实评测；连续 3 次上游失败熔断，剩余 not_run，不自动换模型。`--resume` 只接受同模式 / 套件 / 模型 / 版本。live 套件默认阻断，需用户批准并设置 `PAWMEET_ALLOW_LIVE_AI=approved`；未知 usage 不视为零，不据此推算人民币成本。
+### 用例
+
+[current.ts](../evals/cases/current.ts) 共 41 条，覆盖 Phase 4.5 后仍调用模型的三个场景；每条只用程序可判定的检查（路径等于 / 包含 / 不包含 / 为空 / 非空 / 多选一），不使用 LLM 裁判。
+
+| 场景 | 条数 | 调用方式 | 覆盖 |
+| --- | --- | --- | --- |
+| companion-intent（CI01–CI16） | 16 | 生产 `generateTask` | 正常、口语同义（好相处 / 随和 / 溜达 / 好动 / 遛弯）、排斥（不要大型犬 / 柯基 / 别太活泼）、“必须随和”须澄清或阻断、缺日期、1.5 公里与上下界矛盾、1 / 10 公里边界、注入、组局模式、自家宠物描述不当作对方条件 |
+| companion-tools（CT01–CT07） | 7 | 生产 `assistantStep` + `executeCompanionTool`（冻结种子快照、演示地点 fixture） | search 阶段只调 search_activities 且参数等于程序窗口、地区带入、注入不越阶段、organize 并行查宠友 / 地点 → 比较 → 草稿、排斥条件带入、未核实硬约束不出草稿、注入工具故障须如实报告；总结须与实际工具结果一致、引用只来自返回行 |
+| pet-profile（PP01–PP09） | 9 | `generateTask` | 正常、否定范围、年龄纠正 / 冲突、注入仍提取名字、不凭品种猜体型、同义证据（随和→温和、溜达→散步、好动→活泼） |
+| help-intent（HI01–HI09） | 9 | `generateTask` | 精确时段、缺地点 / 宠物歧义 / 已过时间 / 结束早于开始 / 非本人宠物须澄清、注入“直接发布”、口语“添饭”、“遛一小时”算结束时间 |
+
+标签：normal / colloquial / exclusion / clarify / injection / distance-boundary / multi-tool / tool-error，可用 `--cases tag:<名>` 选子集。已停用的 core.v2 用例（C01–C06 社交名片、M01–M08 独立筛选、L01–L07 交接清单、TC01–TC08 无 workflow 助手）列在 `retiredCases`，选择时报错，不运行、不计分；P / H 用例已并入 PP / HI。固定时钟 `2026-10-17T02:00:00Z`（周六 10:00，Asia/Shanghai）。
+
+### 每次调用记录
+
+报告 `evals/reports/<runId>-<model>-<live|simulated>.json` 中，每次 `callModel` 记录：模型、Prompt / validation 版本、Git 提交、原始响应（content / 原生 tool_calls，校验前；失败时附 ≤4KB 原始响应体片段）、Schema 是否合法（原始 JSON 对任务 Schema / 原生工具参数 Schema / 最终回答 Schema）、业务校验是否通过、关键字段是否全对、首字节与总时长、usage、尝试数与重试次数、超时尝试数、HTTP 状态、错误码、预留与计入 Token。同名 `.md` 为汇总表。只用虚构 fixture，不存密钥、reasoning_content 或真实位置。
+
+### 指标定义
+
+| 指标 | 定义 |
+| --- | --- |
+| 通过率 | 通过的用例尝试 / 已执行尝试。通过 = 业务校验通过且全部检查满足；error（超时、HTTP 失败）计入分母，not_run 不计 |
+| Schema 合法率 | 原始输出合法的调用 / 有响应的调用；程序规范化后才成功的不算合法 |
+| 业务校验通过率 | 生产校验（validateOutput、工具协议、引用校验）未拒绝且工具未报 INVALID_ARGUMENTS 的尝试 / 已执行尝试 |
+| 关键字段准确率 | 满足的检查数 / 检查总数（已执行尝试）；业务校验拒绝的提取任务所有检查记为错 |
+| 完整任务通过率 | 全部重复都通过的用例 / 全部重复均已执行的用例（pass^k；重复 1 次时等于通过率） |
+| p50 / p95 延迟 | 有响应调用的总时长、首字节（含重试）；最近秩法，报告值均为实测样本；超时单独计数 |
+| 平均 / 总 Token | 有 usage 的调用的 total_tokens；无 usage 的调用数单列，不当作 0 |
+| 超时数 | 以 AI_UPSTREAM_TIMEOUT 结束的调用；被自动重试吸收的超时尝试另列 |
+
+### 预算与安全阀
+
+- 真实调用需同时满足：`--mode live`、`--token-limit` 在 1 与该模型批准上限之间（代码 [MODEL_TOKEN_CAPS](../evals/lib/budget.ts)：flash 20 万、max-0902 30 万、27b 30 万；默认 0 = 拒绝）、`PAWMEET_ALLOW_LIVE_AI=approved`；模型必须在服务端文本白名单（[models.ts](../src/server/ai/models.ts)），否则 AI_MODEL_NOT_APPROVED。
+- 独立评测账本（默认 `.local/ai-eval/budget-ledger.json`，被忽略）按模型累计，产品账本不参与（`callModel` 的评测专用 `reserve` 钩子替代产品额度；路由从不传入）。每次上游尝试前按“请求字节数 + 最大输出 1400”预留（大于实际 Token，偏保守），会越过上限就在 fetch 前拒绝；响应后以实际 usage 结算；超时、断流、HTTP 错误等用量未知时按整笔预留计入。账本在预留时即写盘，损坏则拒绝运行且不覆盖。
+- 到额（AI_EVAL_BUDGET）、`--max-calls`、连续 3 次上游失败熔断时立即停止，当前及剩余尝试标 `not_run` 并记原因。按轮次顺序执行（先全部用例跑完第 1 轮），到额时保留完整的前几轮。
+- 不自动换模型、不靠重试刷绿；自动重试只有客户端既有的一次（见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务)），同样逐次预留计额。live 默认最小间隔 1.5 秒。
+
+### 复现
 
 ```powershell
-npm run eval:ai -- --mode mock
-npm run eval:ai -- --mode live --dry-run
-npm run eval:ai -- --mode live --suite core --max-calls 40
-npm run eval:ai -- --mode live --suite tools --max-calls 28
-npm run eval:ai -- --mode live --suite risk --max-calls 24
-npm run test:ai:live
+npm run eval:ai -- --mode simulated                    # 模拟：41 条全量，结果标“模拟数据”
+npm run eval:ai -- --mode simulated --mock-faults      # 注入 CI02 503 / HI03 超时 / PP05 错误形状
+npm run eval:ai -- --mode live --model qwen3.8-flash --token-limit 200000 --repeat 2 --dry-run   # 只打印计划，不联网
+npm run eval:ai -- compare <报告1.json> <报告2.json>     # 多模型对比表；模拟与真实混合会报错
+npm run eval:ai -- legacy                              # 旧版 core.v2 mock 回归
+npm run eval:models                                    # 百炼 GET /models，只核对型号名，不消耗 Token
 ```
 
-## 3. 核心模型用例（35 条；实际状态以报告为准）
+### 模型名核实（2026-10-18）
 
-此表描述验收意图；可执行输入与实际响应由代码用例和报告维护。
+`npm run eval:models` 调用一次 `GET https://dashscope.aliyuncs.com/compatible-mode/v1/models`（HTTP 200，共 176 个模型），结果见 [model-list 报告](../evals/reports/2026-10-18T07-22-35-188Z-model-list.json)：qwen3.8-flash、qwen3.8-max-0902、qwen3.8-27b、qwen3.8-omni-flash、qwen3.5-omni-plus **均存在**，白名单无需调整。列表只说明型号名可用，不说明各型号是否支持 JSON Schema / 工具调用 / 流式限制，这些仍以第 6、7 步真实调用与官方文档为准。
+
+### 模拟传输工程验证（非模型效果）
+
+以下全部是**模拟数据**：mock 传输按用例 fixture / 脚本化“理想代理”返回 SSE，延迟与 Token 为合成值，只证明 runner、预算与报告流程可用。
+
+| 运行 | 结果 |
+| --- | --- |
+| 全量 41 条 | 41/41 通过（首轮发现并修正两处评测代码问题：CT04 期望工具名未按排序书写；mock 代理把无 id 的地点行当引用）|
+| `--mock-faults` | 39/41：CI02 首次 503 后自动重试通过（attempts=2）；HI03 两次首字节超时 → error，usage 未知，按预留保守计入；PP05 错误形状 → Schema 与业务校验均失败 |
+| `--token-limit 30000 --repeat 2` | 执行 15 次后下一次预留会越线，fetch 前停止；其余 67 次尝试标 not_run（budget） |
+| compare | 两份模拟报告生成对比表，标题均标“模拟数据”；与真实报告混合时报错 |
+
+工程验证报告见 `evals/reports/*-simulated.{json,md}` 与 `*-compare-simulated.md`。
+
+### 第 6 步执行计划（待用户批准额度后执行）
+
+每轮计划 54 次调用（不含重试 / 回答修复）：CI 16×1、CT search 4×2、CT organize 3×4、PP 9×1、HI 9×1。估算每次调用 Token：约伴提取 ~1300、工具步骤 ~2000、档案 / 互助 ~1200（参考 2026-10-16/17 qwen3.8-flash 真实 usage：约伴提取 1162–1249、search 1987–2072、续传 1195–1280；模拟估算器同量级），每轮约 8.2 万。超时 / HTTP 错误按预留保守计入，每次约 0.7–1.3 万。
+
+| 模型 | 建议命令（PowerShell，先 `$env:PAWMEET_ALLOW_LIVE_AI='approved'`） | 调用 / 估算 |
+| --- | --- | --- |
+| qwen3.8-flash（≤20 万） | `npm run eval:ai -- --mode live --model qwen3.8-flash --token-limit 200000 --repeat 2 --ledger .local/ai-eval/step6-ledger.json` | 108 次，约 16.5 万；余量约 3 次保守计入的超时，超出则第 2 轮尾部 not_run |
+| qwen3.8-max-0902（≤30 万） | 同上，`--model qwen3.8-max-0902 --token-limit 300000` | 108 次，约 16.5–20 万（输出可能更长）；剩余额度可在批准后定向复跑风险标签 |
+| qwen3.8-27b（可选，≤30 万） | 同上，`--model qwen3.8-27b --token-limit 300000` | 同 max-0902 |
+
+每个模型先加 `--dry-run` 核对计划与账本余量；跑完后 `compare` 生成对比表。`--token-limit` 是该账本中该模型的累计上限，第 6 步用独立账本文件，不沿用历史授权。
+
+## 3. 旧版 core.v2 核心用例（35 条，历史基线）
+
+此表描述第 5 节真实报告所用的 core.v2 验收意图；C / M / L 场景已停用，不计入当前结果，P / H 已并入 cases.v3 的 PP / HI。可执行输入在 [core.ts](../evals/cases/core.ts)，旧 runner 现只保留 mock 回归。旧版判定：每例 `not_run / pass / fail / error`，门槛为 35 条语义通过 ≥95%（≥34/35）、原始 Schema ≥95%，C03、C05、M03、M05、M07、H03、H04、H06、L03、L06 各加跑 2 次。
 
 | ID | 任务 | 输入 / 上下文 | 必须满足的期望 |
 | --- | --- | --- | --- |
@@ -130,7 +190,7 @@ Phase 4.5 将 AI 收敛为智能约伴、档案填写、互助填表，新增 12
 
 ## 6. 智能约伴真实验证
 
-两轮都使用生产 service 与原生 Qwen 客户端，读取全新浏览器的 localStorage 快照，在 Node 执行共享只读工具；只传任务摘要，不上传完整数据；单次输出 ≤1400 Token，无格式修复。浏览器业务快照前后不变。不是 live UI 或真实组局多工具验收。
+两轮都使用生产 service 与原生 Qwen 客户端，读取全新浏览器的 localStorage 快照，在 Node 执行共享只读工具；只传任务摘要，不上传完整数据；单次输出 ≤1400 Token，无格式修复。浏览器业务快照前后不变。不是 live UI 或真实组局多工具验收。当时的一次性入口 `companion-live.test.ts` 已在第 5 步删除（可用 `git show cdf63aa:evals/runner/companion-live.test.ts` 查看），其样例已并入 cases.v3（CI02 / CI05 / CI09 / CT01），之后统一由预算受控的 runner 执行。
 
 ### 首次 3 次（Prompt 6.0 / validation-7）
 

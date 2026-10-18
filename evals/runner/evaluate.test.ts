@@ -271,6 +271,11 @@ it("工具参数评测拒绝错误地区、通称犬种和遗漏排除条件", (
   ).toEqual({ correct: 1, total: 1 });
 });
 it("执行并保存分离的AI评测报告", async () => {
+  // Legacy core.v2 regression is mock-only; real calls go through the budgeted runner.
+  if ((process.env.AI_EVAL_MODE ?? "mock") !== "mock")
+    throw Error(
+      "旧版 core.v2 评测只保留 mock 回归；真实评测请用 npm run eval:ai -- --mode live",
+    );
   const rows: Row[] = [];
   const suite = process.env.AI_EVAL_SUITE || "all";
   let actualCalls = 0;

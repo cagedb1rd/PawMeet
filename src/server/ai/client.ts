@@ -44,6 +44,11 @@ export type CallOptions = {
   signal?: AbortSignal;
   onProgress?: (progress: AiProgress) => void;
   backoffMs?: number;
+  /**
+   * Evaluation only: reserves each attempt's worst case in an independent eval budget
+   * instead of the product ledger. Throwing here stops the attempt before any fetch.
+   */
+  reserve?: (worstTokens: number) => Promise<void> | void;
 };
 const MAX_OUTPUT_TOKENS = 1400;
 /** Conservative quota estimate for one ≤512px thumbnail, instead of counting base64 bytes. */
@@ -248,7 +253,8 @@ export async function callModel(
       if (options.signal?.aborted)
         throw new AiError("AI_CANCELLED", "请求已取消", 499);
       // Every attempt reserves its own worst case. Never refund unknown consumption.
-      await reserveAiCall(session, worstTokens);
+      if (options.reserve) await options.reserve(worstTokens);
+      else await reserveAiCall(session, worstTokens);
       progress?.({
         stage: attempt ? "retrying" : "waiting",
         attempt: attempt + 1,

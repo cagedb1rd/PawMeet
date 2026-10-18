@@ -1,0 +1,2600 @@
+{
+  "kind": "pawmeet-eval-run",
+  "schemaVersion": 2,
+  "simulated": true,
+  "dataLabel": "模拟数据（mock 传输，未调用真实模型）",
+  "runId": "2026-10-18T07-42-52-166Z",
+  "mode": "simulated",
+  "model": "qwen3.8-flash",
+  "provider": "mock",
+  "promptVersion": "pawmeet-6.3",
+  "validationVersion": "pawmeet-validation-9",
+  "caseVersion": "cases.v3",
+  "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+  "gitDirty": true,
+  "clock": "2026-10-17T02:00:00.000Z",
+  "startedAt": "2026-10-18T07:42:52.232Z",
+  "finishedAt": "2026-10-18T07:42:55.520Z",
+  "config": {
+    "repeat": 2,
+    "cases": [
+      "CI01",
+      "CI02",
+      "CI03",
+      "CI04",
+      "CI05",
+      "CI06",
+      "CI07",
+      "CI08",
+      "CI09",
+      "CI10",
+      "CI11",
+      "CI12",
+      "CI13",
+      "CI14",
+      "CI15",
+      "CI16",
+      "CT01",
+      "CT02",
+      "CT03",
+      "CT04",
+      "CT05",
+      "CT06",
+      "CT07",
+      "PP01",
+      "PP02",
+      "PP03",
+      "PP04",
+      "PP05",
+      "PP06",
+      "PP07",
+      "PP08",
+      "PP09",
+      "HI01",
+      "HI02",
+      "HI03",
+      "HI04",
+      "HI05",
+      "HI06",
+      "HI07",
+      "HI08",
+      "HI09"
+    ],
+    "tokenLimit": 30000,
+    "maxCalls": null,
+    "minIntervalMs": 0,
+    "mockFaults": false,
+    "ledger": "memory"
+  },
+  "budget": {
+    "model": "qwen3.8-flash",
+    "limit": 30000,
+    "chargedBefore": 0,
+    "chargedAfter": 21063,
+    "chargedThisRun": 21063,
+    "knownThisRun": 21063,
+    "conservativeThisRun": 0,
+    "transmissionsThisRun": 15,
+    "stoppedBy": "budget"
+  },
+  "retiredCases": [
+    {
+      "id": "C01",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C02",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C03",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C04",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C05",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C06",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "M01",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M02",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M03",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M04",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M05",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M06",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M07",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M08",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "L01",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L02",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L03",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L04",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L05",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L06",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L07",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "TC01",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC02",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC03",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC04",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC05",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC06",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC07",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC08",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    }
+  ],
+  "metrics": {
+    "attempts": {
+      "planned": 82,
+      "executed": 15,
+      "pass": 15,
+      "fail": 0,
+      "error": 0,
+      "notRun": 67
+    },
+    "passRate": 1,
+    "schemaValidRate": 1,
+    "businessValidRate": 1,
+    "keyFieldAccuracy": 1,
+    "completeTaskRate": null,
+    "calls": {
+      "total": 15,
+      "withResponse": 15,
+      "retries": 0,
+      "timeouts": 0,
+      "timedOutAttempts": 0,
+      "errors": {}
+    },
+    "latencyMs": {
+      "samples": 15,
+      "totalP50": 249,
+      "totalP95": 317,
+      "firstByteP50": 189,
+      "firstByteP95": 207
+    },
+    "tokens": {
+      "knownCalls": 15,
+      "unknownCalls": 0,
+      "prompt": 19151,
+      "completion": 1912,
+      "totalKnown": 21063,
+      "avgPerKnownCall": 1404.2,
+      "charged": 21063
+    }
+  },
+  "byScenario": {
+    "companion-intent": {
+      "attempts": {
+        "planned": 32,
+        "executed": 15,
+        "pass": 15,
+        "fail": 0,
+        "error": 0,
+        "notRun": 17
+      },
+      "passRate": 1,
+      "schemaValidRate": 1,
+      "businessValidRate": 1,
+      "keyFieldAccuracy": 1,
+      "completeTaskRate": null,
+      "calls": {
+        "total": 15,
+        "withResponse": 15,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 15,
+        "totalP50": 249,
+        "totalP95": 317,
+        "firstByteP50": 189,
+        "firstByteP95": 207
+      },
+      "tokens": {
+        "knownCalls": 15,
+        "unknownCalls": 0,
+        "prompt": 19151,
+        "completion": 1912,
+        "totalKnown": 21063,
+        "avgPerKnownCall": 1404.2,
+        "charged": 21063
+      }
+    },
+    "companion-tools": {
+      "attempts": {
+        "planned": 14,
+        "executed": 0,
+        "pass": 0,
+        "fail": 0,
+        "error": 0,
+        "notRun": 14
+      },
+      "passRate": null,
+      "schemaValidRate": null,
+      "businessValidRate": null,
+      "keyFieldAccuracy": null,
+      "completeTaskRate": null,
+      "calls": {
+        "total": 0,
+        "withResponse": 0,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 0,
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null,
+        "firstByteP95": null
+      },
+      "tokens": {
+        "knownCalls": 0,
+        "unknownCalls": 0,
+        "prompt": 0,
+        "completion": 0,
+        "totalKnown": 0,
+        "avgPerKnownCall": null,
+        "charged": 0
+      }
+    },
+    "pet-profile": {
+      "attempts": {
+        "planned": 18,
+        "executed": 0,
+        "pass": 0,
+        "fail": 0,
+        "error": 0,
+        "notRun": 18
+      },
+      "passRate": null,
+      "schemaValidRate": null,
+      "businessValidRate": null,
+      "keyFieldAccuracy": null,
+      "completeTaskRate": null,
+      "calls": {
+        "total": 0,
+        "withResponse": 0,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 0,
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null,
+        "firstByteP95": null
+      },
+      "tokens": {
+        "knownCalls": 0,
+        "unknownCalls": 0,
+        "prompt": 0,
+        "completion": 0,
+        "totalKnown": 0,
+        "avgPerKnownCall": null,
+        "charged": 0
+      }
+    },
+    "help-intent": {
+      "attempts": {
+        "planned": 18,
+        "executed": 0,
+        "pass": 0,
+        "fail": 0,
+        "error": 0,
+        "notRun": 18
+      },
+      "passRate": null,
+      "schemaValidRate": null,
+      "businessValidRate": null,
+      "keyFieldAccuracy": null,
+      "completeTaskRate": null,
+      "calls": {
+        "total": 0,
+        "withResponse": 0,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 0,
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null,
+        "firstByteP95": null
+      },
+      "tokens": {
+        "knownCalls": 0,
+        "unknownCalls": 0,
+        "prompt": 0,
+        "completion": 0,
+        "totalKnown": 0,
+        "avgPerKnownCall": null,
+        "charged": 0
+      }
+    }
+  },
+  "cases": [
+    {
+      "caseId": "CI01",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 6,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 3,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周六下午在滨江散步，3公里内，想找性格温和的狗狗",
+        "activityType": "散步",
+        "placeQuery": "滨江",
+        "preferences": [
+          "想找性格温和的狗狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 1,
+          "caseId": "CI01",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 205,
+          "totalMs": 267,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1280,
+            "completion_tokens": 133,
+            "total_tokens": 1413
+          },
+          "reservedTokens": 9538,
+          "chargedTokens": 1413,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":\"滨江\",\"preferences\":[\"想找性格温和的狗狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI02",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周六下午或者晚上想找附近的狗狗玩伴，最好好相处一点",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "最好好相处一点"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“好相处”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 2,
+          "caseId": "CI02",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 189,
+          "totalMs": 249,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1282,
+            "completion_tokens": 127,
+            "total_tokens": 1409
+          },
+          "reservedTokens": 9543,
+          "chargedTokens": 1409,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"最好好相处一点\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI03",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天傍晚想带狗溜达溜达，找个随和点的伴",
+        "activityType": "溜达",
+        "placeQuery": null,
+        "preferences": [
+          "找个随和点的伴"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 3,
+          "caseId": "CI03",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 185,
+          "totalMs": 214,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1275,
+            "completion_tokens": 128,
+            "total_tokens": 1403
+          },
+          "reservedTokens": 9522,
+          "chargedTokens": 1403,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"溜达\",\"placeQuery\":null,\"preferences\":[\"找个随和点的伴\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI04",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "活泼"
+          ],
+          "activities": [
+            "草地撒欢"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周六上午想找好动的狗一起草地撒欢",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "想找好动的狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“好动”→活泼作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 4,
+          "caseId": "CI04",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 207,
+          "totalMs": 317,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1273,
+            "completion_tokens": 130,
+            "total_tokens": 1403
+          },
+          "reservedTokens": 9516,
+          "chargedTokens": 1403,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"想找好动的狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[\"草地撒欢\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI05",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 3,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [
+            "large"
+          ],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周日想散步，不要大型犬，3公里内就好",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 5,
+          "caseId": "CI05",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 206,
+          "totalMs": 283,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1274,
+            "completion_tokens": 122,
+            "total_tokens": 1396
+          },
+          "reservedTokens": 9520,
+          "chargedTokens": 1396,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[\"large\"],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI06",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [
+            "柯基"
+          ],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午找狗狗玩伴，不要柯基",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 6,
+          "caseId": "CI06",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 202,
+          "totalMs": 284,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1270,
+            "completion_tokens": 122,
+            "total_tokens": 1392
+          },
+          "reservedTokens": 9507,
+          "chargedTokens": 1392,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[\"柯基\"],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI07",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion",
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [
+            "活泼"
+          ],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周日上午遛弯，别找太活泼的",
+        "activityType": "遛弯",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 7,
+          "caseId": "CI07",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 199,
+          "totalMs": 285,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1270,
+            "completion_tokens": 123,
+            "total_tokens": 1393
+          },
+          "reservedTokens": 9507,
+          "chargedTokens": 1393,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"遛弯\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[\"活泼\"],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI08",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [
+            "必须是性格随和的狗"
+          ],
+          "clarifications": [
+            "存在未支持的筛选词，请改用已提供的标签"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午散步，必须是性格随和的狗",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [
+          "必须是性格随和的狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 8,
+          "caseId": "CI08",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 196,
+          "totalMs": 252,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1272,
+            "completion_tokens": 130,
+            "total_tokens": 1402
+          },
+          "reservedTokens": 9513,
+          "chargedTokens": 1402,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[\"必须是性格随和的狗\"],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI09",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": null,
+        "activityType": "遛弯",
+        "placeQuery": null,
+        "preferences": [
+          "性格随和一点"
+        ],
+        "hardRequirements": [],
+        "clarifications": [
+          "想哪天一起玩？说“周六下午或晚上”或选个日期就行，不用精确到分钟"
+        ],
+        "warnings": [
+          "已按同义词表将“随和”→温和作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 9,
+          "caseId": "CI09",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 192,
+          "totalMs": 249,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1280,
+            "completion_tokens": 135,
+            "total_tokens": 1415
+          },
+          "reservedTokens": 9537,
+          "chargedTokens": 1415,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"遛弯\",\"placeQuery\":null,\"preferences\":[\"性格随和一点\"],\"hardRequirements\":[],\"clarifications\":[\"请补充大概日期\"],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI10",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 2,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [
+            "仅支持1/3/5/10公里，请确认范围",
+            "距离条件暂不能明确执行，请确认 1、3、5 或 10 公里以内的上限。"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午找1.5公里内的狗狗一起散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 10,
+          "caseId": "CI10",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 67,
+          "totalMs": 161,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1271,
+            "completion_tokens": 128,
+            "total_tokens": 1399
+          },
+          "reservedTokens": 9513,
+          "chargedTokens": 1399,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[\"仅支持1/3/5/10公里\"],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI11",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [
+            "距离上下界需要澄清，当前只支持单一半径",
+            "距离条件暂不能明确执行，请确认 1、3、5 或 10 公里以内的上限。"
+          ],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "明天下午散步，只要1公里以内，同时必须在5公里以外",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 11,
+          "caseId": "CI11",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 64,
+          "totalMs": 128,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1279,
+            "completion_tokens": 127,
+            "total_tokens": 1406
+          },
+          "reservedTokens": 9536,
+          "chargedTokens": 1406,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[\"距离条件矛盾\"],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI12",
+      "scenario": "companion-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 5,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "名字和距离。我想这周日下午找狗狗散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "不能编造宠友或距离"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 12,
+          "caseId": "CI12",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 61,
+          "totalMs": 127,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1292,
+            "completion_tokens": 130,
+            "total_tokens": 1422
+          },
+          "reservedTokens": 9573,
+          "chargedTokens": 1422,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[\"不能编造宠友或距离\"],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI13",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 3,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "observed": {
+        "mode": "create",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "我想自己组局，下周六下午找几只狗一起散步",
+        "activityType": "散步",
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 13,
+          "caseId": "CI13",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 58,
+          "totalMs": 93,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1276,
+            "completion_tokens": 121,
+            "total_tokens": 1397
+          },
+          "reservedTokens": 9525,
+          "chargedTokens": 1397,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"create\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":\"散步\",\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI14",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": null,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [
+            "闻闻探索"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "，想找温和的狗狗明天上午一起闻闻探索",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [
+          "想找温和的狗狗"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": [
+          "已按同义词表将“闻闻”→闻闻探索作为排序参考，实际互动偏好仍需向主人核实。"
+        ]
+      },
+      "calls": [
+        {
+          "seq": 14,
+          "caseId": "CI14",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 80,
+          "totalMs": 195,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1283,
+            "completion_tokens": 134,
+            "total_tokens": 1417
+          },
+          "reservedTokens": 9546,
+          "chargedTokens": 1417,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[\"想找温和的狗狗\"],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":null,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[\"闻闻探索\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI15",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 4,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 10,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [],
+          "activities": [
+            "晒太阳"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "下周六晚上十公里内，找喜欢晒太阳的狗",
+        "activityType": null,
+        "placeQuery": null,
+        "preferences": [],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 15,
+          "caseId": "CI15",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 78,
+          "totalMs": 162,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1274,
+            "completion_tokens": 122,
+            "total_tokens": 1396
+          },
+          "reservedTokens": 9519,
+          "chargedTokens": 1396,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"startAt\":null,\"endAt\":null,\"timeText\":null,\"activityType\":null,\"placeQuery\":null,\"preferences\":[],\"hardRequirements\":[],\"clarifications\":[],\"warnings\":[],\"match\":{\"radiusKm\":10,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[],\"activities\":[\"晒太阳\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]}}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CI16",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": [
+        {
+          "seq": 16,
+          "caseId": "CI16",
+          "repeat": 1,
+          "step": 1,
+          "model": "qwen3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-9",
+          "git": "cdf63aa7681b2dd9d3ca6c42c8d7d764dc3c9521",
+          "attempts": 0,
+          "retries": 0,
+          "firstByteMs": null,
+          "totalMs": 0,
+          "httpStatus": null,
+          "errorCode": "AI_EVAL_BUDGET",
+          "usage": null,
+          "reservedTokens": 0,
+          "chargedTokens": 0,
+          "timedOutAttempts": 0,
+          "response": null,
+          "schemaValid": null,
+          "businessValid": null,
+          "keyFieldsCorrect": null
+        }
+      ]
+    },
+    {
+      "caseId": "CT01",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal",
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT02",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT03",
+      "scenario": "companion-tools",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT04",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT05",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool",
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT06",
+      "scenario": "companion-tools",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT07",
+      "scenario": "companion-tools",
+      "tags": [
+        "tool-error"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP01",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP02",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP03",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP04",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP05",
+      "scenario": "pet-profile",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP06",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP07",
+      "scenario": "pet-profile",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP08",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP09",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI01",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI02",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI03",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI04",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI05",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI06",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI07",
+      "scenario": "help-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI08",
+      "scenario": "help-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI09",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI01",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI02",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI03",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI04",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI05",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI06",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI07",
+      "scenario": "companion-intent",
+      "tags": [
+        "exclusion",
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI08",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI09",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI10",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI11",
+      "scenario": "companion-intent",
+      "tags": [
+        "clarify",
+        "distance-boundary"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 1,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI12",
+      "scenario": "companion-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI13",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI14",
+      "scenario": "companion-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI15",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CI16",
+      "scenario": "companion-intent",
+      "tags": [
+        "distance-boundary"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT01",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal",
+        "exclusion"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT02",
+      "scenario": "companion-tools",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT03",
+      "scenario": "companion-tools",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT04",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 7,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT05",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool",
+        "exclusion"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT06",
+      "scenario": "companion-tools",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "CT07",
+      "scenario": "companion-tools",
+      "tags": [
+        "tool-error"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP01",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP02",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP03",
+      "scenario": "pet-profile",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP04",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP05",
+      "scenario": "pet-profile",
+      "tags": [
+        "exclusion"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP06",
+      "scenario": "pet-profile",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP07",
+      "scenario": "pet-profile",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP08",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "PP09",
+      "scenario": "pet-profile",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI01",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI02",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI03",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI04",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 2,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI05",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI06",
+      "scenario": "help-intent",
+      "tags": [
+        "clarify"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 3,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI07",
+      "scenario": "help-intent",
+      "tags": [
+        "injection"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI08",
+      "scenario": "help-intent",
+      "tags": [
+        "colloquial"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 5,
+      "failedChecks": [],
+      "calls": []
+    },
+    {
+      "caseId": "HI09",
+      "scenario": "help-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 2,
+      "status": "not_run",
+      "reason": "budget",
+      "businessValid": false,
+      "fieldsCorrect": 0,
+      "fieldsTotal": 4,
+      "failedChecks": [],
+      "calls": []
+    }
+  ]
+}
