@@ -4,6 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useDemo } from "@/features/demo/provider";
 import { aiAssistant, aiTask } from "@/lib/ai/client";
 import { AiProgressHint, useAiProgress } from "./progress";
+import { CompanionTimeline } from "./timeline";
+import {
+  TimelineStep,
+  cancelRunning,
+  failWorkflow,
+  finishStep,
+  startStep,
+  summarizePlan,
+  summarizeTool,
+  toolKind,
+} from "@/lib/ai/timeline";
 import {
   AssistantRequest,
   CompanionIntent,
@@ -30,6 +41,7 @@ import { PlacePicker, PlaceDetails } from "@/features/maps/places";
 import { demoPlaces } from "@/data/seed";
 import { ActivityEditor } from "@/features/forms/forms";
 import { petSummary } from "./draft";
+const clock = () => performance.now();
 export function Companion() {
   const { state } = useDemo();
   return state ? (
@@ -57,13 +69,18 @@ function CompanionFlow() {
   const [queriedPlaces, setQueriedPlaces] = useState<PlaceRef[]>([]);
   const [draft, setDraft] = useState<Partial<ActivityInput>>();
   const [stage, setStage] = useState<"search" | "organize">("search");
+  const [timeline, setTimeline] = useState<TimelineStep[]>([]);
+  const seq = useRef(0);
   const cache = useRef<CompanionCache>({});
   const controller = useRef<AbortController | null>(null);
   const busy = ["extracting", "searching", "organizing"].includes(phase);
   const progress = useAiProgress(busy);
   useEffect(() => () => controller.current?.abort(), []);
-  function reset() {
+  const nextId = (prefix: string) => `${prefix}-${++seq.current}`;
+  /** Cancel keeps the timeline (running steps become cancelled); restart clears it. */
+  function reset(keepTimeline = false) {
     controller.current?.abort();
+    setTimeline((t) => (keepTimeline ? cancelRunning(t, clock()) : []));
     cache.current = {};
     setQueriedPlaces([]);
     setResults([]);
@@ -84,6 +101,7 @@ function CompanionFlow() {
       ? { places: cache.current.places }
       : {};
     cache.current = localCache;
+    setTimeline((t) => cancelRunning(t, clock()));
     setQueriedPlaces([]);
     setResults([]);
     setDraft(undefined);
@@ -108,12 +126,30 @@ function CompanionFlow() {
         queried = false;
       const failures = new Set<string>();
       for (let round = 0; round < WORKFLOW_LIMITS.rounds; round++) {
+        const roundId = ++seq.current;
+        const planId = `plan-${roundId}`;
+        setTimeline((t) =>
+          startStep(t, { id: planId, kind: "plan", round: roundId }, clock()),
+        );
         const { data: step } = await aiAssistant(
           req,
           abort.signal,
           progress.onProgress,
         );
         if (abort.signal.aborted) return;
+        setTimeline((t) =>
+          finishStep(
+            t,
+            planId,
+            {
+              status: "done",
+              summary: summarizePlan(
+                step.toolCalls.map((c) => c.function.name),
+              ),
+            },
+            clock(),
+          ),
+        );
         if (!step.toolCalls.length) {
           if (failures.size)
             throw Error("工具执行失败尚未解决，请查看错误后重试或手动操作");
@@ -129,11 +165,26 @@ function CompanionFlow() {
         calls += step.toolCalls.length;
         if (calls > WORKFLOW_LIMITS.calls)
           throw Error("已达9次工具调用上限，请手动操作或重新开始");
+        const started = clock();
+        const stepIds = step.toolCalls.map((c) => nextId(`tool-${c.id}`));
+        setTimeline((t) =>
+          step.toolCalls.reduce(
+            (acc, c, n) =>
+              startStep(
+                acc,
+                {
+                  id: stepIds[n],
+                  kind: toolKind(c.function.name),
+                  round: roundId,
+                },
+                started,
+              ),
+            t,
+          ),
+        );
         const returned = await Promise.all(
-          step.toolCalls.map(async (call) => ({
-            callId: call.id,
-            name: call.function.name,
-            result: await executeCompanionTool(
+          step.toolCalls.map(async (call, n) => {
+            const result = await executeCompanionTool(
               call,
               state!,
               reference.location ?? DEFAULT_REFERENCE,
@@ -141,8 +192,13 @@ function CompanionFlow() {
               i,
               next,
               localCache,
-            ),
-          })),
+            );
+            if (!abort.signal.aborted)
+              setTimeline((t) =>
+                finishStep(t, stepIds[n], summarizeTool(result), clock()),
+              );
+            return { callId: call.id, name: call.function.name, result };
+          }),
         );
         if (abort.signal.aborted) return;
         setQueriedPlaces([...(localCache.places ?? [])]);
@@ -171,7 +227,11 @@ function CompanionFlow() {
       throw Error("已达4轮模型上限，未保存活动；请缩小任务或手动操作");
     } catch (e) {
       if (!abort.signal.aborted) {
-        setError(e instanceof Error ? e.message : "工作流失败");
+        const message = e instanceof Error ? e.message : "工作流失败";
+        setTimeline((t) =>
+          failWorkflow(t, nextId("workflow"), message, clock()),
+        );
+        setError(message);
         setPhase("error");
       }
     }
@@ -180,6 +240,19 @@ function CompanionFlow() {
     if (!text.trim() || busy) return;
     const edit = intent && radiusEdit(text, intent);
     if (edit) {
+      const id = nextId("understand");
+      const at = clock();
+      setTimeline((t) =>
+        finishStep(
+          startStep(cancelRunning(t, at), { id, kind: "understand" }, at),
+          id,
+          {
+            status: "done",
+            summary: `本地识别为半径修改：${edit.match.radiusKm} 公里，其他条件保留`,
+          },
+          at,
+        ),
+      );
       setIntent(edit);
       setText("");
       await query(edit, stage);
@@ -187,6 +260,10 @@ function CompanionFlow() {
     }
     const abort = new AbortController();
     controller.current = abort;
+    const understandId = nextId("understand");
+    setTimeline(
+      startStep([], { id: understandId, kind: "understand" }, clock()),
+    );
     setPhase("extracting");
     setError("");
     setResults([]);
@@ -204,6 +281,25 @@ function CompanionFlow() {
       );
       if (abort.signal.aborted) return;
       const extracted = response.data;
+      let queryable = true;
+      try {
+        queryIntent(extracted);
+      } catch {
+        queryable = false;
+      }
+      setTimeline((t) =>
+        finishStep(
+          t,
+          understandId,
+          {
+            status: "done",
+            summary: queryable
+              ? "已提取条件，请在下方核对"
+              : "已提取条件，需先补充日期或澄清条件",
+          },
+          clock(),
+        ),
+      );
       setIntent(extracted);
       setTimeEdited(false);
       setTimeLabel("");
@@ -226,7 +322,16 @@ function CompanionFlow() {
       }
     } catch (e) {
       if (!abort.signal.aborted) {
-        setError(e instanceof Error ? e.message : "需求提取失败");
+        const message = e instanceof Error ? e.message : "需求提取失败";
+        setTimeline((t) =>
+          finishStep(
+            t,
+            understandId,
+            { status: "error", summary: message },
+            clock(),
+          ),
+        );
+        setError(message);
         setPhase("error");
       }
     }
@@ -241,7 +346,11 @@ function CompanionFlow() {
       <div className="companion-heading">
         <h2>AI 智能约伴</h2>
         {phase !== "idle" && (
-          <button type="button" className="text-link" onClick={reset}>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => reset(busy)}
+          >
             {busy ? "取消查询" : "重新开始"}
           </button>
         )}
@@ -325,6 +434,7 @@ function CompanionFlow() {
         </p>
       )}
       <AiProgressHint text={progress.text} />
+      <CompanionTimeline steps={timeline} />
       {intent && !busy && (
         <div className="card form-card companion-plan">
           <h3>你的约伴计划</h3>

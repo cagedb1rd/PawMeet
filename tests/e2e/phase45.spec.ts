@@ -121,6 +121,9 @@ async function mock(
   });
   return seen;
 }
+const timeline = (page: Page) => page.getByTestId("companion-timeline");
+const step = (page: Page, kind: string) =>
+  timeline(page).locator(`[data-testid="timeline-step"][data-kind="${kind}"]`);
 async function understand(page: Page) {
   const trigger = page.getByRole("button", {
     name: "AI 智能约伴",
@@ -284,7 +287,10 @@ test("工具循环有界且取消清空旧结果", async ({ page }) => {
   await ready(page);
   const before = await saved(page);
   await understand(page);
-  await expect(page.getByText(/已达4轮模型上限/)).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "AI 智能约伴" }).getByRole("alert"),
+  ).toContainText("已达4轮模型上限");
+  await expect(step(page, "workflow")).toHaveAttribute("data-status", "error");
   expect(seen.length).toBe(3);
   expect(await saved(page)).toBe(before);
   await page.getByRole("button", { name: "重新开始", exact: true }).click();
@@ -382,4 +388,130 @@ test("缺少日期只问日期与时段，不要求分钟", async ({ page }) => 
   await expect(page.getByTestId("availability-label")).toContainText(
     "查询范围",
   );
+});
+
+test("工具时间线按实际顺序展示状态、耗时与摘要，不写入存储", async ({
+  page,
+}) => {
+  await sdk(page);
+  const seen = await mock(page);
+  await ready(page);
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("pawmeet:state:v1")!);
+    s.activities.forEach((a: { status: string }) => (a.status = "cancelled"));
+    localStorage.setItem("pawmeet:state:v1", JSON.stringify(s));
+  });
+  await page.reload();
+  const before = await saved(page);
+  await understand(page);
+  await finished(page);
+  await expect(step(page, "search_activities")).toHaveAttribute(
+    "data-status",
+    "empty",
+  );
+  await expect(step(page, "search_activities")).toContainText(
+    "没有符合条件的活动",
+  );
+  await page.getByRole("button", { name: "自己组局", exact: true }).click();
+  await expect(page.getByLabel("活动名称", { exact: true })).toBeVisible();
+  const kinds = await timeline(page)
+    .getByTestId("timeline-step")
+    .evaluateAll((els) => els.map((e) => e.getAttribute("data-kind")));
+  // Only calls the mock model actually requested, in order; finished model rounds stay in the details.
+  expect(kinds).toEqual([
+    "understand",
+    "search_activities",
+    "search_pets",
+    "search_places",
+    "check_compatibility",
+    "create_activity_draft",
+  ]);
+  expect(seen.map((x) => x.tool)).toEqual(kinds.slice(1));
+  await expect(step(page, "search_pets")).toContainText("并行");
+  await expect(step(page, "search_places")).toContainText("并行");
+  await expect(step(page, "create_activity_draft")).toContainText(
+    "草稿已生成，待主人确认",
+  );
+  await expect(timeline(page).getByText(/秒/).first()).toBeVisible();
+  await expect(timeline(page).locator('[data-status="running"]')).toHaveCount(
+    0,
+  );
+  await timeline(page)
+    .getByText(/查看完整过程/)
+    .click();
+  await expect(
+    timeline(page).locator('[data-testid="timeline-detail"][data-kind="plan"]'),
+  ).toHaveCount(6);
+  await expect(timeline(page)).toContainText(
+    "请求 2 个工具：查询宠友、查询地点",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await timeline(page).scrollIntoViewIfNeeded();
+  await timeline(page).screenshot({
+    path: `test-results/phase45-timeline-${test.info().project.name}.png`,
+  });
+  expect(await saved(page)).toBe(before);
+  expect(
+    await page.evaluate(() => JSON.stringify({ ...localStorage })),
+  ).not.toContain("timeline");
+});
+test("时间线区分工具出错、空结果与流程终止", async ({ page }) => {
+  await sdk(page);
+  await mock(page, { create: true, failPlaces: true });
+  await ready(page);
+  await understand(page);
+  await expect(step(page, "search_places")).toHaveAttribute(
+    "data-status",
+    "error",
+  );
+  await expect(step(page, "search_places")).toContainText("失败");
+  await expect(step(page, "search_places")).not.toContainText("没有合适地点");
+  await expect(step(page, "search_pets")).not.toHaveAttribute(
+    "data-status",
+    "error",
+  );
+  await expect(step(page, "workflow")).toHaveAttribute("data-status", "error");
+  await expect(step(page, "workflow")).toContainText("工具执行失败尚未解决");
+});
+test("取消查询把进行中的步骤标为已取消，迟到响应不会复活", async ({ page }) => {
+  await mock(page);
+  let release: () => void = () => {};
+  await page.route("**/api/ai/assistant", async (route) => {
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await route
+      .fulfill({
+        json: success({
+          continuation: "late",
+          toolCalls: [call("search_activities")],
+          answer: null,
+        }),
+      })
+      .catch(() => {});
+  });
+  await ready(page);
+  const before = await saved(page);
+  const request = page.waitForRequest("**/api/ai/assistant");
+  await page
+    .getByLabel("智能约伴需求")
+    .fill(`${day}下午或晚上5公里内散步，最好有草坪`);
+  await page.getByRole("button", { name: "帮我找活动" }).click();
+  await request;
+  await expect(step(page, "plan")).toHaveAttribute("data-status", "running");
+  await expect(step(page, "understand")).toHaveAttribute("data-status", "done");
+  await page.getByRole("button", { name: "取消查询" }).click();
+  await expect(step(page, "plan")).toHaveAttribute("data-status", "cancelled");
+  await expect(step(page, "plan")).toContainText("已取消");
+  release();
+  await page.waitForTimeout(300);
+  await expect(step(page, "plan")).toHaveAttribute("data-status", "cancelled");
+  await expect(step(page, "search_activities")).toHaveCount(0);
+  await expect(page.getByTestId("companion-result")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "帮我找活动" })).toBeEnabled();
+  expect(await saved(page)).toBe(before);
 });

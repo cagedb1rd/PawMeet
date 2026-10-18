@@ -6,24 +6,17 @@ import {
   HelpDraft,
   MatchIntent,
 } from "./contracts";
+import {
+  ControlledTag,
+  WALK_WORDS,
+  isWalkingType,
+  positiveEvidence,
+  softTagsIn,
+  splitSoftTags,
+  tagEvidence,
+} from "./synonyms";
 
-const matchTagEvidence: Record<string, RegExp> = {
-  温和: /温和|温顺|温柔|松弛/,
-  慢热: /慢热|需要.{0,6}熟悉/,
-  活泼: /活泼|活跃/,
-  亲人: /亲人|喜欢人|亲近人/,
-  独立: /独立/,
-  怕追逐: /(?:怕|不喜欢).{0,6}(?:追逐|追赶|奔跑|冲过来)/,
-  喜欢追逐: /(?:喜欢|爱).{0,5}追|会追/,
-  散步: /散步|慢慢走|遛弯/,
-  闻闻探索: /闻闻|嗅闻|闻一闻/,
-  接飞盘: /飞盘/,
-  晒太阳: /晒太阳/,
-  草地撒欢: /草地|撒欢/,
-  一起慢跑: /慢跑|跑步/,
-};
-
-export const VALIDATION_VERSION = "pawmeet-validation-8";
+export const VALIDATION_VERSION = "pawmeet-validation-9";
 export const genericCare = [
   "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
   "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
@@ -155,10 +148,7 @@ export function validateOutput<T extends AiTask>(
     ))
       if (!source.includes(fact!)) throw Error("硬条件或地点缺少原文依据");
     if (intent.activityType && !source.includes(intent.activityType)) {
-      if (
-        /散(?:散)?步|遛(?:遛)?狗|遛弯/.test(source) &&
-        /散步|遛狗/.test(intent.activityType)
-      )
+      if (WALK_WORDS.test(source) && isWalkingType(intent.activityType))
         intent.activityType = "散步";
       else throw Error("活动类型缺少原文依据");
     }
@@ -205,7 +195,11 @@ export function validateOutput<T extends AiTask>(
               c.includes(t),
           ),
     );
-    if (intent.match.unmappedTerms.some((t) => !hardUnmapped.includes(t)))
+    // Soft wording is mapped by the program-owned synonym table; hard wording keeps its clarification.
+    const softUnmapped = intent.match.unmappedTerms.filter(
+      (t) => !hardUnmapped.includes(t),
+    );
+    if (softUnmapped.some((t) => !softTagsIn(t).length))
       warnings.push(
         "“一起玩”等自由偏好会在结果里保留，需向主人核实，不会阻止搜索。",
       );
@@ -223,28 +217,58 @@ export function validateOutput<T extends AiTask>(
         now,
       ),
     );
-    const keepSupportedSoft = <T extends string>(tags: T[]): T[] =>
+    const keepSupportedSoft = <T extends ControlledTag>(tags: T[]): T[] =>
       tags.filter((tag) => {
-        if (matchTagEvidence[tag]?.test(source)) return true;
-        if (
-          tag === "温和" &&
-          /性格好(?:些|点|一点)?|好相处|友好|随和|脾气好/.test(source)
-        ) {
-          warnings.push(
-            "友好、好相处等描述暂按温和标签参与排序，实际互动偏好仍需向主人核实。",
-          );
-          return true;
-        }
+        if (positiveEvidence(tag, source)) return true;
         warnings.push(
           "有些性格或活动偏好暂不能对应已知标签，已保留原文，不据此排除候选。",
         );
         return false;
       });
+    // Clauses about the user's own pet describe it, not the wished-for companion.
+    const hits = [
+      ...softUnmapped,
+      ...intent.preferences.filter((t) => !/我家|我的|自家|我们家/.test(t)),
+    ].flatMap(softTagsIn);
+    const mapped = splitSoftTags(hits);
     match.clarifications = [
       ...new Set([...match.clarifications, ...distanceQuestions]),
     ].slice(0, 12);
-    match.temperaments = keepSupportedSoft(intent.match.temperaments);
-    match.activities = keepSupportedSoft(intent.match.activities);
+    // An explicit exclusion always wins over a soft wish for the same tag.
+    match.temperaments = [
+      ...new Set([
+        ...keepSupportedSoft(intent.match.temperaments),
+        ...mapped.temperamentTags,
+      ]),
+    ]
+      .filter((t) => !match.excludedTemperaments.includes(t))
+      .slice(0, 8);
+    match.activities = [
+      ...new Set([
+        ...keepSupportedSoft(intent.match.activities),
+        ...mapped.activityTags,
+      ]),
+    ]
+      .filter((t) => !match.excludedActivities.includes(t))
+      .slice(0, 8);
+    const sourceHits = softTagsIn(source);
+    const paraphrases = [...match.temperaments, ...match.activities].flatMap(
+      (tag) => {
+        const words = [...hits, ...sourceHits]
+          .filter((h) => h.tag === tag)
+          .map((h) => h.word);
+        return words.length && !words.includes(tag)
+          ? [`“${words[0]}”→${tag}`]
+          : [];
+      },
+    );
+    if (paraphrases.length)
+      warnings.push(
+        `已按同义词表将${paraphrases.slice(0, 4).join("、")}作为排序参考，实际互动偏好仍需向主人核实。`.slice(
+          0,
+          150,
+        ),
+      );
     intent.match = match;
     const timeIndex = source.search(
       /20\d{2}[-年]|后天|明天|今天|今晚|(?:下下|上上|下|上|本|这)?(?:周|星期|礼拜)[一二三四五六日天末]/,
@@ -352,24 +376,9 @@ export function validateOutput<T extends AiTask>(
         /(?:不爱|不喜欢|不要|不能|怕)/.test(tag.evidence)
       )
         throw Error("否定证据不能生成正向标签");
-    const mapping: Record<string, RegExp> = {
-      温和: /温和|温顺|温柔|松弛/,
-      慢热: /慢热|需要.{0,6}熟悉/,
-      活泼: /活泼|活跃/,
-      亲人: /亲人|喜欢人|亲近人/,
-      独立: /独立/,
-      怕追逐: /(?:怕|不喜欢).{0,6}(?:追逐|追赶|奔跑|冲过来)/,
-      喜欢追逐: /(?:喜欢|爱).{0,5}追|会追/,
-      散步: /散步|慢慢走|遛弯/,
-      闻闻探索: /闻闻|嗅闻|闻一闻/,
-      接飞盘: /飞盘/,
-      晒太阳: /晒太阳/,
-      草地撒欢: /草地|撒欢/,
-      一起慢跑: /慢跑|跑步/,
-    };
     for (const tag of [...p.temperamentTags, ...p.activityTags])
       if (
-        !mapping[tag.value].test(tag.evidence) ||
+        !tagEvidence[tag.value].test(tag.evidence) ||
         (tag.value === "怕追逐" && /不怕/.test(tag.evidence))
       )
         throw Error("标签与原文证据不相符");
@@ -479,7 +488,7 @@ export function validateOutput<T extends AiTask>(
       ...m.activities,
       ...m.excludedActivities,
     ])
-      if (!matchTagEvidence[tag]?.test(request.text))
+      if (!tagEvidence[tag]?.test(request.text))
         throw Error("筛选标签缺少用户描述依据");
     const sizeEvidence = {
       small: /小型|体型小/,

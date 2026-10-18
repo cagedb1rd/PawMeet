@@ -21,6 +21,7 @@ import {
   toolResultSchema,
 } from "./contracts";
 import { parseToolArguments } from "./tools";
+import { WALK_WORDS, isWalkingType } from "./synonyms";
 
 export type WorkflowPhase =
   | "idle"
@@ -122,13 +123,10 @@ export function activityRecommendations(
       )
         return [];
       const content = `${a.title}\n${a.description}`;
-      const walkingType =
-        i.activityType &&
-        /^(?:散步|散散步|遛狗|遛遛狗|遛弯)$/.test(i.activityType);
       const activityMatches =
         !i.activityType ||
-        (walkingType
-          ? /散(?:散)?步|遛(?:遛)?狗|遛弯/.test(content)
+        (isWalkingType(i.activityType)
+          ? WALK_WORDS.test(content)
           : content.includes(i.activityType));
       // Unverifiable explicit hard constraints never become a partial recommendation.
       if (!activityMatches || i.hardRequirements.length > 0) return [];
