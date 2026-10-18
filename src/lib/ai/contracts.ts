@@ -125,6 +125,54 @@ export const outputSchemas = {
   "post-copy": postCopySchema,
 };
 export type AiTask = keyof typeof outputSchemas;
+const confidence = z.number().min(0).max(1);
+/**
+ * Raw output of the pet-photo vision task (validated before business review). Only visible
+ * appearance: no health, age, temperament or pedigree fields exist to be filled.
+ */
+export const petPhotoOutputSchema = z.strictObject({
+  dog: z.strictObject({
+    value: z.enum(["yes", "no", "unsure"]),
+    confidence,
+  }),
+  multipleDogs: z.boolean(),
+  breed: z.strictObject({ value: nullable(30), confidence }),
+  size: z.strictObject({ value: z.enum(sizes), confidence }),
+  coatColor: z.strictObject({ value: nullable(20), confidence }),
+  features: z
+    .array(z.strictObject({ value: short(30).min(1), confidence }))
+    .max(5),
+});
+export type PetPhotoOutput = z.infer<typeof petPhotoOutputSchema>;
+/** Thumbnail produced in the browser: re-encoded JPEG, longest edge ≤512px. */
+export const PHOTO_MAX_EDGE = 512;
+export const petPhotoRequestSchema = z.strictObject({
+  image: z
+    .string()
+    .max(160000)
+    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/),
+});
+export type PetPhotoRequest = z.infer<typeof petPhotoRequestSchema>;
+const reviewedField = <T extends z.ZodType>(value: T) =>
+  z.strictObject({
+    value,
+    confidence,
+    /** Passed the confidence threshold and content rules; only accepted values are filled. */
+    accepted: z.boolean(),
+  });
+/** What the browser receives: program-reviewed draft, never the raw model text. */
+export const petPhotoDraftSchema = z.strictObject({
+  status: z.enum(["recognized", "uncertain", "not_dog", "multiple"]),
+  dogConfidence: confidence,
+  breed: reviewedField(nullable(30)),
+  size: reviewedField(z.enum(sizes)),
+  coatColor: reviewedField(nullable(20)),
+  features: z.array(reviewedField(short(30).min(1))).max(5),
+  /** Items the program removed because they looked like diagnosis / age / temperament claims. */
+  removed: z.number().int().min(0).max(10),
+  messages: z.array(short(120)).max(8),
+});
+export type PetPhotoDraft = z.infer<typeof petPhotoDraftSchema>;
 export type AiData<T extends AiTask> = z.infer<(typeof outputSchemas)[T]>;
 export type MatchIntent = z.infer<typeof matchIntentSchema>;
 export type HelpDraft = z.infer<typeof helpDraftSchema>;
@@ -327,7 +375,7 @@ export type AiSuccess<T> = {
   requestId: string;
   data: T;
   meta: {
-    provider: "qwen";
+    provider: string;
     model: string;
     promptVersion: string;
     latencyMs: number;

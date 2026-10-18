@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { AiDraft, fillForm } from "@/features/ai/draft";
+import { PhotoRecognize } from "@/features/ai/photo";
 import { FormError, clearAiMarker } from "./feedback";
 import { useDemo } from "@/features/demo/provider";
 import {
@@ -149,6 +150,32 @@ function PetEditor({ id }: { id?: string }) {
           />
           <h2>它的第一张名片</h2>
           <PhotoPicker draft={draft} max={1} />
+          <PhotoRecognize
+            key={
+              draft.images[0]?.kind === "upload"
+                ? draft.images[0].imageId
+                : (draft.images[0]?.path ?? "none")
+            }
+            image={draft.images[0]}
+            disabled={!writable}
+            onApply={(fill) => {
+              const notes = form.current?.elements.namedItem("notes");
+              const current =
+                notes instanceof HTMLTextAreaElement ? notes.value.trim() : "";
+              fillForm(form.current, {
+                ...(fill.breed ? { breed: fill.breed } : {}),
+                ...(fill.size ? { size: fill.size } : {}),
+                ...(fill.appearance
+                  ? {
+                      notes: current
+                        ? `${current}；${fill.appearance}`
+                        : fill.appearance,
+                    }
+                  : {}),
+              });
+              setDirty(true);
+            }}
+          />
           <div className="form-grid">
             <Field label="宠物名字 *">
               <input

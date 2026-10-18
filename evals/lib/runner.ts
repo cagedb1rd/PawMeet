@@ -28,6 +28,7 @@ import {
   type WorkflowCase,
 } from "../cases/current";
 import { scoreChecks } from "./checks";
+import { requestNotSent } from "./https-transport";
 import type { EvalBudget, Ticket } from "./budget";
 import type { EvalConfig } from "./config";
 import { summarize, type CallRecord, type CaseAttempt } from "./metrics";
@@ -139,6 +140,8 @@ export async function runEval(config: EvalConfig, deps: RunDeps) {
         completed: boolean;
         signal?: AbortSignal | null;
         excerpt: Uint8Array[];
+        /** Transport proved the request never left this machine. */
+        unsent?: boolean;
       };
       const attempts: Attempt[] = [];
       const start = clock();
@@ -155,7 +158,13 @@ export async function runEval(config: EvalConfig, deps: RunDeps) {
           excerpt: [],
         };
         attempts.push(a);
-        const res = await deps.transport(url, init);
+        let res: Response;
+        try {
+          res = await deps.transport(url, init);
+        } catch (e) {
+          a.unsent = requestNotSent(e);
+          throw e;
+        }
         a.status = res.status;
         if (!res.body) {
           a.completed = true;
@@ -181,13 +190,23 @@ export async function runEval(config: EvalConfig, deps: RunDeps) {
           headers: res.headers,
         });
       };
+      // tickets[i] belongs to attempts[i]: callModel reserves right before each transport call.
       const settleAll = async (usageTotal: number | null) => {
-        for (const [i, t] of tickets.entries())
-          if (!t.settled)
+        for (const [i, t] of tickets.entries()) {
+          if (t.settled) continue;
+          const last = i === tickets.length - 1;
+          if (
+            !(last && usageTotal !== null) &&
+            (!attempts[i] || attempts[i].unsent)
+          ) {
+            record.unsentAttempts = (record.unsentAttempts ?? 0) + 1;
+            record.chargedTokens += await deps.budget.release(t);
+          } else
             record.chargedTokens += await deps.budget.settle(
               t,
-              i === tickets.length - 1 ? usageTotal : null,
+              last ? usageTotal : null,
             );
+        }
       };
       try {
         const result = await callModel(

@@ -37,6 +37,8 @@ export type CallRecord = {
   /** Tokens charged to the eval budget (actual usage, or the conservative reservation). */
   chargedTokens: number;
   timedOutAttempts: number;
+  /** Attempts released from the budget because the request provably was never sent. */
+  unsentAttempts?: number;
   /** Raw model output (content / native tool calls) before any validation. */
   response: { content: string | null; toolCalls?: unknown[] } | null;
   rawBodyExcerpt?: string;

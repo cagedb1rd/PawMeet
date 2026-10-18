@@ -6,12 +6,18 @@ import {
   outputSchemas,
   taskRequestSchema,
   assistantRequestSchema,
+  petPhotoRequestSchema,
 } from "@/lib/ai/contracts";
-import { generateTask, assistantStep } from "@/server/ai/service";
+import {
+  generateTask,
+  assistantStep,
+  recognizePetPhoto,
+} from "@/server/ai/service";
 import { aiConfig } from "@/server/ai/client";
 import { AiError } from "@/server/ai/errors";
 import { sessionId } from "@/server/ai/session";
-import { PROMPT_VERSION } from "@/server/ai/prompts";
+import { PHOTO_PROMPT_VERSION, PROMPT_VERSION } from "@/server/ai/prompts";
+import { PROVIDERS } from "@/server/ai/models";
 export const runtime = "nodejs";
 export async function POST(
   request: NextRequest,
@@ -28,7 +34,8 @@ export async function POST(
     )
       throw new AiError("AI_ORIGIN", "AI请求来源未获允许", 403);
     const { task } = await params;
-    if (task !== "assistant" && !Object.hasOwn(outputSchemas, task))
+    const photo = task === "pet-photo";
+    if (task !== "assistant" && !photo && !Object.hasOwn(outputSchemas, task))
       throw new AiError("AI_TASK", "未知AI任务", 400);
     if (
       [
@@ -44,7 +51,9 @@ export async function POST(
         "此独立AI功能已合并或改为规则，请使用活动智能约伴或手动表单",
         400,
       );
-    // Bound the stream itself, rather than trusting Content-Length.
+    // Bound the stream itself, rather than trusting Content-Length. A ≤512px JPEG thumbnail
+    // is about 30–80KB of base64; text tasks stay at 48KB.
+    const limit = photo ? 170000 : 48000;
     const reader = request.body?.getReader();
     if (!reader) throw new AiError("AI_INPUT", "请求不能为空", 400);
     const parts: Uint8Array[] = [];
@@ -53,9 +62,13 @@ export async function POST(
       const p = await reader.read();
       if (p.done) break;
       length += p.value.length;
-      if (length > 48000) {
+      if (length > limit) {
         await reader.cancel();
-        throw new AiError("AI_INPUT_LIMIT", "AI请求超过48KB限制", 413);
+        throw new AiError(
+          "AI_INPUT_LIMIT",
+          `AI请求超过${Math.round(limit / 1000)}KB限制`,
+          413,
+        );
       }
       parts.push(p.value);
     }
@@ -70,39 +83,51 @@ export async function POST(
     const parsed =
       task === "assistant"
         ? assistantRequestSchema.safeParse(raw)
-        : taskRequestSchema.safeParse(raw);
+        : photo
+          ? petPhotoRequestSchema.safeParse(raw)
+          : taskRequestSchema.safeParse(raw);
     if (!parsed.success)
       throw new AiError("AI_INPUT", "请求字段或长度不合法", 400);
-    aiConfig();
+    const config = aiConfig(photo ? "vision" : "text");
     const session = sessionId(request.cookies.get("pawmeet-ai")?.value);
     // The browser never selects a model: only progress/signal are passed down.
     const run = (onProgress?: (p: AiProgress) => void) =>
-      task === "assistant"
-        ? assistantStep(
-            assistantRequestSchema.parse(parsed.data),
+      photo
+        ? recognizePetPhoto(
+            petPhotoRequestSchema.parse(parsed.data),
             session.id,
             requestId,
-            undefined,
             undefined,
             { onProgress, signal: request.signal },
           )
-        : generateTask(
-            task as AiTask,
-            taskRequestSchema.parse(parsed.data),
-            session.id,
-            requestId,
-            undefined,
-            undefined,
-            { onProgress, signal: request.signal },
-          );
+        : task === "assistant"
+          ? assistantStep(
+              assistantRequestSchema.parse(parsed.data),
+              session.id,
+              requestId,
+              undefined,
+              undefined,
+              { onProgress, signal: request.signal },
+            )
+          : generateTask(
+              task as AiTask,
+              taskRequestSchema.parse(parsed.data),
+              session.id,
+              requestId,
+              undefined,
+              undefined,
+              { onProgress, signal: request.signal },
+            );
     const success = (result: Awaited<ReturnType<typeof run>>) => ({
       ok: true,
       requestId,
       data: result.data,
       meta: {
-        provider: "qwen",
+        provider: photo
+          ? PROVIDERS[config.profile.provider].label.toLowerCase()
+          : "qwen",
         model: result.model,
-        promptVersion: PROMPT_VERSION,
+        promptVersion: photo ? PHOTO_PROMPT_VERSION : PROMPT_VERSION,
         schemaVersion: 1,
         latencyMs: Date.now() - start,
         usage: result.usage,

@@ -1,5 +1,6 @@
 import "server-only";
 import { AiError } from "./errors";
+import type { ImageTokenRule } from "@/lib/ai/estimate";
 
 export type ModelKind = "text" | "vision";
 export type Provider = "dashscope" | "gemini";
@@ -23,16 +24,27 @@ export type ModelProfile = {
   id: string;
   kind: ModelKind;
   provider: Provider;
-  /** Provider only accepts stream=true (Qwen-Omni class; re-verify in docs before step 7). */
+  /** Provider only accepts stream=true (qwen3.5-omni per the Qwen-Omni docs). */
   streamOnly: boolean;
   /** Sends enable_thinking/preserve_thinking=false. */
   thinkingParams: boolean;
-  /** Sends response_format (JSON mode / strict JSON Schema). */
-  responseFormat: boolean;
+  /**
+   * Strongest response_format the model supports. json_object models receive JSON mode even
+   * when a schema is requested (Qwen-Omni has no JSON Schema mode; multimodal requests are
+   * downgraded by the provider anyway); the business layer validates with Zod either way.
+   */
+  responseFormat: "json_schema" | "json_object";
   /** Accepts image_url content parts. */
   images: boolean;
-  /** OpenAI reasoning_effort for models whose thinking cannot be turned off (Gemini 3). */
-  reasoningEffort?: "minimal" | "low";
+  /** Image token rule for reservations (see src/lib/ai/estimate.ts). */
+  imageTokens?: ImageTokenRule;
+  /** Sends modalities:["text"] (Qwen-Omni can also answer with audio). */
+  textOnly?: boolean;
+  /**
+   * OpenAI reasoning_effort: lowest level for Gemini 3 (thinking cannot be turned off);
+   * "none" turns off qwen3.8-omni-flash thinking, which is on by default (xhigh).
+   */
+  reasoningEffort?: "none" | "minimal" | "low";
   /** null = provider default (Gemini 3 recommends keeping the default 1.0). */
   temperature: number | null;
   /** max_tokens; on Gemini 3 it includes thinking tokens, so it is set higher. */
@@ -44,7 +56,7 @@ const qwenText = (id: string): ModelProfile => ({
   provider: "dashscope",
   streamOnly: false,
   thinkingParams: true,
-  responseFormat: true,
+  responseFormat: "json_schema",
   images: false,
   temperature: 0.1,
   maxOutputTokens: 1400,
@@ -58,11 +70,44 @@ const geminiText = (
   provider: "gemini",
   streamOnly: false,
   thinkingParams: false,
-  responseFormat: true,
+  responseFormat: "json_schema",
   images: false,
   reasoningEffort,
   temperature: null,
   maxOutputTokens: 4096,
+});
+
+/**
+ * Qwen-Omni (verified in the Qwen-Omni docs, 2026-10-19): 3.8-omni-flash accepts stream=false
+ * and thinks by default (reasoning_effort "none" turns it off); 3.5-omni only streams and has no
+ * thinking mode. Both support JSON mode but not JSON Schema. Output is small JSON, so 1000.
+ */
+const qwenOmni = (
+  id: string,
+  extra: Pick<ModelProfile, "streamOnly"> & Partial<ModelProfile>,
+): ModelProfile => ({
+  id,
+  kind: "vision",
+  provider: "dashscope",
+  thinkingParams: false,
+  responseFormat: "json_object",
+  images: true,
+  imageTokens: "qwen",
+  textOnly: true,
+  temperature: 0.1,
+  maxOutputTokens: 1000,
+  ...extra,
+});
+/** Gemini vision: same thinking levels as text; 2048 covers thinking plus a small JSON. */
+const geminiVision = (
+  id: string,
+  reasoningEffort: "minimal" | "low",
+): ModelProfile => ({
+  ...geminiText(id, reasoningEffort),
+  kind: "vision",
+  images: true,
+  imageTokens: "gemini3",
+  maxOutputTokens: 2048,
 });
 
 /**
@@ -78,17 +123,15 @@ export const MODEL_WHITELIST: Record<ModelKind, readonly ModelProfile[]> = {
     geminiText("gemini-3.5-flash-lite", "minimal"),
     geminiText("gemini-3.8-flash", "low"),
   ],
-  vision: ["qwen3.8-omni-flash", "qwen3.5-omni-plus"].map((id) => ({
-    id,
-    kind: "vision" as const,
-    provider: "dashscope" as const,
-    streamOnly: true,
-    thinkingParams: false,
-    responseFormat: false,
-    images: true,
-    temperature: 0.1,
-    maxOutputTokens: 1400,
-  })),
+  vision: [
+    qwenOmni("qwen3.8-omni-flash", {
+      streamOnly: false,
+      reasoningEffort: "none",
+    }),
+    qwenOmni("qwen3.5-omni-plus", { streamOnly: true }),
+    geminiVision("gemini-3.5-flash-lite", "minimal"),
+    geminiVision("gemini-3.8-flash", "low"),
+  ],
 };
 const DEFAULT_MODEL: Record<ModelKind, string> = {
   text: "qwen3.8-flash",

@@ -151,9 +151,22 @@ describe("vision / omni compatibility", () => {
       content: [{ type: "text", text: "看看这只狗" }, imagePart(image)],
     },
   ];
-  it("forces streaming, omits text-only params and estimates images at a fixed cost", async () => {
+  it("qwen3.8-omni-flash honours AI_STREAM=false (docs), turns thinking off and asks for text only", async () => {
     vi.stubEnv("AI_STREAM", "false");
-    const t = vi.fn<typeof fetch>().mockResolvedValue(ok("一只柴犬"));
+    const t = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              finish_reason: "stop",
+              message: { role: "assistant", content: "一只柴犬" },
+            },
+          ],
+          usage,
+        }),
+        { headers: { "content-type": "application/json" } },
+      ),
+    );
     const r = await callModel(
       visionMessages,
       "s",
@@ -165,9 +178,12 @@ describe("vision / omni compatibility", () => {
     );
     const body = bodyOf(t);
     expect(body.model).toBe("qwen3.8-omni-flash");
-    expect(body.stream).toBe(true);
-    expect(body.stream_options).toEqual({ include_usage: true });
+    expect(body.stream).toBe(false);
+    // Thinking is on by default (xhigh) for 3.8-omni-flash; "none" turns it off.
+    expect(body.reasoning_effort).toBe("none");
     expect(body.enable_thinking).toBeUndefined();
+    expect(body.modalities).toEqual(["text"]);
+    // No schema requested: no response_format (JSON mode needs "JSON" in the prompt).
     expect(body.response_format).toBeUndefined();
     expect(body.messages[0].content[1]).toEqual({
       type: "image_url",
@@ -175,10 +191,24 @@ describe("vision / omni compatibility", () => {
     });
     expect(r.message.content).toBe("一只柴犬");
     expect(r.usage).toEqual(usage);
-    // 80KB of base64 is not counted as 80K tokens.
+    // 80KB of base64 is not counted as 80K tokens (unknown size → provider default cap).
     expect(reserve.mock.calls[0][1]).toBeLessThan(5000);
   });
-  it("rejects images for text models, tools / strict schema for omni, and non-thumbnail data", async () => {
+  it("qwen3.5-omni-plus is stream-only and has no thinking parameters", async () => {
+    vi.stubEnv("AI_VISION_MODEL", "qwen3.5-omni-plus");
+    const t = vi.fn<typeof fetch>().mockResolvedValue(ok("一只柴犬"));
+    await callModel(visionMessages, "s", "r", undefined, t, undefined, {
+      kind: "vision",
+      stream: false,
+    });
+    const body = bodyOf(t);
+    expect(body.model).toBe("qwen3.5-omni-plus");
+    expect(body.stream).toBe(true);
+    expect(body.stream_options).toEqual({ include_usage: true });
+    expect(body.reasoning_effort).toBeUndefined();
+    expect(body.enable_thinking).toBeUndefined();
+  });
+  it("rejects images for text models, tools for vision models, and non-thumbnail data; a schema downgrades to JSON mode on omni", async () => {
     const t = vi.fn<typeof fetch>();
     await expect(
       callModel(visionMessages, "s", "r", undefined, t),
@@ -188,20 +218,13 @@ describe("vision / omni compatibility", () => {
         kind: "vision",
       }),
     ).rejects.toMatchObject({ code: "AI_MODEL_CAPABILITY" });
-    await expect(
-      callModel(
-        user,
-        "s",
-        "r",
-        undefined,
-        t,
-        { type: "object" },
-        {
-          kind: "vision",
-        },
-      ),
-    ).rejects.toMatchObject({ code: "AI_MODEL_CAPABILITY" });
     expect(t).not.toHaveBeenCalled();
+    // Qwen-Omni has no JSON Schema mode (official docs); JSON mode + Zod in the service.
+    t.mockResolvedValue(ok("{}"));
+    await callModel(user, "s", "r", undefined, t, { type: "object" }, {
+      kind: "vision",
+    });
+    expect(bodyOf(t).response_format).toEqual({ type: "json_object" });
     for (const bad of [
       "https://example.test/dog.jpg",
       "data:image/svg+xml;base64,AAAA",

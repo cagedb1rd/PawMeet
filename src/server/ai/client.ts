@@ -3,13 +3,11 @@ import { z } from "zod";
 import { toolCallSchema, type AiProgress } from "@/lib/ai/contracts";
 import { AiError } from "./errors";
 import { reserveAiCall, withAiSlot } from "./quota";
-import {
-  ModelKind,
-  PROVIDERS,
-  resolveModel,
-  transportConfig,
-} from "./models";
+import { ModelKind, PROVIDERS, resolveModel, transportConfig } from "./models";
 import { readChatStream, type Usage } from "./sse";
+import { estimateImageTokens, estimateTextTokens } from "@/lib/ai/estimate";
+import { inspectJpegDataUrl } from "@/lib/ai/jpeg";
+import { PHOTO_MAX_EDGE } from "@/lib/ai/contracts";
 export type ContentPart =
   | { type: "text"; text: string }
   | { type: "image_url"; image_url: { url: string } };
@@ -55,8 +53,6 @@ export type CallOptions = {
    */
   reserve?: (worstTokens: number) => Promise<void> | void;
 };
-/** Conservative quota estimate for one ≤512px thumbnail, instead of counting base64 bytes. */
-const IMAGE_TOKEN_ESTIMATE = 1500;
 const RETRYABLE_STATUS = [429, 500, 502, 503, 504];
 const RETRYABLE_NETWORK = [
   "ECONNRESET",
@@ -73,6 +69,31 @@ export function imagePart(dataUrl: string): ContentPart {
   )
     throw new AiError("AI_INPUT", "图片必须是已压缩的JPEG/PNG/WebP缩略图", 400);
   return { type: "image_url", image_url: { url: dataUrl } };
+}
+
+/**
+ * Pet-photo thumbnail: must be a JPEG the browser re-encoded, longest edge ≤512px and without
+ * Exif / XMP metadata (camera, time, GPS). The server re-checks instead of trusting the client.
+ */
+export function thumbnailPart(dataUrl: string) {
+  const info = inspectJpegDataUrl(dataUrl);
+  if (!info)
+    throw new AiError("AI_INPUT", "缩略图必须是浏览器重新编码的JPEG", 400);
+  if (Math.max(info.width, info.height) > PHOTO_MAX_EDGE)
+    throw new AiError(
+      "AI_INPUT",
+      `缩略图最长边不能超过${PHOTO_MAX_EDGE}px`,
+      400,
+    );
+  if (Math.min(info.width, info.height) < 16)
+    throw new AiError("AI_INPUT", "缩略图尺寸过小，无法识别", 400);
+  if (info.metadata)
+    throw new AiError(
+      "AI_INPUT",
+      "缩略图仍含拍摄信息（EXIF / 位置），已拒绝",
+      400,
+    );
+  return imagePart(dataUrl);
 }
 
 export function aiConfig(kind: ModelKind = "text", model?: string) {
@@ -207,12 +228,6 @@ export async function callModel(
       `${profile.id}不支持本次请求的${images.length ? "图片输入" : "工具调用"}`,
       400,
     );
-  if (jsonSchema && !profile.responseFormat)
-    throw new AiError(
-      "AI_MODEL_CAPABILITY",
-      `${profile.id}未开启结构化输出参数，需由业务层解析文本并校验`,
-      400,
-    );
   if (images.length > 4)
     throw new AiError("AI_INPUT", "单次最多4张缩略图", 400);
   const stream = profile.streamOnly || (options.stream ?? config.stream);
@@ -226,38 +241,41 @@ export async function callModel(
     ...(profile.reasoningEffort
       ? { reasoning_effort: profile.reasoningEffort }
       : {}),
+    ...(profile.textOnly ? { modalities: ["text"] } : {}),
     ...(profile.temperature === null
       ? {}
       : { temperature: profile.temperature }),
     max_tokens: profile.maxOutputTokens,
     stream,
     ...(stream ? { stream_options: { include_usage: true } } : {}),
-    ...(profile.responseFormat
+    // Vision calls only ask for JSON when the caller supplies a schema (Qwen JSON mode also
+    // requires the word "JSON" in the prompt, which the pet-photo prompt contains).
+    ...(jsonSchema || profile.kind === "text"
       ? {
-          response_format: jsonSchema
-            ? {
-                type: "json_schema",
-                json_schema: {
-                  name: "pawmeet_result",
-                  strict: true,
-                  schema: jsonSchema,
-                },
-              }
-            : { type: "json_object" },
+          response_format:
+            jsonSchema && profile.responseFormat === "json_schema"
+              ? {
+                  type: "json_schema",
+                  json_schema: {
+                    name: "pawmeet_result",
+                    strict: true,
+                    schema: jsonSchema,
+                  },
+                }
+              : { type: "json_object" },
         }
       : {}),
     ...(tools ? { tools, tool_choice: "auto", parallel_tool_calls: true } : {}),
   };
   const body = JSON.stringify(payload);
-  // Size and quota count text bytes; each image counts as a fixed thumbnail estimate.
-  const textBytes = Buffer.byteLength(
-    images.length
-      ? JSON.stringify(payload, (key, value) =>
-          key === "image_url" ? { url: "" } : value,
-        )
-      : body,
-    "utf8",
-  );
+  // The size limit counts text bytes; images are counted by their own token rules instead of
+  // their base64 length.
+  const text = images.length
+    ? JSON.stringify(payload, (key, value) =>
+        key === "image_url" ? { url: "" } : value,
+      )
+    : body;
+  const textBytes = Buffer.byteLength(text, "utf8");
   if (textBytes > 30000)
     throw new AiError(
       "AI_CONTEXT_LIMIT",
@@ -265,7 +283,19 @@ export async function callModel(
       400,
     );
   const worstTokens =
-    textBytes + profile.maxOutputTokens + images.length * IMAGE_TOKEN_ESTIMATE;
+    estimateTextTokens(text) +
+    profile.maxOutputTokens +
+    images.reduce(
+      (sum, part) =>
+        sum +
+        estimateImageTokens(
+          profile.imageTokens ?? "qwen",
+          part.type === "image_url"
+            ? inspectJpegDataUrl(part.image_url.url)
+            : null,
+        ),
+      0,
+    );
   const maxAttempts = retry === "none" ? 1 : 2;
   const progress = options.onProgress;
   return withAiSlot(async () => {

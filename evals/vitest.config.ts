@@ -4,6 +4,8 @@ const entries: Record<string, string> = {
   run: "evals/runner/multi-model.eval.ts",
   compare: "evals/runner/compare.eval.ts",
   legacy: "evals/runner/evaluate.test.ts",
+  vision: "evals/runner/vision.eval.ts",
+  "vision-compare": "evals/runner/vision-compare.eval.ts",
 };
 export default defineConfig({
   resolve: { alias: { "@": path.resolve("src") } },

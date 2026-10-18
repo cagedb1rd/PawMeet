@@ -4,17 +4,25 @@
 //   npm run eval:ai -- --mode live --model qwen3.8-flash --token-limit 200000 --repeat 2 [--dry-run]
 //   npm run eval:ai -- compare evals/reports/a.json evals/reports/b.json
 //   npm run eval:ai -- legacy [--suite all|core|tools]   (core.v2 mock regression only)
+//   npm run eval:ai -- vision --mode simulated|live --model gemini-3.8-flash --token-limit 50000
+//        [--source public|private|all] [--cases pub-dog-1,prv-dog-01] [--dry-run]
+//   npm run eval:ai -- vision-compare evals/reports/a-vision-live.json b.json ...
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
 const argv = process.argv.slice(2);
-const entry = ["compare", "legacy"].includes(argv[0]) ? argv[0] : "run";
+const entry = ["compare", "legacy", "vision", "vision-compare"].includes(
+  argv[0],
+)
+  ? argv[0]
+  : "run";
 const args = entry === "run" ? argv : argv.slice(1);
 const option = (name) => {
   const i = args.indexOf(name);
   return i < 0 ? undefined : args[i + 1];
 };
-const live = entry === "run" && option("--mode") === "live";
+const live =
+  (entry === "run" || entry === "vision") && option("--mode") === "live";
 const env = { ...process.env, AI_EVAL_ENTRY: entry };
 if (live) {
   // Secrets stay in process memory; they are never printed or written to reports.

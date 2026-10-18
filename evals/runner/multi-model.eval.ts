@@ -14,6 +14,7 @@ import {
 import { EvalBudget, fileStore, memoryStore } from "../lib/budget";
 import { createMockTransport, type MockContext } from "../lib/mock-transport";
 import { runEval } from "../lib/runner";
+import { createHttpsTransport } from "../lib/https-transport";
 import { reportStem, runMarkdown } from "../lib/report";
 import { PROMPT_VERSION } from "@/server/ai/prompts";
 import { PROVIDERS, resolveModel } from "@/server/ai/models";
@@ -65,7 +66,8 @@ it("PawMeet multi-model evaluation", async () => {
       throw Error(
         "真实评测默认关闭；获得用户批准后设置 PAWMEET_ALLOW_LIVE_AI=approved",
       );
-    const keyEnv = PROVIDERS[resolveModel("text", config.model).provider].keyEnv;
+    const keyEnv =
+      PROVIDERS[resolveModel("text", config.model).provider].keyEnv;
     if (!process.env[keyEnv]) throw Error(`${keyEnv} 未配置`);
     if (estimate > budget.remaining)
       console.warn(
@@ -78,7 +80,7 @@ it("PawMeet multi-model evaluation", async () => {
     runId,
     transport:
       config.mode === "live"
-        ? fetch
+        ? createHttpsTransport()
         : createMockTransport(mock, config.mockFaults),
     budget,
     mock: config.mode === "live" ? undefined : mock,

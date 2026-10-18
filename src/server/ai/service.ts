@@ -11,9 +11,13 @@ import {
   toolResultSchema,
   assistantSummaries,
   noResultSummaries,
+  PetPhotoRequest,
+  PetPhotoDraft,
+  petPhotoOutputSchema,
 } from "@/lib/ai/contracts";
+import { reviewPetPhoto } from "@/lib/ai/photo";
 import { validateOutput } from "@/lib/ai/validation";
-import { callModel, CallOptions, Message } from "./client";
+import { callModel, CallOptions, Message, thumbnailPart } from "./client";
 import {
   taskPrompt,
   assistantPrompt,
@@ -22,6 +26,8 @@ import {
   taskOutputSchema,
   finalAnswerSchema,
   workflowPrompt,
+  petPhotoPrompt,
+  petPhotoJsonSchema,
 } from "./prompts";
 import { AiError } from "./errors";
 import { seal, unseal } from "./session";
@@ -76,6 +82,62 @@ export async function generateTask(
     );
   }
 }
+/** Strips one Markdown code fence some JSON-mode models still add. */
+const unfence = (text: string) =>
+  text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/, "");
+
+/**
+ * Pet-photo vision task: the browser sends only a re-encoded ≤512px JPEG after the user clicks.
+ * The output is a program-reviewed draft; nothing is written until the owner saves the form.
+ */
+export async function recognizePetPhoto(
+  input: PetPhotoRequest,
+  session: string,
+  requestId: string,
+  call = callModel,
+  options: Pick<CallOptions, "onProgress" | "signal" | "model"> = {},
+): Promise<{ data: PetPhotoDraft; usage: unknown; model: string }> {
+  const image = thumbnailPart(input.image);
+  const result = await call(
+    [
+      { role: "system", content: petPhotoPrompt },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "识别这张宠物照片的外观，按要求只输出JSON。" },
+          image,
+        ],
+      },
+    ],
+    session,
+    requestId,
+    undefined,
+    undefined,
+    petPhotoJsonSchema,
+    { ...options, kind: "vision", retry: "idempotent" },
+  );
+  let raw: unknown;
+  try {
+    raw = JSON.parse(unfence(result.message.content ?? ""));
+  } catch {
+    raw = undefined;
+  }
+  const parsed = petPhotoOutputSchema.safeParse(raw);
+  if (!parsed.success)
+    throw new AiError(
+      "AI_INVALID_OUTPUT",
+      "照片识别结果未通过结构校验，没有填入任何内容；可以重试或手动填写",
+    );
+  return {
+    data: reviewPetPhoto(parsed.data),
+    usage: result.usage,
+    model: result.model,
+  };
+}
+
 const messageSchema = z.strictObject({
   role: z.enum(["user", "assistant", "tool"]),
   content: z.string().max(18000).nullable(),

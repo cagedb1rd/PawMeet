@@ -12,6 +12,8 @@ import {
   aiProgressSchema,
   toolCallSchema,
   assistantAnswerSchema,
+  PetPhotoDraft,
+  petPhotoDraftSchema,
 } from "./contracts";
 const assistantStepSchema = z.strictObject({
   continuation: z.string().max(40000),
@@ -68,9 +70,9 @@ export async function readAiStream(
 
 export function describeProgress(progress: AiProgress | null, seconds: number) {
   if (progress?.stage === "receiving")
-    return `Qwen 正在生成，已接收约 ${progress.chars} 字符…`;
+    return `模型正在生成，已接收约 ${progress.chars} 字符…`;
   if (progress?.stage === "retrying") return "上游响应异常，正在自动重试 1 次…";
-  return seconds >= 3 ? `等待 Qwen 响应（${seconds} 秒）…` : "";
+  return seconds >= 3 ? `等待模型响应（${seconds} 秒）…` : "";
 }
 
 async function request<T>(
@@ -122,6 +124,20 @@ export function aiTask<T extends AiTask>(
     task,
     body,
     outputSchemas[task] as unknown as z.ZodType<AiData<T>>,
+    signal,
+    onProgress,
+  );
+}
+/** Sends only the re-encoded thumbnail; called after the user clicks "识别照片". */
+export function aiPetPhoto(
+  thumbnail: string,
+  signal?: AbortSignal,
+  onProgress?: ProgressHandler,
+) {
+  return request<PetPhotoDraft>(
+    "pet-photo",
+    { image: thumbnail },
+    petPhotoDraftSchema,
     signal,
     onProgress,
   );

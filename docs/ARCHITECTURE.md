@@ -149,25 +149,30 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 
 [Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)（[SSE 解析](../src/server/ai/sse.ts)、[模型白名单](../src/server/ai/models.ts)）。密钥、Prompt、模型配置与额度模块使用 server-only。模型只来自服务端白名单（见 [AGENTS](../AGENTS.md#ai-与模型)）：文本组由 AI_MODEL 选择（默认 qwen3.8-flash），视觉组由 AI_VISION_MODEL 选择（默认 qwen3.8-omni-flash）；名称须精确匹配所在组，否则返回 AI_MODEL_NOT_APPROVED，无自动回退。callModel 的 `model` 覆盖参数只供服务端 / 评测调用，同样受白名单约束；Route 不读取浏览器传入的模型字段（多余字段按 strict Schema 拒绝）。白名单 Qwen 5 个型号名经百炼模型列表、gemini-3.5-flash-lite / gemini-3.8-flash 经 Gemini 模型列表核实存在（见 [AI_EVAL](AI_EVAL.md#模型名核实2026-10-18) 与第 6b 步）。每个型号的 profile 指定 provider：dashscope 用 DASHSCOPE_API_KEY 与下述百炼端点；gemini 用 GEMINI_API_KEY 与固定的 `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`（不可配置）。取舍见 [DECISIONS D024](DECISIONS.md)。callModel 另有评测专用 `reserve` 钩子，以独立评测账本替代产品额度账本，Route 从不传入。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
-POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
+POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling；pet-photo 只接受 {image}（见下文“拍照建档”）。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
 
 | 场景 | 最少上下文与结果 |
 | --- | --- |
 | pet-profile | 描述文本；基本信息可空，性格 / 活动标签附原文证据，填入后由主人编辑并确认保存 |
 | help-intent | 描述 + 最多3只本人宠物摘要；类型、宠物、起止、时长、原始时间与公共地点线索；缺失信息及地点复核沿用原表单校验 |
 | companion-intent | 描述 + 选中本人宠物摘要；match 包含 / 排斥条件、日期时间提议、活动类型、地点关键词、软偏好、其他硬要求、澄清；不返回实体 |
+| pet-photo | 仅一张浏览器重新编码的 JPEG 缩略图（≤512px、无 EXIF）；输出是否为狗、多只狗、品种、体型、毛色、可见特征及各自置信度，经程序审核后返回草稿 |
 
 成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；失败 {ok:false,requestId,error:{code,message,retryable}}。400 输入 / 协议 / 模型能力不符、413 超量、403 来源、429 本地额度、499 客户端取消、503 配置 / 账本、502 上游 / 非法输出 / 流中断、504 超时。失败不返回上游原始正文或思考过程。
 
 浏览器请求带 `Accept: application/x-ndjson` 时，Route 在模型开始返回（或进入自动重试）后改为 NDJSON：若干 `{type:"progress",stage:"waiting"|"receiving"|"retrying",attempt,chars}`，最后一行 `{type:"result",body:<成功信封>}` 或 `{type:"error",status,body:<失败信封>}`。在此之前发生的失败（来源、输入、额度、配置、上游 HTTP 错误）仍是普通 JSON 和真实 HTTP 状态。进度只含阶段与已接收字符数，不推送模型原文；结果仍在服务端整体解析并通过 Zod / 业务校验后才下发。[浏览器客户端](../src/lib/ai/client.ts) 兼容两种响应，界面在等待时显示已等待秒数，接收中显示字符数，重试时提示。
 
-请求流上限48KB，描述1500字、摘要至多3宠；上游请求文本30000字节（图片按每张固定估算，不计 base64 长度）。Qwen：max_tokens=1400、temperature=0.1，文本模型发送 enable_thinking=false。Gemini：不发送 temperature 与 enable_thinking，发送 reasoning_effort（3.5-flash-lite 为 minimal、3.8-flash 为 low），max_tokens=4096（含思考 Token）；tool_calls 上的 `extra_content.google.thought_signature` 原样保存在签名上下文并在续传时回传，流式 tool_calls 缺 index 时按 id 归并。回答修复指令以 user 角色追加。
+请求流上限48KB（pet-photo 为170KB），描述1500字、摘要至多3宠；上游请求文本30000字节（图片不计 base64 长度，按下述图片 Token 规则估算）。Qwen：max_tokens=1400、temperature=0.1，文本模型发送 enable_thinking=false。Gemini：不发送 temperature 与 enable_thinking，发送 reasoning_effort（3.5-flash-lite 为 minimal、3.8-flash 为 low），max_tokens=4096（含思考 Token）；tool_calls 上的 `extra_content.google.thought_signature` 原样保存在签名上下文并在续传时回传，流式 tool_calls 缺 index 时按 id 归并。回答修复指令以 user 角色追加。
 
-- 流式：默认 `stream:true` 并带 `stream_options.include_usage`，AI_STREAM=false 时走原非流式路径；只支持流式的模型（视觉组按 omni 处理）强制流式。SSE 解析拼接 content 增量、按 index 拼接 tool_calls 片段（名称取首片段，arguments 连接），保留末尾 usage；原始流 ≤512000 字节、单行 ≤64000、文本 ≤16000 字符。未见 finish_reason 即断流为 AI_UPSTREAM_STREAM_INTERRUPTED，`length` 截断为 AI_UPSTREAM_INCOMPLETE，流内 error / 非法 JSON 显式失败。若上游忽略 stream 返回 JSON 信封，按非流式解析。
+- 流式：默认 `stream:true` 并带 `stream_options.include_usage`，AI_STREAM=false 时走原非流式路径；只支持流式的模型（qwen3.5-omni-plus，见下文图片一条）强制流式。SSE 解析拼接 content 增量、按 index 拼接 tool_calls 片段（名称取首片段，arguments 连接），保留末尾 usage；原始流 ≤512000 字节、单行 ≤64000、文本 ≤16000 字符。未见 finish_reason 即断流为 AI_UPSTREAM_STREAM_INTERRUPTED，`length` 截断为 AI_UPSTREAM_INCOMPLETE，流内 error / 非法 JSON 显式失败。若上游忽略 stream 返回 JSON 信封，按非流式解析。
 - 输出：结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。流式与非流式都整体拼接后再走同一校验，不消费部分结果。格式错误最多一次无工具严格总结修复，计入4轮。
 - 超时：AI_FIRST_BYTE_TIMEOUT_MS（默认15000，流式到首个数据块、非流式到响应头）与 AI_TOTAL_TIMEOUT_MS（默认40000，单次尝试）；浏览器120秒总超时并可取消，取消经 request.signal 中止上游。
 - 重试：每次调用最多自动重试1次，退避500ms（短 Retry-After 最多3秒），每次尝试都重新预留额度、不退款。抽取类任务（generateTask）为 idempotent：429 / 500 / 502 / 503 / 504、受控连接错误、首字节或总超时、流中断都可重试。工具续传（assistantStep，含总结修复）为 pre-response：只在未消费任何响应体时重试（HTTP 429 / 5xx、连接错误、首字节超时）；工具只在浏览器收到签名步骤后执行，失败的尝试不生成续传凭据，因此不会重复执行业务工具。401 / 403 / 400、非法内容、截断、额度拒绝不重试。
-- 图片：消息内容可为 `{type:"text"}` / `{type:"image_url",image_url:{url}}` 数组；[imagePart](../src/server/ai/client.ts) 只接受 JPEG / PNG / WebP base64 data URL 且 ≤400000 字符，单次最多4张。文本模型收到图片、视觉模型收到 tools 或 JSON Schema 均返回 AI_MODEL_CAPABILITY；视觉组当前不发送 response_format 与思考参数。拍照建档业务未实现（第 7 步），omni 的流式要求、response_format 与输入格式届时按官方文档复核。
+- 图片：消息内容可为 `{type:"text"}` / `{type:"image_url",image_url:{url}}` 数组；[imagePart](../src/server/ai/client.ts) 只接受 JPEG / PNG / WebP base64 data URL 且 ≤400000 字符，单次最多4张；文本模型收到图片、视觉模型收到 tools 均返回 AI_MODEL_CAPABILITY。视觉组 4 个型号的调用要求（2026-10-19 按官方文档核实，来源见第 9 节）：
+  - qwen3.8-omni-flash：支持非流式（随 AI_STREAM），默认开启思考（reasoning_effort 默认 xhigh），发送 `reasoning_effort:"none"` 关闭；只支持 JSON Mode（`json_object`，提示词须含 “JSON”），不支持 JSON Schema；发送 `modalities:["text"]`。
+  - qwen3.5-omni-plus：只支持流式（强制 `stream:true`），无思考模式；JSON Mode，同上。百炼说明多模态输入请求 json_schema 会自动降级为 json_object，因此 Qwen 视觉统一发 json_object，结构由服务端 Zod 校验。Base64 Data URI ≤20MB，宽高 >10px。
+  - gemini-3.5-flash-lite / gemini-3.8-flash：同一 Gemini OpenAI 兼容端点，图片用 `image_url` 的 `data:image/jpeg;base64,…`，内嵌请求总大小 ≤20MB；支持结构化输出，发送 strict `json_schema`；思考不可关闭，沿用 minimal / low，`max_tokens` 2048（含思考）。
+  - 图片 Token（只用于预留，实际以 usage 结算）：Qwen 3.x 每 32×32 像素 1 Token +2（omni 页未单列，按旧版 28×28 与向上取整作上界，≤512px 最多约 363）；Gemini 3 默认 media_resolution 每张图上限 1120。尺寸未知时取厂商默认上限（Qwen 2562）。
 
 [Prompt](../src/server/ai/prompts.ts) 版本 pawmeet-6.3，validation-11。档案 / 互助保留摘录、否定、年龄、日期、本人ID和剂量禁区等防线。约伴可接受粗略日期与时段：程序 [availability](../src/lib/ai/availability.ts) 按北京时间生成并展示只读查询边界，上午6–12点、下午12–18点、晚上18–24点；OR时段保留间隔，排除日期 / 时段从候选范围扣除。缺少日期才询问日期，不要求分钟；不把查询边界写入活动计划。普通软偏好改写不再导致整体事实校验失败：保留有依据的原话。性格 / 活动受控标签由程序维护的 [同义词表](../src/lib/ai/synonyms.ts) 映射（如随和 / 好相处 → 温和，遛弯 / 溜达 → 散步，好动 → 活泼），模型只需逐字保留原话；只扫描模型放入 preferences 和非硬性 unmappedTerms 的片段（跳过描述本人宠物的子句），否定前缀（不要太活泼）不算正向，映射结果只作软排序并在 warnings 列出“原话 → 标签”供核实，明确排斥同标签时排斥优先。同义词不会产生排斥、体型、品种或距离条件；含“必须 / 不要”等硬性措辞的未映射词仍走澄清，无法映射的软词仅提示不阻断搜索。无依据的硬条件、准入 / 安全保证仍拒绝，明确距离上限由程序核对，不支持或冲突先澄清。所有业务写入继续走正式 Schema、角色 / 状态和 Repository，身份 / 数据 revision 变化中止旧工作流。
 
@@ -187,11 +192,19 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 签名令牌不是加密或认证，不能证明浏览器业务实体真实；当前浏览器是演示数据所有者。只包含本任务必要数据，不建立服务端业务数据库。
 
+### 拍照建档（pet-photo）
+
+入口为档案表单照片区的 [PhotoRecognize](../src/features/ai/photo.tsx)。只有主人点击“识别照片”才会调用：[makeThumbnail](../src/lib/ai/thumbnail.ts) 按 Exif 方向解码后在新 canvas 上绘制（最长边 ≤512px）并重新编码为 JPEG（质量 0.85 → 0.55，≤100KB），原图及其 EXIF / GPS 不离开浏览器；发送前用 [inspectJpeg](../src/lib/ai/jpeg.ts) 自检。浏览器只发 `{image}`（strict Schema，不能附带模型名或其他数据）；服务端 [thumbnailPart](../src/server/ai/client.ts) 再次检查是 JPEG、最长边 ≤512、最短边 ≥16、无 APP1 Exif / XMP，否则 400。
+
+[recognizePetPhoto](../src/server/ai/service.ts) 用视觉组模型（AI_VISION_MODEL，默认 qwen3.8-omni-flash）与 [petPhotoPrompt](../src/server/ai/prompts.ts)（pawmeet-photo-1）调用，抽取式任务可自动重试一次；输出先过 [petPhotoOutputSchema](../src/lib/ai/contracts.ts)（strict：dog、multipleDogs、breed、size、coatColor、features，各带 0–1 置信度，没有健康 / 年龄 / 性格字段），不合法为 AI_INVALID_OUTPUT。再由 [reviewPetPhoto](../src/lib/ai/photo.ts) 做业务审核：不是“确信是一只狗”（非狗、拿不准、多只狗）一律不填；每个字段置信度 ≥0.6 才可填入，unknown / 混血不填；看起来像诊断、年龄、性格或胖瘦评价的文字不论置信度一律移除并提示；提示语由程序生成，不回显模型原文。浏览器只收到审核后的草稿（petPhotoDraftSchema）。
+
+“填入表单（尚未保存）”只写入表单：品种、体型和“外观：毛色、特征”（追加到见面前的小提醒），沿用 `data-ai-filled` 标记，手改即清除；点击“确认保存档案”才走原 save-pet 命令。失败（未配置、超时、额度、Schema 不过）显示真实错误码，表单仍可完整手填。
+
 ### 公开 Demo 保护
 
 仅支持一个Node进程 / 实例。APP_ORIGIN精确同源与Fetch Metadata检查，HttpOnly、SameSite=Strict签名匿名cookie；HTTPS生产cookie使用Secure。身份切换不重置额度。DEMO_SESSION_SECRET可配置，缺省从服务端Qwen key签名，轮换key将使旧对话失效。匿名机制不是认证，不能阻止脚本直连。
 
-额度全局10次/分钟、每日最多200次；每session 6次/分钟、20次/日；并发2。全局限制覆盖每个来源IP，忽略不可信IP header，不保存地址。每次尝试按整个请求UTF-8字节数加1400保守预留token，日上限300000，可通过环境降低。缺usage也不退款，不将该账本解释为人民币硬保证。
+额度全局10次/分钟、每日最多200次；每session 6次/分钟、20次/日；并发2。全局限制覆盖每个来源IP，忽略不可信IP header，不保存地址。每次尝试按 [estimateTextTokens](../src/lib/ai/estimate.ts)（ASCII 每字符 1、常用中日韩字符 1.5、其他字符按 UTF-8 字节）+ 图片 Token + 该型号最大输出保守预留token，日上限300000，可通过环境降低。缺usage也不退款，不将该账本解释为人民币硬保证。
 
 .runtime/ai-quota.json按mutex串行、临时写入和原子rename，在上游前持久预留；损坏或写失败fail closed，重启不清零。多进程 / serverless 不得沿用该账本；部署属于未授权Phase 5。平台配额也须独立限制。
 
@@ -237,6 +250,8 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 - [Next.js 安装](https://nextjs.org/docs/app/getting-started/installation)：App Router 与环境要求；版本最终以 Phase 1 lockfile / 构建为准。
 - [Next.js 项目结构](https://nextjs.org/docs/app/getting-started/project-structure)：下划线路由需使用 `%5F` 目录前缀，避免被识别为私有目录。
 - [Qwen3.8-Flash](https://help.aliyun.com/zh/model-studio/qwen3-8-flash)、[OpenAI兼容接口](https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope)、[结构化输出](https://help.aliyun.com/zh/model-studio/qwen-structured-output)、[Function Calling](https://help.aliyun.com/zh/model-studio/qwen-function-calling)：核验模型ID qwen3.8-flash，支持 JSON 输出与原生工具调用；地域与密钥需匹配。
+- [Qwen-Omni](https://help.aliyun.com/zh/model-studio/qwen-omni)、[视觉理解](https://help.aliyun.com/zh/model-studio/vision)（2026-10-19 查阅）：3.8-omni-flash 可非流式、默认思考、reasoning_effort none 关闭、不支持 JSON Schema；3.5-omni 仅流式、无思考；Base64 / 尺寸限制与图片 Token 计算（smart_resize，32×32 +2）。
+- [Gemini OpenAI 兼容](https://ai.google.dev/gemini-api/docs/openai)、[图片理解](https://ai.google.dev/gemini-api/docs/image-understanding)、[媒体分辨率](https://ai.google.dev/gemini-api/docs/media-resolution)（2026-10-19 查阅）：image_url base64 data URL、内嵌请求 ≤20MB、Gemini 3 默认每图 ≤1120 Token、思考不可关闭。
 - [高德安全密钥](https://lbs.amap.com/api/javascript-api-v2/guide/abc/jscode)：serviceHost 服务端代理方案。
 - [高德准备](https://lbs.amap.com/api/javascript-api-v2/prerequisites)、[官方 GPS 转换](https://lbs.amap.com/api/javascript-api-v2/guide/transform/convertfrom)：JS 平台 Key / 安全密钥与 convertFrom。
 - [高德坐标基础类](https://lbs.amap.com/api/javascript-api-v2/guide/abc/basetype)、[定位](https://lbs.amap.com/api/javascript-api-v2/guide/services/geolocation)：坐标口径与定位能力。

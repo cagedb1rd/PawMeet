@@ -14,6 +14,17 @@ export const MODEL_TOKEN_CAPS: Record<string, number> = {
   "gemini-3.5-flash-lite": 300000,
   "gemini-3.8-flash": 300000,
 };
+/**
+ * Vision eval caps (AGENTS「AI 与模型」, step 7): each vision model ≤50k in its own ledger
+ * (default .local/ai-eval/step7-vision-ledger.json). Gemini ids overlap the text whitelist, so
+ * vision runs never read the text caps above.
+ */
+export const VISION_TOKEN_CAPS: Record<string, number> = {
+  "qwen3.8-omni-flash": 50000,
+  "qwen3.5-omni-plus": 50000,
+  "gemini-3.5-flash-lite": 50000,
+  "gemini-3.8-flash": 50000,
+};
 
 const entrySchema = z.strictObject({
   /** Everything charged so far: actual usage plus conservative charges and open reservations. */
@@ -21,6 +32,8 @@ const entrySchema = z.strictObject({
   knownTokens: z.number().int().nonnegative(),
   conservativeTokens: z.number().int().nonnegative(),
   transmissions: z.number().int().nonnegative(),
+  /** Attempts whose request provably never left this machine (connect / TLS phase). */
+  unsent: z.number().int().nonnegative().default(0),
   runs: z.array(z.string()).max(500),
 });
 const ledgerSchema = z.strictObject({
@@ -102,10 +115,12 @@ export type Ticket = { id: number; reserved: number; settled: boolean };
 
 /**
  * Hard per-model token budget. Each upstream attempt reserves its worst case before the
- * request (request bytes + max output tokens, an over-estimate of tokens), so an attempt that
+ * request (estimateTextTokens of the request + image tokens + max output, see
+ * src/lib/ai/estimate.ts; never below the billed amount), so an attempt that
  * could cross the limit is refused before any fetch. Settling replaces the reservation with the
  * provider's actual usage; unknown usage (timeouts, interrupted streams, HTTP errors) keeps the
- * full reservation. The ledger is written at reserve time too, so a crash stays conservative.
+ * full reservation, except attempts proven unsent (release). The ledger is written at reserve
+ * time too, so a crash stays conservative.
  */
 export class EvalBudget {
   private next = 1;
@@ -123,7 +138,8 @@ export class EvalBudget {
     runId: string;
   }) {
     if (!(opts.limit >= 0)) throw Error("token limit must be >= 0");
-    const ledger = await opts.store.load();
+    // Parse again so entries from older ledgers get today's defaults (e.g. unsent = 0).
+    const ledger = ledgerSchema.parse(await opts.store.load());
     return new EvalBudget(
       opts.model,
       opts.limit,
@@ -138,6 +154,7 @@ export class EvalBudget {
       knownTokens: 0,
       conservativeTokens: 0,
       transmissions: 0,
+      unsent: 0,
       runs: [],
     });
   }
@@ -166,6 +183,20 @@ export class EvalBudget {
       e.runs = [...e.runs, this.runId].slice(-500);
     await this.store.save(this.ledger);
     return { id: this.next++, reserved: tokens, settled: false };
+  }
+  /**
+   * The request never reached the provider (failed while connecting / in the TLS handshake,
+   * before the body was written), so nothing can have been billed: release the reservation.
+   * Only call this with transport evidence; unknown cases must settle(null) instead.
+   */
+  async release(ticket: Ticket): Promise<number> {
+    if (ticket.settled) throw Error("ticket already settled");
+    ticket.settled = true;
+    const e = this.entry();
+    e.chargedTokens -= ticket.reserved;
+    e.unsent++;
+    await this.store.save(this.ledger);
+    return 0;
   }
   /** Returns the tokens finally charged for this attempt. */
   async settle(ticket: Ticket, totalTokens: number | null): Promise<number> {
