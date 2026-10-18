@@ -10,6 +10,7 @@ import {
   companionContextSchema,
   toolResultSchema,
   assistantSummaries,
+  noResultSummaries,
 } from "@/lib/ai/contracts";
 import { validateOutput } from "@/lib/ai/validation";
 import { callModel, CallOptions, Message } from "./client";
@@ -251,6 +252,10 @@ export async function assistantStep(
   let answer: AssistantStep["answer"] = null;
   let usage: unknown = result.usage;
   if (!calls.length) {
+    // A terminal success/empty/failure summary needs this step's tool results.
+    const allowed = input.results?.length
+      ? assistantSummaries
+      : noResultSummaries;
     const checked = await checkedAnswer(
       result.message,
       state.refs,
@@ -260,7 +265,7 @@ export async function assistantStep(
               [
                 ...messages,
                 result.message,
-                answerRepairInstruction(state.refs),
+                answerRepairInstruction(state.refs, allowed),
               ],
               session,
               requestId,
@@ -270,6 +275,7 @@ export async function assistantStep(
               callOptions,
             )
         : undefined,
+      allowed,
     );
     answer = checked.answer;
     if (

@@ -299,6 +299,12 @@ export const assistantSummaries = [
   "工具执行失败，请稍后重试。",
   "请说明要查询宠友、活动还是创建互助草稿。",
 ] as const;
+/** Without tool results in this step, only clarification summaries are truthful. */
+export const noResultSummaries: readonly AssistantSummary[] = [
+  "需要补充信息，请查看工具提示。",
+  "请说明要查询宠友、活动还是创建互助草稿。",
+];
+export type AssistantSummary = (typeof assistantSummaries)[number];
 export const assistantAnswerSchema = z.strictObject({
   summary: z.enum(assistantSummaries),
   references: z.array(z.string().max(100)).max(15),

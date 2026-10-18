@@ -516,6 +516,16 @@ const response = (calls: ToolCall[] = []) => ({
   usage: { prompt_tokens: 6, completion_tokens: 4, total_tokens: 10 },
   model: "offline-mock",
 });
+const answered = (summary: string, references: string[] = []) => ({
+  ...response(),
+  message: {
+    role: "assistant" as const,
+    content: JSON.stringify({ summary, references }),
+    tool_calls: [],
+  },
+});
+// A step with no tool results may only ask for clarification.
+const clarify = () => answered("需要补充信息，请查看工具提示。");
 describe("Phase 4.5 signed native protocol offline", () => {
   it("search publishes only native activity tool and returns actual tool result to model", async () => {
     const { intent } = setup(),
@@ -623,7 +633,7 @@ describe("Phase 4.5 signed native protocol offline", () => {
   });
   it("enforces signed round limit before model invocation", async () => {
     const { intent } = setup(),
-      model = vi.fn<typeof callModel>().mockResolvedValue(response());
+      model = vi.fn<typeof callModel>().mockResolvedValue(clarify());
     const a = await assistantStep(
       { text: "约伴", workflow: { intent, stage: "search" } },
       "s",
@@ -759,7 +769,7 @@ describe("Phase 4.5 review regressions", () => {
   });
   it("signed context enforces nine tool calls even if a client attempts more", async () => {
     const { intent } = setup(),
-      model = vi.fn<typeof callModel>().mockResolvedValue(response());
+      model = vi.fn<typeof callModel>().mockResolvedValue(clarify());
     const first = await assistantStep(
       { text: "约伴", workflow: { intent, stage: "organize" } },
       "s",
@@ -799,6 +809,129 @@ describe("Phase 4.5 review regressions", () => {
       expect(() => confirmedIntent(intent, now)).toThrow("具体日期");
     },
   );
+});
+
+describe("Step 6 live eval regression: terminal summary without tool results", () => {
+  const terminal = [
+    "已查询，请查看实际结果卡片。",
+    "没有符合条件的结果，请调整条件。",
+    "已生成活动草稿，请编辑并确认，尚未创建。",
+    "已生成互助草稿，请编辑并确认，尚未发布。",
+    "工具执行失败，请稍后重试。",
+  ];
+  it.each(terminal)(
+    "rejects %s when the model made no tool call (qwen3.8-27b CT01-CT07)",
+    async (summary) => {
+      const { intent } = setup(),
+        model = vi.fn<typeof callModel>().mockResolvedValue(answered(summary));
+      await expect(
+        assistantStep(
+          { text: "约伴", workflow: { intent, stage: "search" } },
+          "s",
+          "r",
+          now,
+          model,
+        ),
+      ).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
+      // The existing one-shot repair runs, offered only clarification summaries.
+      expect(model).toHaveBeenCalledTimes(2);
+      const repair = JSON.stringify(model.mock.calls[1][0].at(-1));
+      expect(repair).toContain("需要补充信息，请查看工具提示。");
+      expect(repair).not.toContain(summary);
+      expect(model.mock.calls[1][3]).toBeUndefined();
+    },
+  );
+  it("rejects the same summary without a workflow", async () => {
+    const model = vi
+      .fn<typeof callModel>()
+      .mockResolvedValue(answered("已查询，请查看实际结果卡片。"));
+    await expect(
+      assistantStep({ text: "查宠友" }, "s", "r", now, model),
+    ).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
+  });
+  it("accepts a repair to a clarification summary", async () => {
+    const { intent } = setup(),
+      model = vi
+        .fn<typeof callModel>()
+        .mockResolvedValueOnce(answered("没有符合条件的结果，请调整条件。"))
+        .mockResolvedValueOnce(
+          answered("请说明要查询宠友、活动还是创建互助草稿。"),
+        );
+    const step = await assistantStep(
+      { text: "约伴", workflow: { intent, stage: "search" } },
+      "s",
+      "r",
+      now,
+      model,
+    );
+    expect(step.data.answer?.summary).toBe(
+      "请说明要查询宠友、活动还是创建互助草稿。",
+    );
+    expect(step.data.toolCalls).toEqual([]);
+  });
+  it.each([
+    "需要补充信息，请查看工具提示。",
+    "请说明要查询宠友、活动还是创建互助草稿。",
+  ])("accepts clarification %s without repair", async (summary) => {
+    const model = vi
+      .fn<typeof callModel>()
+      .mockResolvedValue(answered(summary));
+    const step = await assistantStep({ text: "你好" }, "s", "r", now, model);
+    expect(step.data.answer?.summary).toBe(summary);
+    expect(model).toHaveBeenCalledTimes(1);
+  });
+  it("a follow-up turn cannot reuse an earlier turn's results for a terminal summary", async () => {
+    const { a, intent } = setup(),
+      model = vi
+        .fn<typeof callModel>()
+        .mockResolvedValueOnce(response([tc("search_activities")]))
+        .mockResolvedValueOnce(
+          answered("已查询，请查看实际结果卡片。", [a.id]),
+        );
+    const first = await assistantStep(
+      { text: "约伴", workflow: { intent, stage: "search" } },
+      "s",
+      "r",
+      now,
+      model,
+    );
+    const result: ToolResult = {
+      kind: "activities",
+      rows: [
+        {
+          id: a.id,
+          title: a.title,
+          district: "演示区",
+          startAt: a.startAt,
+          endAt: a.endAt,
+          distanceM: null,
+        },
+      ],
+    };
+    const searched = await assistantStep(
+      {
+        continuation: first.data.continuation,
+        results: [{ toolCallId: "search_activities", result }],
+      },
+      "s",
+      "r",
+      now,
+      model,
+    );
+    expect(searched.data.answer?.summary).toBe("已查询，请查看实际结果卡片。");
+    const followUp = vi
+      .fn<typeof callModel>()
+      .mockResolvedValue(answered("已查询，请查看实际结果卡片。", [a.id]));
+    await expect(
+      assistantStep(
+        { text: "那换个时间呢", continuation: searched.data.continuation },
+        "s",
+        "r",
+        now,
+        followUp,
+      ),
+    ).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
+  });
 });
 
 describe("Phase 4.5 first live extraction regression", () => {

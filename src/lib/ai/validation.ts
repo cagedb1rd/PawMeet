@@ -16,7 +16,7 @@ import {
   tagEvidence,
 } from "./synonyms";
 
-export const VALIDATION_VERSION = "pawmeet-validation-9";
+export const VALIDATION_VERSION = "pawmeet-validation-10";
 export const genericCare = [
   "请主人确认喂食品牌、份量及禁忌，未确认前不要自行喂食。",
   "请主人补充健康状况；如涉及用药，请向主人及兽医核实，不在此生成剂量。",
