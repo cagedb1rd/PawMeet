@@ -1,4 +1,4 @@
-import { HelpDetail } from "@/features/help/help";
+import { HelpDetail } from "@/features/help/detail";
 export default async function Page({
   params,
 }: {

@@ -148,14 +148,6 @@ export function Empty({
     </div>
   );
 }
-export function Unavailable({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="unavailable">
-      <span className="status-dot" />
-      {children}
-    </div>
-  );
-}
 export function PetCard({
   pet,
   distance,

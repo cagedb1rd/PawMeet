@@ -1,4 +1,4 @@
-import { PetForm } from "@/features/forms/forms";
+import { PetForm } from "@/features/forms/pet-form";
 export default async function Page({
   params,
 }: {

@@ -1,4 +1,4 @@
-import { HelpForm } from "@/features/help/help";
+import { HelpForm } from "@/features/help/form";
 export default async function Page({
   params,
 }: {

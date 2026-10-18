@@ -16,9 +16,6 @@ export const PRECHECK_CATEGORIES = {
   other: "其他",
 } as const;
 export type PrecheckCategory = keyof typeof PRECHECK_CATEGORIES;
-export const precheckCategoryIds = Object.keys(
-  PRECHECK_CATEGORIES,
-) as PrecheckCategory[];
 export type PrecheckField = "title" | "text" | "tags";
 export const PRECHECK_FIELD_LABELS: Record<PrecheckField, string> = {
   title: "标题",
