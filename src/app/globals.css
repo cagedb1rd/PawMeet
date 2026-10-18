@@ -3341,5 +3341,7 @@ textarea::placeholder {
 .ai-preview { display: grid; gap: .6rem; margin-block: 1rem; overflow-wrap: anywhere; }
 .ai-preview > div { display: grid; grid-template-columns: minmax(6rem, 25%) minmax(0, 1fr); gap: .8rem; }
 .ai-preview dt { font-weight: 600; }
+.photo-suggestion { display: grid; gap: .4rem; }
+.photo-suggestion .button-row { margin: 0; }
 .ai-preview dd { margin: 0; }
 @media(max-width: 500px) { .ai-preview > div { grid-template-columns: 1fr; gap: .2rem; } }

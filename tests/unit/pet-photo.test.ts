@@ -7,7 +7,13 @@ import { NextRequest } from "next/server";
 import { inspectJpeg, inspectJpegDataUrl } from "@/lib/ai/jpeg";
 import { makeThumbnail, thumbnailSize } from "@/lib/ai/thumbnail";
 import { estimateImageTokens, estimateTextTokens } from "@/lib/ai/estimate";
-import { photoFill, reviewPetPhoto, forbiddenClaim } from "@/lib/ai/photo";
+import {
+  photoFill,
+  photoSuggestions,
+  reviewPetPhoto,
+  forbiddenClaim,
+} from "@/lib/ai/photo";
+import { typicalSizes } from "@/lib/ai/breeds";
 import {
   PetPhotoOutput,
   petPhotoDraftSchema,
@@ -314,6 +320,124 @@ describe("pet-photo business review", () => {
   });
 });
 
+describe("low-confidence suggestions and breed–size cross-check", () => {
+  const none = { breed: undefined, size: undefined, appearance: undefined };
+  it("a usable low-confidence guess becomes a suggestion, never an automatic fill", () => {
+    const draft = reviewPetPhoto(
+      output({
+        breed: { value: "柴犬", confidence: 0.45 },
+        size: { value: "medium", confidence: 0.3 },
+        coatColor: { value: "赤色", confidence: 0.5 },
+        features: [{ value: "卷尾", confidence: 0.4 }],
+      }),
+    );
+    expect(photoFill(draft)).toEqual(none);
+    expect(draft.breed).toMatchObject({ accepted: false, suggested: true });
+    expect(photoSuggestions(draft)).toEqual({
+      breed: { value: "柴犬", confidence: 0.45 },
+      size: {
+        value: "medium",
+        confidence: 0.3,
+        options: ["medium"],
+        hint: undefined,
+      },
+      appearance: "外观：赤色、卷尾",
+    });
+    expect(draft.messages.join()).toContain("AI 猜测“柴犬”，把握 45%");
+  });
+  it("no suggestions at all when the photo is not confidently one dog", () => {
+    for (const over of [
+      { dog: { value: "no" as const, confidence: 0.9 } },
+      { dog: { value: "unsure" as const, confidence: 0.4 } },
+      { dog: { value: "yes" as const, confidence: 0.5 } },
+      { multipleDogs: true },
+    ]) {
+      const draft = reviewPetPhoto(
+        output({ ...over, breed: { value: "柴犬", confidence: 0.4 } }),
+      );
+      expect(photoSuggestions(draft)).toEqual(none);
+      expect(photoFill(draft)).toEqual(none);
+    }
+  });
+  it("forbidden content is deleted, not offered as a suggestion", () => {
+    const draft = reviewPetPhoto(
+      output({
+        breed: { value: "金毛幼犬", confidence: 0.4 },
+        coatColor: { value: "浅金色", confidence: 0.4 },
+        features: [
+          { value: "疑似皮肤病", confidence: 0.3 },
+          { value: "性格胆小", confidence: 0.3 },
+        ],
+      }),
+    );
+    expect(draft.removed).toBe(3);
+    expect(photoSuggestions(draft).breed).toBeUndefined();
+    expect(photoSuggestions(draft).appearance).toBe("外观：浅金色");
+    expect(JSON.stringify(draft)).not.toMatch(/幼犬|皮肤病|胆小/);
+  });
+  it("a size that contradicts a confidently recognised breed turns into a choice with a hint", () => {
+    // The dog-07 case from the live run: beagle 0.95, size small 0.85.
+    const draft = reviewPetPhoto(
+      output({
+        breed: { value: "比格犬", confidence: 0.95 },
+        size: { value: "small", confidence: 0.85 },
+      }),
+    );
+    expect(photoFill(draft)).toMatchObject({
+      breed: "比格犬",
+      size: undefined,
+    });
+    expect(draft.size).toMatchObject({
+      accepted: false,
+      suggested: true,
+      typical: ["medium"],
+      hint: "AI 识别为比格（通常为中型），但判断为小型，请确认体型",
+    });
+    expect(photoSuggestions(draft).size?.options).toEqual(["small", "medium"]);
+    expect(draft.messages.join()).toContain("通常为中型");
+    // A low-confidence size that conflicts gets the same hint and choices.
+    const low = reviewPetPhoto(
+      output({
+        breed: { value: "比格", confidence: 0.9 },
+        size: { value: "large", confidence: 0.4 },
+      }),
+    );
+    expect(photoSuggestions(low).size?.options).toEqual(["large", "medium"]);
+  });
+  it("no conflict: consistent size, multi-size breeds, breeds outside the table, unconfirmed breed", () => {
+    const fill = (
+      breed: string,
+      bc: number,
+      size: "small" | "medium" | "large",
+    ) =>
+      photoFill(
+        reviewPetPhoto(
+          output({
+            breed: { value: breed, confidence: bc },
+            size: { value: size, confidence: 0.85 },
+          }),
+        ),
+      ).size;
+    expect(fill("比格", 0.95, "medium")).toBe("medium");
+    // 萨摩耶 is listed as medium or large, so the dog-11 answer is not a conflict.
+    expect(fill("萨摩耶", 0.95, "medium")).toBe("medium");
+    expect(fill("田园犬", 0.95, "small")).toBe("small");
+    // Only a confirmed (≥0.6) breed is cross-checked.
+    expect(fill("比格", 0.4, "small")).toBe("small");
+  });
+  it("synonyms and specific names resolve to the right table entry", () => {
+    expect(typicalSizes("米格鲁")?.label).toBe("比格");
+    expect(typicalSizes("比格犬")?.label).toBe("比格");
+    expect(typicalSizes("泰迪")?.sizes).toEqual(["small"]);
+    expect(typicalSizes("法国斗牛犬")?.label).toBe("法国斗牛犬");
+    expect(typicalSizes("英国斗牛犬")?.label).toBe("英国斗牛犬");
+    expect(typicalSizes("金毛寻回犬")?.sizes).toEqual(["large"]);
+    expect(typicalSizes("德 牧")?.label).toBe("德国牧羊犬");
+    expect(typicalSizes("田园犬")).toBeNull();
+    expect(typicalSizes(null)).toBeNull();
+  });
+});
+
 describe("vision whitelist and per-model request shape", () => {
   it("vision group = 2 Qwen-Omni + 2 Gemini, default qwen3.8-omni-flash, no cross-group names", () => {
     expect(MODEL_WHITELIST.vision.map((m) => m.id)).toEqual([
@@ -439,6 +563,7 @@ describe("recognizePetPhoto service", () => {
       value: "柯基",
       confidence: 0.85,
       accepted: true,
+      suggested: false,
     });
   });
   it("accepts one Markdown fence but rejects non-JSON or off-schema output as AI_INVALID_OUTPUT", async () => {

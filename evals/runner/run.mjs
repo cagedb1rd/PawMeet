@@ -7,6 +7,7 @@
 //   npm run eval:ai -- vision --mode simulated|live --model gemini-3.8-flash --token-limit 50000
 //        [--source public|private|all] [--cases pub-dog-1,prv-dog-01] [--dry-run]
 //   npm run eval:ai -- vision-compare evals/reports/a-vision-live.json b.json ...
+//   npm run eval:ai -- vision-recheck evals/reports/a-vision-live.json ...   (offline, no calls)
 //   npm run eval:ai -- community --mode simulated|live --model gemini-3.8-flash --token-limit 50000
 //        [--suite meta|safety|all] [--cases CM01,CS04] [--dry-run]   (≤50k for all models together)
 import { spawnSync } from "node:child_process";
@@ -18,6 +19,7 @@ const entry = [
   "legacy",
   "vision",
   "vision-compare",
+  "vision-recheck",
   "community",
 ].includes(argv[0])
   ? argv[0]

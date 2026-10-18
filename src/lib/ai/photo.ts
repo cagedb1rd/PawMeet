@@ -1,6 +1,7 @@
 import type { PetPhotoDraft, PetPhotoOutput } from "./contracts";
+import { typicalSizes } from "./breeds";
 
-/** Below this the field is shown as "不确定" and never filled into the form. */
+/** Below this a field is only a suggestion: filled only if the owner clicks “采用”. */
 export const PHOTO_CONFIDENCE_MIN = 0.6;
 /**
  * A photo only gives appearance. Text that reads like a diagnosis, an age conclusion or a
@@ -49,38 +50,53 @@ export function reviewPetPhoto(raw: PetPhotoOutput): PetPhotoDraft {
           ? "multiple"
           : "recognized";
   const fillable = status === "recognized";
-  const ok = (value: unknown, c: number) =>
-    fillable && value != null && c >= PHOTO_CONFIDENCE_MIN;
-  const breedOk =
-    ok(breedValue, raw.breed.confidence) && !UNKNOWN_BREED.test(breedValue!);
-  const sizeOk =
-    raw.size.value !== "unknown" && ok(raw.size.value, raw.size.confidence);
-  const coatOk = ok(coatValue, raw.coatColor.confidence);
+  // Model-reported confidence is not calibrated: ≥ threshold fills automatically, a lower but
+  // usable guess becomes a suggestion the owner may adopt with one click. Nothing at all is
+  // offered unless the photo is confidently a single dog.
+  const decide = (usable: boolean, c: number) => ({
+    accepted: fillable && usable && c >= PHOTO_CONFIDENCE_MIN,
+    suggested: fillable && usable && c < PHOTO_CONFIDENCE_MIN,
+  });
+  const breed = decide(
+    breedValue != null && !UNKNOWN_BREED.test(breedValue),
+    raw.breed.confidence,
+  );
+  const size = decide(raw.size.value !== "unknown", raw.size.confidence);
+  const coat = decide(coatValue != null, raw.coatColor.confidence);
+  // Cross-check: a confidently recognised breed with a program-known typical size overrides an
+  // automatic size that contradicts it; the size becomes a choice for the owner.
+  const known = breed.accepted ? typicalSizes(breedValue) : null;
+  const conflict =
+    !!known &&
+    raw.size.value !== "unknown" &&
+    (size.accepted || size.suggested) &&
+    !known.sizes.includes(raw.size.value);
   const draft: PetPhotoDraft = {
     status,
     dogConfidence: raw.dog.confidence,
-    breed: {
-      value: breedValue,
-      confidence: raw.breed.confidence,
-      accepted: breedOk,
-    },
+    breed: { value: breedValue, confidence: raw.breed.confidence, ...breed },
     size: {
       value: raw.size.value,
       confidence: raw.size.confidence,
-      accepted: sizeOk,
+      ...(conflict
+        ? {
+            accepted: false,
+            suggested: true,
+            typical: [...known!.sizes],
+            hint: `AI 识别为${known!.label}（通常为${known!.sizes.map(sizeLabel).join(" / ")}），但判断为${sizeLabel(raw.size.value)}，请确认体型`,
+          }
+        : size),
     },
     coatColor: {
       value: coatValue,
       confidence: raw.coatColor.confidence,
-      accepted: coatOk,
+      ...coat,
     },
-    features: features.map((f) => ({
-      ...f,
-      accepted: ok(f.value, f.confidence),
-    })),
+    features: features.map((f) => ({ ...f, ...decide(true, f.confidence) })),
     removed,
     messages,
   };
+  const pct = (c: number) => `${Math.round(c * 100)}%`;
   if (status === "not_dog")
     messages.push(
       "无法识别：照片里看起来不是狗，没有填入任何字段，请换一张或手动填写。",
@@ -94,10 +110,23 @@ export function reviewPetPhoto(raw: PetPhotoOutput): PetPhotoDraft {
       "照片里有多只狗，无法确定是哪一只，没有填入任何字段；请换单只照片或手动填写。",
     );
   else {
-    if (!breedOk)
+    if (breed.suggested)
+      messages.push(
+        `品种不确定（AI 猜测“${breedValue}”，把握 ${pct(raw.breed.confidence)}），未自动填入，可点“采用”或手动填写。`,
+      );
+    else if (!breed.accepted)
       messages.push("品种不确定，请手动填写（可留空保存为“未知”）。");
-    if (!sizeOk) messages.push("体型不确定，请手动选择。");
-    if (!coatOk && !draft.features.some((f) => f.accepted))
+    if (conflict) messages.push(`${draft.size.hint}。`);
+    else if (size.suggested)
+      messages.push(
+        `体型不确定（AI 猜测${sizeLabel(raw.size.value)}，把握 ${pct(raw.size.confidence)}），未自动填入，可点“采用”或手动选择。`,
+      );
+    else if (!size.accepted) messages.push("体型不确定，请手动选择。");
+    if (
+      !draft.coatColor.accepted &&
+      !draft.coatColor.suggested &&
+      !draft.features.some((f) => f.accepted || f.suggested)
+    )
       messages.push("毛色与外观特征不确定，未写入提醒。");
   }
   if (removed)
@@ -118,6 +147,36 @@ export function photoFill(draft: PetPhotoDraft) {
     size:
       draft.size.accepted && draft.size.value !== "unknown"
         ? draft.size.value
+        : undefined,
+    appearance: appearance.length
+      ? `外观：${appearance.join("、")}`
+      : undefined,
+  };
+}
+
+/** Low-confidence or cross-check suggestions; each is filled only after its own “采用” click. */
+export function photoSuggestions(draft: PetPhotoDraft) {
+  const appearance = [
+    draft.coatColor.suggested ? draft.coatColor.value : null,
+    ...draft.features.filter((f) => f.suggested).map((f) => f.value),
+  ].filter(Boolean);
+  return {
+    breed: draft.breed.suggested
+      ? { value: draft.breed.value!, confidence: draft.breed.confidence }
+      : undefined,
+    size:
+      draft.size.suggested && draft.size.value !== "unknown"
+        ? {
+            value: draft.size.value,
+            confidence: draft.size.confidence,
+            // Choices: the model's guess plus, on a breed conflict, the breed's typical sizes.
+            options: [
+              ...new Set([draft.size.value, ...(draft.size.typical ?? [])]),
+            ].filter((v) => v !== "unknown") as (
+              "small" | "medium" | "large"
+            )[],
+            hint: draft.size.hint,
+          }
         : undefined,
     appearance: appearance.length
       ? `外观：${appearance.join("、")}`

@@ -8,7 +8,11 @@ import {
   petPhotoOutputSchema,
   type PetPhotoDraft,
 } from "../../src/lib/ai/contracts";
-import { forbiddenClaim, photoFill } from "../../src/lib/ai/photo";
+import {
+  forbiddenClaim,
+  photoFill,
+  reviewPetPhoto,
+} from "../../src/lib/ai/photo";
 import { inspectJpegDataUrl } from "../../src/lib/ai/jpeg";
 import {
   CATEGORY_LABELS,
@@ -670,4 +674,100 @@ export function visionCompareMarkdown(reports: VisionReport[]) {
     }),
   );
   return `${[...sim][0] ? `${SIMULATED_BANNER}\n\n` : ""}${head}\n${rows.join("\n")}\n`;
+}
+
+/**
+ * Offline recheck: re-applies the current program rules (confidence threshold, suggestions,
+ * breed–size cross-check) to the raw model outputs saved in a live report. No model call.
+ * Counts breed and size on labelled single-dog images: filled automatically (and how many of
+ * those are wrong) versus left for the owner to confirm. "before" uses the drafts produced by
+ * the rules at run time.
+ */
+export function recheckRules(
+  r: VisionReport,
+  cases: VisionCase[] = loadVisionCases("private"),
+) {
+  const labels = new Map(cases.map((c) => [c.id, c] as const));
+  const tally = () => ({ auto: 0, autoWrong: 0, confirm: 0, empty: 0 });
+  const before = tally(),
+    after = tally();
+  const wrongAuto: string[] = [];
+  for (const a of r.cases) {
+    const c = labels.get(a.caseId);
+    if (!c || !a.raw || c.isDog !== true || c.multiple || !c.breed) continue;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(
+        a.raw
+          .trim()
+          .replace(/^```(?:json)?\s*/i, "")
+          .replace(/\s*```$/, ""),
+      );
+    } catch {
+      continue;
+    }
+    const out = petPhotoOutputSchema.safeParse(parsed);
+    if (!out.success) continue;
+    const now = reviewPetPhoto(out.data);
+    const fields = [
+      {
+        name: "breed",
+        wrong: (v: string) => !breedMatches(c.breed!, v),
+        old: a.draft?.breed,
+        cur: now.breed,
+      },
+      {
+        name: "size",
+        wrong: (v: string) => !c.sizes?.includes(v as never),
+        old: a.draft?.size,
+        cur: now.size,
+      },
+    ];
+    for (const f of fields) {
+      for (const [t, field, isNew] of [
+        [before, f.old, false],
+        [after, f.cur, true],
+      ] as const) {
+        if (!field) continue;
+        const value = String(field.value ?? "");
+        if (field.accepted) {
+          t.auto++;
+          if (f.wrong(value)) {
+            t.autoWrong++;
+            if (isNew) wrongAuto.push(`${a.file} ${f.name}=${value}`);
+          }
+        } else if (
+          isNew
+            ? (field as { suggested?: boolean }).suggested
+            : value && value !== "unknown"
+        )
+          t.confirm++;
+        else t.empty++;
+      }
+    }
+  }
+  return { model: r.model, runId: r.runId, before, after, wrongAuto };
+}
+
+export function recheckMarkdown(reports: VisionReport[]) {
+  const results = reports.map((r) => recheckRules(r));
+  const rows = results.flatMap((x) => [
+    `| ${x.model} | 运行时规则 | ${x.before.auto} | ${x.before.autoWrong} | ${x.before.auto ? `${(((x.before.auto - x.before.autoWrong) / x.before.auto) * 100).toFixed(1)}%` : "—"} | ${x.before.confirm}（低置信度，当时只显示“不确定”） | ${x.before.empty} |`,
+    `| ${x.model} | 建议 + 交叉校验 | ${x.after.auto} | ${x.after.autoWrong} | ${x.after.auto ? `${(((x.after.auto - x.after.autoWrong) / x.after.auto) * 100).toFixed(1)}%` : "—"} | ${x.after.confirm} | ${x.after.empty} |`,
+  ]);
+  const wrong = results
+    .filter((x) => x.wrongAuto.length)
+    .map((x) => `- ${x.model}：${x.wrongAuto.join("；")}`);
+  return [
+    "> 离线复算：用报告中保存的同一批真实原始模型输出重新执行程序规则，**没有新的模型调用**；只统计有品种 / 体型标签的单只狗图片上的品种与体型两个字段。",
+    "",
+    "| 模型 | 规则 | 自动填入字段 | 其中错误 | 自动填入准确率 | 需用户确认字段 | 未给值 |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
+    ...rows,
+    "",
+    wrong.length
+      ? "复算后仍自动填错的字段："
+      : "复算后自动填入的字段全部正确。",
+    ...wrong,
+  ].join("\n");
 }

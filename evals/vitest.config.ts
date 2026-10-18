@@ -6,6 +6,7 @@ const entries: Record<string, string> = {
   legacy: "evals/runner/evaluate.test.ts",
   vision: "evals/runner/vision.eval.ts",
   "vision-compare": "evals/runner/vision-compare.eval.ts",
+  "vision-recheck": "evals/runner/vision-recheck.eval.ts",
   community: "evals/runner/community.eval.ts",
 };
 export default defineConfig({

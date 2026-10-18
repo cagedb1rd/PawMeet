@@ -157,15 +157,21 @@ const reviewedField = <T extends z.ZodType>(value: T) =>
   z.strictObject({
     value,
     confidence,
-    /** Passed the confidence threshold and content rules; only accepted values are filled. */
+    /** Passed the confidence threshold, content rules and cross-checks: filled automatically. */
     accepted: z.boolean(),
+    /** A usable guess the owner may adopt with one click; never filled without that click. */
+    suggested: z.boolean().default(false),
   });
 /** What the browser receives: program-reviewed draft, never the raw model text. */
 export const petPhotoDraftSchema = z.strictObject({
   status: z.enum(["recognized", "uncertain", "not_dog", "multiple"]),
   dogConfidence: confidence,
   breed: reviewedField(nullable(30)),
-  size: reviewedField(z.enum(sizes)),
+  size: reviewedField(z.enum(sizes)).extend({
+    /** Breed table sizes when the model's size conflicts with the recognised breed. */
+    typical: z.array(z.enum(sizes)).max(3).optional(),
+    hint: short(120).optional(),
+  }),
   coatColor: reviewedField(nullable(20)),
   features: z.array(reviewedField(short(30).min(1))).max(5),
   /** Items the program removed because they looked like diagnosis / age / temperament claims. */

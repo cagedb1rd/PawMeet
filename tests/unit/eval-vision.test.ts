@@ -21,6 +21,7 @@ import {
 import {
   parseVisionConfig,
   privateOnly,
+  recheckRules,
   runVisionEval,
   scoreVision,
   visionCompareMarkdown,
@@ -300,6 +301,52 @@ describe("vision categories and private-only scope", () => {
   });
 });
 
+describe("offline rules recheck (saved raw outputs, no model call)", () => {
+  it("counts automatic fills, their errors and fields left for confirmation, before and after", () => {
+    const beagle: VisionCase = {
+      id: "prv-dog-07",
+      file: "dog-07.jpg",
+      source: "private",
+      isDog: true,
+      breed: "比格",
+      sizes: ["medium"],
+      multiple: false,
+      notes: "",
+    };
+    const rawText = JSON.stringify({
+      dog: { value: "yes", confidence: 0.99 },
+      multipleDogs: false,
+      breed: { value: "比格犬", confidence: 0.95 },
+      size: { value: "small", confidence: 0.85 },
+      coatColor: { value: "三色", confidence: 0.9 },
+      features: [],
+    });
+    const report = {
+      kind: "pawmeet-vision-eval",
+      model: "gemini-3.5-flash-lite",
+      runId: "u",
+      simulated: false,
+      cases: [
+        {
+          caseId: "prv-dog-07",
+          file: "dog-07.jpg",
+          source: "private",
+          raw: rawText,
+          // Draft as produced by the rules at run time: size filled automatically.
+          draft: {
+            breed: { value: "比格犬", confidence: 0.95, accepted: true },
+            size: { value: "small", confidence: 0.85, accepted: true },
+          },
+        },
+      ],
+    } as unknown as Parameters<typeof recheckRules>[0];
+    const r = recheckRules(report, [beagle]);
+    expect(r.before).toEqual({ auto: 2, autoWrong: 1, confirm: 0, empty: 0 });
+    expect(r.after).toEqual({ auto: 1, autoWrong: 0, confirm: 1, empty: 0 });
+    expect(r.wrongAuto).toEqual([]);
+  });
+});
+
 describe("vision scoring (programmatic)", () => {
   it("passes a correct dog; leaving uncertain fields empty is not a failure", () => {
     expect(run(dog, raw({})).failed).toEqual([]);
@@ -317,9 +364,24 @@ describe("vision scoring (programmatic)", () => {
     });
   });
   it("flags a wrong size, a wrong breed and a health claim in the raw output", () => {
+    // A breed outside the size table: a confident wrong size is filled and must be flagged.
+    const mixed = { ...dog, breed: "田园犬" };
     expect(
-      run(dog, raw({ size: { value: "large", confidence: 0.9 } })).failed,
+      run(
+        mixed,
+        raw({
+          breed: { value: "田园犬", confidence: 0.9 },
+          size: { value: "large", confidence: 0.9 },
+        }),
+      ).failed,
     ).toEqual(["size_not_wrong"]);
+    // A table breed (柯基: small / medium) with a contradicting size is not filled at all.
+    const crossChecked = run(
+      dog,
+      raw({ size: { value: "large", confidence: 0.9 } }),
+    );
+    expect(crossChecked.failed).toEqual([]);
+    expect(crossChecked.fill.size).toBeUndefined();
     expect(
       run(dog, raw({ breed: { value: "柴犬", confidence: 0.9 } })).failed,
     ).toEqual(["breed_not_wrong"]);
