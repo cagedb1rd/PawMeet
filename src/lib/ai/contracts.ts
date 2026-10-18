@@ -325,6 +325,15 @@ export type AiFailure = {
   requestId: string;
   error: { code: string; message: string; retryable: boolean };
 };
+/** Progress of one server-side model call; streamed to the browser as NDJSON. */
+export const aiProgressSchema = z.strictObject({
+  stage: z.enum(["waiting", "receiving", "retrying"]),
+  attempt: z.number().int().min(1).max(2),
+  chars: z.number().int().nonnegative().max(20000),
+});
+export type AiProgress = z.infer<typeof aiProgressSchema>;
+/** application/x-ndjson lines of /api/ai/{task} when the browser accepts it. */
+export const AI_STREAM_TYPE = "application/x-ndjson";
 export const emptyMatch: MatchIntent = {
   radiusKm: null,
   district: null,

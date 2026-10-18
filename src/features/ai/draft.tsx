@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AiTask, AiData, TaskRequest } from "@/lib/ai/contracts";
 import { aiTask } from "@/lib/ai/client";
 import { Pet } from "@/domain/schemas";
+import { AiProgressHint, useAiProgress } from "./progress";
 export function petSummary(p: Pet) {
   return {
     id: p.id,
@@ -141,6 +142,7 @@ export function AiDraft<T extends AiTask>({
     [data, setData] = useState<AiData<T> | null>(null),
     [applied, setApplied] = useState(false);
   const controller = useRef<AbortController | null>(null);
+  const progress = useAiProgress(busy);
   useEffect(() => () => controller.current?.abort(), []);
   return (
     <section className="ai-panel" aria-label={title}>
@@ -178,6 +180,7 @@ export function AiDraft<T extends AiTask>({
                 task,
                 { text, context },
                 abort.signal,
+                progress.onProgress,
               );
               if (!abort.signal.aborted) setData(result.data);
             } catch (e) {
@@ -203,6 +206,7 @@ export function AiDraft<T extends AiTask>({
           </button>
         )}
       </div>
+      <AiProgressHint text={progress.text} />
       {error && (
         <p role="alert" className="field-error">
           {error}

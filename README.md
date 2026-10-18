@@ -47,7 +47,7 @@ npm run dev
 
 ## Qwen 本地配置
 
-在已有 `.env.local` 中配置 `DASHSCOPE_API_KEY`、`AI_MODEL=qwen3.8-flash`、`AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`、`AI_ENABLED=true`；`APP_ORIGIN` 须与浏览器访问源一致。密钥仅在 Next 服务端使用，禁止 `NEXT_PUBLIC` 前缀。配置后重启，生产模式先重新 build。用户已授权使用此型号；它按百炼账户规则计费，不能视为永久免费。程序拒绝其他型号且无自动回退；旧 `GLM_*` 配置不参与调用。
+在已有 `.env.local` 中配置 `DASHSCOPE_API_KEY`、`AI_MODEL=qwen3.8-flash`、`AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`、`AI_ENABLED=true`；`APP_ORIGIN` 须与浏览器访问源一致。密钥仅在 Next 服务端使用，禁止 `NEXT_PUBLIC` 前缀。配置后重启，生产模式先重新 build。用户已授权使用此型号；它按百炼账户规则计费，不能视为永久免费。程序只接受服务端白名单型号（见 [AGENTS](AGENTS.md#ai-与模型)），其他型号直接报错且无自动回退；旧 `GLM_*` 配置不参与调用。
 
 “我的”档案编辑和互助发布支持自然语言填写可编辑草稿，填入不保存，点击原确认按钮才写入。社交适配直接展示规则比较，照看交接清单使用已有资料模板，不消耗模型 Token。
 

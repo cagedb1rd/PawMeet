@@ -12,7 +12,7 @@ import {
   assistantSummaries,
 } from "@/lib/ai/contracts";
 import { validateOutput } from "@/lib/ai/validation";
-import { callModel, Message } from "./client";
+import { callModel, CallOptions, Message } from "./client";
 import {
   taskPrompt,
   assistantPrompt,
@@ -32,7 +32,9 @@ export async function generateTask(
   requestId: string,
   now = new Date(),
   call = callModel,
+  options: Pick<CallOptions, "onProgress" | "signal"> = {},
 ) {
+  // Structured extraction has no side effects, so the client may retry it once.
   const result = await call(
     [
       { role: "system", content: taskPrompt(task) },
@@ -51,6 +53,7 @@ export async function generateTask(
     undefined,
     undefined,
     taskOutputSchema(task),
+    { ...options, retry: "idempotent" },
   );
   try {
     return {
@@ -96,7 +99,11 @@ export async function assistantStep(
   requestId: string,
   now = new Date(),
   call = callModel,
+  options: Pick<CallOptions, "onProgress" | "signal"> = {},
 ): Promise<{ data: AssistantStep; usage: unknown; model: string }> {
+  // Tools run in the browser only after a sealed step returns, so a retry never re-runs
+  // a tool; still, only failures before any response body are retried.
+  const callOptions: CallOptions = { ...options, retry: "pre-response" };
   let state: z.infer<typeof stateSchema>;
   if (input.continuation) {
     try {
@@ -213,6 +220,7 @@ export async function assistantStep(
         ),
     undefined,
     finalize ? finalAnswerSchema : undefined,
+    callOptions,
   );
   const calls = result.message.tool_calls ?? [];
   if (finalize && calls.length)
@@ -259,6 +267,7 @@ export async function assistantStep(
               undefined,
               undefined,
               finalAnswerSchema,
+              callOptions,
             )
         : undefined,
     );

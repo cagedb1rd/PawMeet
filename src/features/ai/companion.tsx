@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useDemo } from "@/features/demo/provider";
 import { aiAssistant, aiTask } from "@/lib/ai/client";
+import { AiProgressHint, useAiProgress } from "./progress";
 import {
   AssistantRequest,
   CompanionIntent,
@@ -59,6 +60,7 @@ function CompanionFlow() {
   const cache = useRef<CompanionCache>({});
   const controller = useRef<AbortController | null>(null);
   const busy = ["extracting", "searching", "organizing"].includes(phase);
+  const progress = useAiProgress(busy);
   useEffect(() => () => controller.current?.abort(), []);
   function reset() {
     controller.current?.abort();
@@ -106,7 +108,11 @@ function CompanionFlow() {
         queried = false;
       const failures = new Set<string>();
       for (let round = 0; round < WORKFLOW_LIMITS.rounds; round++) {
-        const { data: step } = await aiAssistant(req, abort.signal);
+        const { data: step } = await aiAssistant(
+          req,
+          abort.signal,
+          progress.onProgress,
+        );
         if (abort.signal.aborted) return;
         if (!step.toolCalls.length) {
           if (failures.size)
@@ -194,6 +200,7 @@ function CompanionFlow() {
           context: { pets: pets.filter((p) => p.id === ownId).map(petSummary) },
         },
         abort.signal,
+        progress.onProgress,
       );
       if (abort.signal.aborted) return;
       const extracted = response.data;
@@ -317,6 +324,7 @@ function CompanionFlow() {
           }
         </p>
       )}
+      <AiProgressHint text={progress.text} />
       {intent && !busy && (
         <div className="card form-card companion-plan">
           <h3>你的约伴计划</h3>

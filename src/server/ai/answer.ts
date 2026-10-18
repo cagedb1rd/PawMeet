@@ -1,9 +1,9 @@
 import "server-only";
 import { assistantAnswerSchema, assistantSummaries } from "@/lib/ai/contracts";
-import type { Message } from "./client";
+import type { AssistantMessage, Message } from "./client";
 import { AiError } from "./errors";
 
-function parse(message: Message, refs: string[]) {
+function parse(message: AssistantMessage, refs: string[]) {
   if (message.role !== "assistant") throw Error("Invalid assistant role");
   if (message.tool_calls?.length) throw Error("Unexpected final tool call");
   const answer = assistantAnswerSchema.parse(JSON.parse(message.content ?? ""));
@@ -19,9 +19,9 @@ export function answerRepairInstruction(refs: string[]): Message {
 }
 /** One real model repair, within the caller's existing round and quota limits. */
 export async function checkedAnswer(
-  message: Message,
+  message: AssistantMessage,
   refs: string[],
-  repair?: () => Promise<{ message: Message; usage: unknown }>,
+  repair?: () => Promise<{ message: AssistantMessage; usage: unknown }>,
 ) {
   try {
     return {

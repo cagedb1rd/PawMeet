@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  AI_STREAM_TYPE,
+  AiProgress,
   AiTask,
   outputSchemas,
   taskRequestSchema,
@@ -73,66 +75,143 @@ export async function POST(
       throw new AiError("AI_INPUT", "请求字段或长度不合法", 400);
     aiConfig();
     const session = sessionId(request.cookies.get("pawmeet-ai")?.value);
-    const result =
+    // The browser never selects a model: only progress/signal are passed down.
+    const run = (onProgress?: (p: AiProgress) => void) =>
       task === "assistant"
-        ? await assistantStep(
+        ? assistantStep(
             assistantRequestSchema.parse(parsed.data),
             session.id,
             requestId,
+            undefined,
+            undefined,
+            { onProgress, signal: request.signal },
           )
-        : await generateTask(
+        : generateTask(
             task as AiTask,
             taskRequestSchema.parse(parsed.data),
             session.id,
             requestId,
+            undefined,
+            undefined,
+            { onProgress, signal: request.signal },
           );
-    const response = NextResponse.json(
-      {
-        ok: true,
-        requestId,
-        data: result.data,
-        meta: {
-          provider: "qwen",
-          model: result.model,
-          promptVersion: PROMPT_VERSION,
-          schemaVersion: 1,
-          latencyMs: Date.now() - start,
-          usage: result.usage,
-        },
+    const success = (result: Awaited<ReturnType<typeof run>>) => ({
+      ok: true,
+      requestId,
+      data: result.data,
+      meta: {
+        provider: "qwen",
+        model: result.model,
+        promptVersion: PROMPT_VERSION,
+        schemaVersion: 1,
+        latencyMs: Date.now() - start,
+        usage: result.usage,
       },
-      { headers: { "Cache-Control": "no-store" } },
-    );
-    response.cookies.set("pawmeet-ai", session.cookie, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure:
-        process.env.NODE_ENV === "production" && origin.startsWith("https:"),
-      maxAge: 86400,
-      path: "/api/ai",
     });
-    return response;
-  } catch (e) {
-    const error =
-      e instanceof AiError
-        ? e
-        : new AiError("AI_INTERNAL", "AI服务暂不可用", 503);
-    return NextResponse.json(
-      {
-        ok: false,
-        requestId,
-        error: {
-          code: error.code,
-          message: error.message,
-          retryable: error.retryable,
-        },
+    const withCookie = <T extends NextResponse>(response: T) => {
+      response.cookies.set("pawmeet-ai", session.cookie, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure:
+          process.env.NODE_ENV === "production" && origin.startsWith("https:"),
+        maxAge: 86400,
+        path: "/api/ai",
+      });
+      return response;
+    };
+    if (!request.headers.get("accept")?.includes(AI_STREAM_TYPE))
+      return withCookie(
+        NextResponse.json(success(await run()), {
+          headers: { "Cache-Control": "no-store" },
+        }),
+      );
+    // NDJSON progress: switch to a stream only once the model starts responding, so
+    // failures before that (quota, config, upstream HTTP) keep their real HTTP status.
+    const encoder = new TextEncoder();
+    const early: string[] = [];
+    let sink: ((line: string) => void) | undefined;
+    let started!: () => void;
+    const progressed = new Promise<void>((r) => (started = r));
+    const work = run((progress) => {
+      const line = JSON.stringify({ type: "progress", ...progress }) + "\n";
+      if (sink) sink(line);
+      else early.push(line);
+      if (progress.stage !== "waiting") started();
+    });
+    const first = await Promise.race([
+      work.then((result) => ({ result })),
+      progressed.then(() => null),
+    ]);
+    if (first)
+      return withCookie(
+        NextResponse.json(success(first.result), {
+          headers: { "Cache-Control": "no-store" },
+        }),
+      );
+    let open = true;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        const write = (line: string) => {
+          if (open) controller.enqueue(encoder.encode(line));
+        };
+        early.forEach(write);
+        sink = write;
+        work
+          .then(
+            (result) =>
+              write(
+                JSON.stringify({ type: "result", body: success(result) }) +
+                  "\n",
+              ),
+            (e) => {
+              const { status, body } = failure(e, requestId);
+              write(JSON.stringify({ type: "error", status, body }) + "\n");
+            },
+          )
+          .finally(() => {
+            if (open) controller.close();
+            open = false;
+          });
       },
-      {
-        status: error.status,
+      cancel() {
+        open = false;
+      },
+    });
+    return withCookie(
+      new NextResponse(body, {
         headers: {
+          "Content-Type": `${AI_STREAM_TYPE}; charset=utf-8`,
           "Cache-Control": "no-store",
-          ...(error.status === 429 ? { "Retry-After": "60" } : {}),
+          "X-Accel-Buffering": "no",
         },
-      },
+      }),
     );
+  } catch (e) {
+    const { status, body } = failure(e, requestId);
+    return NextResponse.json(body, {
+      status,
+      headers: {
+        "Cache-Control": "no-store",
+        ...(status === 429 ? { "Retry-After": "60" } : {}),
+      },
+    });
   }
+}
+function failure(e: unknown, requestId: string) {
+  const error =
+    e instanceof AiError
+      ? e
+      : new AiError("AI_INTERNAL", "AI服务暂不可用", 503);
+  return {
+    status: error.status,
+    body: {
+      ok: false as const,
+      requestId,
+      error: {
+        code: error.code,
+        message: error.message,
+        retryable: error.retryable,
+      },
+    },
+  };
 }

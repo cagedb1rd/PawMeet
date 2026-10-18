@@ -147,7 +147,7 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 
 ### 统一服务与任务
 
-[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)。密钥、Prompt、固定模型与额度模块使用 server-only。仅允许服务端环境 DASHSCOPE_API_KEY / AI_BASE_URL / AI_MODEL；默认 qwen3.8-flash，用户已授权该型号，拒绝其他型号且无自动回退。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
+[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)（[SSE 解析](../src/server/ai/sse.ts)、[模型白名单](../src/server/ai/models.ts)）。密钥、Prompt、模型配置与额度模块使用 server-only。模型只来自服务端白名单（见 [AGENTS](../AGENTS.md#ai-与模型)）：文本组由 AI_MODEL 选择（默认 qwen3.8-flash），视觉组由 AI_VISION_MODEL 选择（默认 qwen3.8-omni-flash）；名称须精确匹配所在组，否则返回 AI_MODEL_NOT_APPROVED，无自动回退。callModel 的 `model` 覆盖参数只供服务端 / 评测调用，同样受白名单约束；Route 不读取浏览器传入的模型字段（多余字段按 strict Schema 拒绝）。白名单其余型号名待第 5 步按百炼模型列表核实。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
 POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
 
@@ -157,9 +157,17 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 | help-intent | 描述 + 最多3只本人宠物摘要；类型、宠物、起止、时长、原始时间与公共地点线索；缺失信息及地点复核沿用原表单校验 |
 | companion-intent | 描述 + 选中本人宠物摘要；match 包含 / 排斥条件、日期时间提议、活动类型、地点关键词、软偏好、其他硬要求、澄清；不返回实体 |
 
-成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；失败 {ok:false,requestId,error:{code,message,retryable}}。400 输入 / 协议、413 超量、403 来源、429 本地额度、503 配置 / 账本、502 上游 / 非法输出、504 超时。失败不返回上游原始正文或思考过程。
+成功 {ok:true,requestId,data,meta:{provider,model,promptVersion,schemaVersion,latencyMs,usage}}；失败 {ok:false,requestId,error:{code,message,retryable}}。400 输入 / 协议 / 模型能力不符、413 超量、403 来源、429 本地额度、499 客户端取消、503 配置 / 账本、502 上游 / 非法输出 / 流中断、504 超时。失败不返回上游原始正文或思考过程。
 
-请求流上限48KB，描述1500字、摘要至多3宠；上游请求30000字符、响应64000字节。固定 qwen3.8-flash、max_tokens=1400、temperature=0.1、关闭思考与流式。结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。格式错误最多一次无工具严格总结修复，计入4轮。429 / 503及受控连接重置 / 连接超时最多一次传输重试，逐次预留额度；单次20秒，浏览器45秒可取消，无无限重试。
+浏览器请求带 `Accept: application/x-ndjson` 时，Route 在模型开始返回（或进入自动重试）后改为 NDJSON：若干 `{type:"progress",stage:"waiting"|"receiving"|"retrying",attempt,chars}`，最后一行 `{type:"result",body:<成功信封>}` 或 `{type:"error",status,body:<失败信封>}`。在此之前发生的失败（来源、输入、额度、配置、上游 HTTP 错误）仍是普通 JSON 和真实 HTTP 状态。进度只含阶段与已接收字符数，不推送模型原文；结果仍在服务端整体解析并通过 Zod / 业务校验后才下发。[浏览器客户端](../src/lib/ai/client.ts) 兼容两种响应，界面在等待时显示已等待秒数，接收中显示字符数，重试时提示。
+
+请求流上限48KB，描述1500字、摘要至多3宠；上游请求文本30000字节（图片按每张固定估算，不计 base64 长度）。max_tokens=1400、temperature=0.1；文本模型发送 enable_thinking=false。
+
+- 流式：默认 `stream:true` 并带 `stream_options.include_usage`，AI_STREAM=false 时走原非流式路径；只支持流式的模型（视觉组按 omni 处理）强制流式。SSE 解析拼接 content 增量、按 index 拼接 tool_calls 片段（名称取首片段，arguments 连接），保留末尾 usage；原始流 ≤512000 字节、单行 ≤64000、文本 ≤16000 字符。未见 finish_reason 即断流为 AI_UPSTREAM_STREAM_INTERRUPTED，`length` 截断为 AI_UPSTREAM_INCOMPLETE，流内 error / 非法 JSON 显式失败。若上游忽略 stream 返回 JSON 信封，按非流式解析。
+- 输出：结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。流式与非流式都整体拼接后再走同一校验，不消费部分结果。格式错误最多一次无工具严格总结修复，计入4轮。
+- 超时：AI_FIRST_BYTE_TIMEOUT_MS（默认15000，流式到首个数据块、非流式到响应头）与 AI_TOTAL_TIMEOUT_MS（默认40000，单次尝试）；浏览器120秒总超时并可取消，取消经 request.signal 中止上游。
+- 重试：每次调用最多自动重试1次，退避500ms（短 Retry-After 最多3秒），每次尝试都重新预留额度、不退款。抽取类任务（generateTask）为 idempotent：429 / 500 / 502 / 503 / 504、受控连接错误、首字节或总超时、流中断都可重试。工具续传（assistantStep，含总结修复）为 pre-response：只在未消费任何响应体时重试（HTTP 429 / 5xx、连接错误、首字节超时）；工具只在浏览器收到签名步骤后执行，失败的尝试不生成续传凭据，因此不会重复执行业务工具。401 / 403 / 400、非法内容、截断、额度拒绝不重试。
+- 图片：消息内容可为 `{type:"text"}` / `{type:"image_url",image_url:{url}}` 数组；[imagePart](../src/server/ai/client.ts) 只接受 JPEG / PNG / WebP base64 data URL 且 ≤400000 字符，单次最多4张。文本模型收到图片、视觉模型收到 tools 或 JSON Schema 均返回 AI_MODEL_CAPABILITY；视觉组当前不发送 response_format 与思考参数。拍照建档业务未实现（第 7 步），omni 的流式要求、response_format 与输入格式届时按官方文档复核。
 
 [Prompt](../src/server/ai/prompts.ts) 版本 pawmeet-6.2，validation-8。档案 / 互助保留摘录、否定、年龄、日期、本人ID和剂量禁区等防线。约伴可接受粗略日期与时段：程序 [availability](../src/lib/ai/availability.ts) 按北京时间生成并展示只读查询边界，上午6–12点、下午12–18点、晚上18–24点；OR时段保留间隔，排除日期 / 时段从候选范围扣除。缺少日期才询问日期，不要求分钟；不把查询边界写入活动计划。普通软偏好改写不再导致整体事实校验失败：保留有依据的原话，无法映射的标签不作筛选，友好类同义描述仅作温和排序线索并提示核实。无依据的硬条件、准入 / 安全保证仍拒绝，明确距离上限由程序核对，不支持或冲突先澄清。所有业务写入继续走正式 Schema、角色 / 状态和 Repository，身份 / 数据 revision 变化中止旧工作流。
 
@@ -209,7 +217,8 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 | 变量 | 可见性 / 用途 |
 | --- | --- |
-| DASHSCOPE_API_KEY、AI_MODEL、AI_BASE_URL | 服务端；key默认空，model默认qwen3.8-flash，base URL如上；旧GLM配置不再使用 |
+| DASHSCOPE_API_KEY、AI_MODEL、AI_VISION_MODEL、AI_BASE_URL | 服务端；key默认空，文本默认qwen3.8-flash、视觉默认qwen3.8-omni-flash（均须在白名单内），base URL如上；旧GLM配置不再使用 |
+| AI_STREAM、AI_FIRST_BYTE_TIMEOUT_MS、AI_TOTAL_TIMEOUT_MS | 服务端；默认 true / 15000 / 40000；非法值或首字节大于总时长时返回 AI_CONFIG |
 | AI_ENABLED、AI_MAX_DAILY_CALLS、AI_MAX_DAILY_TOKENS | 服务端；未配置密钥默认关闭 AI |
 | DEMO_SESSION_SECRET、QUOTA_STORE_PATH | 服务端；签名与可写持久化账本文件 |
 | APP_ORIGIN | 服务端；精确线上同源值 |

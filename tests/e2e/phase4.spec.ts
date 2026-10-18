@@ -73,6 +73,73 @@ test("mock AI 档案：生成与填入均不写入，编辑确认后持久化", 
   await page.reload();
   await expect(page.getByText("主人改过的名字", { exact: true })).toBeVisible();
 });
+test("mock AI 流式进度：NDJSON 进度与结果被浏览器解析，失败事件可见", async ({
+  page,
+}) => {
+  let calls = 0;
+  await page.route("**/api/ai/pet-profile", (route) => {
+    expect(route.request().headers()["accept"]).toContain(
+      "application/x-ndjson",
+    );
+    const progress = JSON.stringify({
+      type: "progress",
+      stage: "receiving",
+      attempt: 1,
+      chars: 42,
+    });
+    const last =
+      calls++ === 0
+        ? {
+            type: "result",
+            body: success({
+              name: "流式年糕",
+              breed: null,
+              ageMonths: null,
+              size: null,
+              city: null,
+              district: null,
+              temperamentTags: [],
+              activityTags: [],
+              likes: [],
+              dislikes: [],
+              cautions: [],
+              ...notes,
+            }),
+          }
+        : {
+            type: "error",
+            status: 502,
+            body: {
+              ok: false,
+              requestId: "e2e-stream-error",
+              error: {
+                code: "AI_UPSTREAM_STREAM_INTERRUPTED",
+                message: "Qwen流式输出中途断开，未得到完整结果",
+                retryable: true,
+              },
+            },
+          };
+    return route.fulfill({
+      contentType: "application/x-ndjson; charset=utf-8",
+      body: `${progress}\n${JSON.stringify(last)}\n`,
+    });
+  });
+  await ready(page, "/me/pets/new");
+  const before = await saved(page);
+  await generate(page, "AI 宠物档案与社交信息", "叫流式年糕的小狗");
+  await expect(page.getByTestId("ai-draft")).toContainText("流式年糕");
+  await page
+    .getByRole("region", { name: "AI 宠物档案与社交信息" })
+    .getByRole("button", { name: "生成 AI 草稿", exact: true })
+    .click();
+  await expect(
+    page
+      .getByRole("region", { name: "AI 宠物档案与社交信息" })
+      .getByRole("alert"),
+  ).toContainText("AI_UPSTREAM_STREAM_INTERRUPTED");
+  await expect(page.getByTestId("ai-draft")).toHaveCount(0);
+  expect(await saved(page)).toBe(before);
+});
 test("名片改为手动复核：无需模型仍可编辑确认并持久化", async ({ page }) => {
   await ready(page, "/me");
   const id = await page.evaluate(() => {
@@ -147,7 +214,9 @@ test("mock AI 互助：模糊时间保持空，地点需重新确认", async ({ 
   await page.getByLabel("结束时间（北京时间）").fill(`${day}T14:30`);
   await page.getByLabel("我已复核 AI 草稿中的宠物、时间与特别要求").check();
   await page.getByRole("button", { name: "确认发布求助" }).click();
-  await expect(page.locator("form").getByRole("alert")).toContainText("地点选择器");
+  await expect(page.locator("form").getByRole("alert")).toContainText(
+    "地点选择器",
+  );
   expect(await saved(page)).toBe(before);
   await page.getByRole("button", { name: "文字地点", exact: true }).click();
   await page.getByLabel("文字地点名称").fill("滨江公园公共东门");

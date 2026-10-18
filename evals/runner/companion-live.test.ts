@@ -203,7 +203,9 @@ it("approved Phase 4.5 bounded Qwen availability regression smoke", async () => 
     tools,
     _transport,
     schema,
-  ) => callModel(messages, session, requestId, tools, transport, schema);
+    options,
+  ) =>
+    callModel(messages, session, requestId, tools, transport, schema, options);
   const errorData = (e: unknown) =>
     e instanceof AiError
       ? { code: e.code, message: e.message, providerCode: e.providerCode }

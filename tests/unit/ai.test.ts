@@ -76,7 +76,8 @@ afterEach(() => {
   vi.useRealTimers();
   reserve.mockClear();
 });
-describe("Qwen transport", () => {
+describe("Qwen transport (non-streaming path)", () => {
+  beforeEach(() => vi.stubEnv("AI_STREAM", "false"));
   it("does not reuse a Zhipu credential when Qwen key is missing", () => {
     vi.stubEnv("DASHSCOPE_API_KEY", "");
     vi.stubEnv("GLM_API_KEY", "old-zhipu-key");
@@ -159,24 +160,21 @@ describe("Qwen transport", () => {
       json_schema: { name: "pawmeet_result", strict: true, schema },
     });
   });
-  it.each([401, 403, 400, 500])(
-    "HTTP %i fails without retry",
-    async (status) => {
-      const transport = vi
-        .fn<typeof fetch>()
-        .mockResolvedValue(new Response("private provider text", { status }));
-      await expect(
-        callModel(
-          [{ role: "user", content: "test" }],
-          "s",
-          "r",
-          undefined,
-          transport,
-        ),
-      ).rejects.toMatchObject({ code: `AI_UPSTREAM_HTTP_${status}` });
-      expect(transport).toHaveBeenCalledTimes(1);
-    },
-  );
+  it.each([401, 403, 400])("HTTP %i fails without retry", async (status) => {
+    const transport = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response("private provider text", { status }));
+    await expect(
+      callModel(
+        [{ role: "user", content: "test" }],
+        "s",
+        "r",
+        undefined,
+        transport,
+      ),
+    ).rejects.toMatchObject({ code: `AI_UPSTREAM_HTTP_${status}` });
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
   it("retries 429 once with a new quota reservation", async () => {
     const transport = vi
       .fn<typeof fetch>()
@@ -236,7 +234,9 @@ describe("Qwen transport", () => {
       ),
     ).rejects.toMatchObject({ code: "AI_UPSTREAM_NETWORK" });
   });
-  it("aborts after 20 seconds", async () => {
+  it("aborts at the configured total timeout", async () => {
+    vi.stubEnv("AI_FIRST_BYTE_TIMEOUT_MS", "20000");
+    vi.stubEnv("AI_TOTAL_TIMEOUT_MS", "20000");
     vi.useFakeTimers();
     const transport: typeof fetch = async (_url, options) =>
       new Promise((_resolve, reject) =>
@@ -244,16 +244,22 @@ describe("Qwen transport", () => {
           reject(Error("abort")),
         ),
       );
-    const assertion = expect(
-      callModel(
-        [{ role: "user", content: "test" }],
-        "s",
-        "r",
-        undefined,
-        transport,
-      ),
-    ).rejects.toMatchObject({ code: "AI_UPSTREAM_TIMEOUT" });
-    await vi.advanceTimersByTimeAsync(20001);
+    let settled = false;
+    const pending = callModel(
+      [{ role: "user", content: "test" }],
+      "s",
+      "r",
+      undefined,
+      transport,
+      undefined,
+      { retry: "none" },
+    ).finally(() => (settled = true));
+    const assertion = expect(pending).rejects.toMatchObject({
+      code: "AI_UPSTREAM_TIMEOUT",
+    });
+    await vi.advanceTimersByTimeAsync(19999);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(2);
     await assertion;
   });
   it("forbids paid model and alternate base URL", () => {
