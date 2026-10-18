@@ -12,7 +12,7 @@
 | 校验 | Zod 4，表单、持久化、API 契约共享定义 | 类型来源统一；AI 草稿 Schema 与正式业务 Schema 分离 |
 | 数据 | localStorage JSON + 图片 IndexedDB + 项目静态资源 | 不使用云数据库；每浏览器独立 |
 | 地图 | 高德 JS API 2.0，官方 script 方式按需加载 | 单例加载与服务适配器隔离，安全码仅服务端 |
-| AI | 服务端原生 fetch 调用 Qwen 百炼兼容 API | 少依赖；按任务设置 Prompt、Schema、token 上限 |
+| AI | 服务端原生 fetch 调用 OpenAI 兼容 API：Qwen（百炼）为默认，Gemini（Google 官方兼容端点）为跨厂商对照 | 少依赖；按任务设置 Prompt、Schema、token 上限；按型号配置厂商参数 |
 | 测试 | Vitest、Testing Library（必要组件）、Playwright | 规则 / 存储 / 接口 / 关键用户路径分层验证 |
 | 工具 | npm + package-lock、ESLint CLI、Git | 不混用包管理器；build 不替代 lint |
 
@@ -147,7 +147,7 @@ Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空�
 
 ### 统一服务与任务
 
-[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)（[SSE 解析](../src/server/ai/sse.ts)、[模型白名单](../src/server/ai/models.ts)）。密钥、Prompt、模型配置与额度模块使用 server-only。模型只来自服务端白名单（见 [AGENTS](../AGENTS.md#ai-与模型)）：文本组由 AI_MODEL 选择（默认 qwen3.8-flash），视觉组由 AI_VISION_MODEL 选择（默认 qwen3.8-omni-flash）；名称须精确匹配所在组，否则返回 AI_MODEL_NOT_APPROVED，无自动回退。callModel 的 `model` 覆盖参数只供服务端 / 评测调用，同样受白名单约束；Route 不读取浏览器传入的模型字段（多余字段按 strict Schema 拒绝）。白名单 5 个型号名已于 2026-10-18 经百炼模型列表核实存在（见 [AI_EVAL](AI_EVAL.md#模型名核实2026-10-18)）。callModel 另有评测专用 `reserve` 钩子，以独立评测账本替代产品额度账本，Route 从不传入。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
+[Route](../src/app/api/ai/[task]/route.ts) → [Service](../src/server/ai/service.ts) → [Client](../src/server/ai/client.ts)（[SSE 解析](../src/server/ai/sse.ts)、[模型白名单](../src/server/ai/models.ts)）。密钥、Prompt、模型配置与额度模块使用 server-only。模型只来自服务端白名单（见 [AGENTS](../AGENTS.md#ai-与模型)）：文本组由 AI_MODEL 选择（默认 qwen3.8-flash），视觉组由 AI_VISION_MODEL 选择（默认 qwen3.8-omni-flash）；名称须精确匹配所在组，否则返回 AI_MODEL_NOT_APPROVED，无自动回退。callModel 的 `model` 覆盖参数只供服务端 / 评测调用，同样受白名单约束；Route 不读取浏览器传入的模型字段（多余字段按 strict Schema 拒绝）。白名单 Qwen 5 个型号名经百炼模型列表、gemini-3.5-flash-lite / gemini-3.8-flash 经 Gemini 模型列表核实存在（见 [AI_EVAL](AI_EVAL.md#模型名核实2026-10-18) 与第 6b 步）。每个型号的 profile 指定 provider：dashscope 用 DASHSCOPE_API_KEY 与下述百炼端点；gemini 用 GEMINI_API_KEY 与固定的 `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`（不可配置）。取舍见 [DECISIONS D024](DECISIONS.md)。callModel 另有评测专用 `reserve` 钩子，以独立评测账本替代产品额度账本，Route 从不传入。旧 GLM_* 配置不再读取。Base URL 仅允许百炼官方 HTTPS 兼容端点：dashscope.aliyuncs.com、dashscope-intl.aliyuncs.com 或受限地域工作空间域名，路径固定 /compatible-mode/v1；拒绝凭据、端口、查询和客户端透传。
 
 POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-profile、help-intent、companion-intent；assistant 承载原生 Tool Calling。social-card、social-analysis、care-checklist、post-copy 与独立 match-intent 路由返回 AI_TASK_RETIRED，不消耗模型额度。旧契约 / 忠实性校验仍用于历史评测及内部匹配工具，冗余 Prompt 与界面已删除。主人手工编辑名片，照看清单由 [checklistTemplate](../src/lib/ai/templates.ts) 读取已有习惯 / 本次需求并补通用待确认项。
 
@@ -161,7 +161,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 浏览器请求带 `Accept: application/x-ndjson` 时，Route 在模型开始返回（或进入自动重试）后改为 NDJSON：若干 `{type:"progress",stage:"waiting"|"receiving"|"retrying",attempt,chars}`，最后一行 `{type:"result",body:<成功信封>}` 或 `{type:"error",status,body:<失败信封>}`。在此之前发生的失败（来源、输入、额度、配置、上游 HTTP 错误）仍是普通 JSON 和真实 HTTP 状态。进度只含阶段与已接收字符数，不推送模型原文；结果仍在服务端整体解析并通过 Zod / 业务校验后才下发。[浏览器客户端](../src/lib/ai/client.ts) 兼容两种响应，界面在等待时显示已等待秒数，接收中显示字符数，重试时提示。
 
-请求流上限48KB，描述1500字、摘要至多3宠；上游请求文本30000字节（图片按每张固定估算，不计 base64 长度）。max_tokens=1400、temperature=0.1；文本模型发送 enable_thinking=false。
+请求流上限48KB，描述1500字、摘要至多3宠；上游请求文本30000字节（图片按每张固定估算，不计 base64 长度）。Qwen：max_tokens=1400、temperature=0.1，文本模型发送 enable_thinking=false。Gemini：不发送 temperature 与 enable_thinking，发送 reasoning_effort（3.5-flash-lite 为 minimal、3.8-flash 为 low），max_tokens=4096（含思考 Token）；tool_calls 上的 `extra_content.google.thought_signature` 原样保存在签名上下文并在续传时回传，流式 tool_calls 缺 index 时按 id 归并。回答修复指令以 user 角色追加。
 
 - 流式：默认 `stream:true` 并带 `stream_options.include_usage`，AI_STREAM=false 时走原非流式路径；只支持流式的模型（视觉组按 omni 处理）强制流式。SSE 解析拼接 content 增量、按 index 拼接 tool_calls 片段（名称取首片段，arguments 连接），保留末尾 usage；原始流 ≤512000 字节、单行 ≤64000、文本 ≤16000 字符。未见 finish_reason 即断流为 AI_UPSTREAM_STREAM_INTERRUPTED，`length` 截断为 AI_UPSTREAM_INCOMPLETE，流内 error / 非法 JSON 显式失败。若上游忽略 stream 返回 JSON 信封，按非流式解析。
 - 输出：结构化任务使用共享 Zod JSON Schema strict 并校验事实；原生 tools 使用 JSON 模式、tool_choice=auto 和 parallel_tool_calls=true，接收提供方真正的 assistant.tool_calls，不将 content 中的 JSON 当调用。流式与非流式都整体拼接后再走同一校验，不消费部分结果。格式错误最多一次无工具严格总结修复，计入4轮。
@@ -218,7 +218,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 | 变量 | 可见性 / 用途 |
 | --- | --- |
-| DASHSCOPE_API_KEY、AI_MODEL、AI_VISION_MODEL、AI_BASE_URL | 服务端；key默认空，文本默认qwen3.8-flash、视觉默认qwen3.8-omni-flash（均须在白名单内），base URL如上；旧GLM配置不再使用 |
+| DASHSCOPE_API_KEY、GEMINI_API_KEY、AI_MODEL、AI_VISION_MODEL、AI_BASE_URL | 服务端；key默认空（只需配置所选型号所属厂商的 key），文本默认qwen3.8-flash、视觉默认qwen3.8-omni-flash（均须在白名单内），AI_BASE_URL 只作用于百炼；旧GLM配置不再使用 |
 | AI_STREAM、AI_FIRST_BYTE_TIMEOUT_MS、AI_TOTAL_TIMEOUT_MS | 服务端；默认 true / 15000 / 40000；非法值或首字节大于总时长时返回 AI_CONFIG |
 | AI_ENABLED、AI_MAX_DAILY_CALLS、AI_MAX_DAILY_TOKENS | 服务端；未配置密钥默认关闭 AI |
 | DEMO_SESSION_SECRET、QUOTA_STORE_PATH | 服务端；签名与可写持久化账本文件 |

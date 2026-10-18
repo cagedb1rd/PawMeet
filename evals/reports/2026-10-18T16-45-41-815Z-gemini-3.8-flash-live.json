@@ -1,0 +1,425 @@
+{
+  "kind": "pawmeet-eval-run",
+  "schemaVersion": 2,
+  "simulated": false,
+  "dataLabel": "真实模型调用",
+  "runId": "2026-10-18T16-45-41-815Z",
+  "mode": "live",
+  "model": "gemini-3.8-flash",
+  "provider": "bailian",
+  "promptVersion": "pawmeet-6.3",
+  "validationVersion": "pawmeet-validation-10",
+  "caseVersion": "cases.v3",
+  "git": "48fe8da9c1c721f5aa68736e545a315abd7d2985",
+  "gitDirty": true,
+  "clock": "2026-10-17T02:00:00.000Z",
+  "startedAt": "2026-10-18T16:45:41.882Z",
+  "finishedAt": "2026-10-18T16:45:46.963Z",
+  "config": {
+    "repeat": 1,
+    "cases": [
+      "CI01",
+      "CT04"
+    ],
+    "tokenLimit": 300000,
+    "maxCalls": null,
+    "minIntervalMs": 1500,
+    "mockFaults": false,
+    "ledger": ".local/ai-eval/step6b-ledger.json"
+  },
+  "budget": {
+    "model": "gemini-3.8-flash",
+    "limit": 300000,
+    "chargedBefore": 0,
+    "chargedAfter": 13689,
+    "chargedThisRun": 13689,
+    "knownThisRun": 1146,
+    "conservativeThisRun": 12543,
+    "transmissionsThisRun": 2,
+    "stoppedBy": null
+  },
+  "retiredCases": [
+    {
+      "id": "C01",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C02",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C03",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C04",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C05",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "C06",
+      "reason": "social-card 已改为规则 / 模板，不再调用模型"
+    },
+    {
+      "id": "M01",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M02",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M03",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M04",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M05",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M06",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M07",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "M08",
+      "reason": "独立 match-intent 已停用，筛选条件并入智能约伴（CI / CT）"
+    },
+    {
+      "id": "L01",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L02",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L03",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L04",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L05",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L06",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "L07",
+      "reason": "care-checklist 已改为规则模板，不再调用模型"
+    },
+    {
+      "id": "TC01",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC02",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC03",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC04",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC05",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC06",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC07",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    },
+    {
+      "id": "TC08",
+      "reason": "无 workflow 的通用助手工具集已停用，约伴工具见 CT"
+    }
+  ],
+  "metrics": {
+    "attempts": {
+      "planned": 2,
+      "executed": 2,
+      "pass": 1,
+      "fail": 0,
+      "error": 1,
+      "notRun": 0
+    },
+    "passRate": 0.5,
+    "schemaValidRate": 1,
+    "businessValidRate": 0.5,
+    "keyFieldAccuracy": 0.5384615384615384,
+    "completeTaskRate": 0.5,
+    "calls": {
+      "total": 2,
+      "withResponse": 1,
+      "retries": 0,
+      "timeouts": 0,
+      "timedOutAttempts": 0,
+      "errors": {
+        "AI_UPSTREAM_INVALID_RESPONSE": 1
+      }
+    },
+    "latencyMs": {
+      "samples": 1,
+      "totalP50": 3322,
+      "totalP95": 3322,
+      "firstByteP50": 2630,
+      "firstByteP95": 2630
+    },
+    "tokens": {
+      "knownCalls": 1,
+      "unknownCalls": 1,
+      "prompt": 1017,
+      "completion": 129,
+      "totalKnown": 1146,
+      "avgPerKnownCall": 1146,
+      "charged": 13689
+    }
+  },
+  "byScenario": {
+    "companion-intent": {
+      "attempts": {
+        "planned": 1,
+        "executed": 1,
+        "pass": 1,
+        "fail": 0,
+        "error": 0,
+        "notRun": 0
+      },
+      "passRate": 1,
+      "schemaValidRate": 1,
+      "businessValidRate": 1,
+      "keyFieldAccuracy": 1,
+      "completeTaskRate": 1,
+      "calls": {
+        "total": 1,
+        "withResponse": 1,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {}
+      },
+      "latencyMs": {
+        "samples": 1,
+        "totalP50": 3322,
+        "totalP95": 3322,
+        "firstByteP50": 2630,
+        "firstByteP95": 2630
+      },
+      "tokens": {
+        "knownCalls": 1,
+        "unknownCalls": 0,
+        "prompt": 1017,
+        "completion": 129,
+        "totalKnown": 1146,
+        "avgPerKnownCall": 1146,
+        "charged": 1146
+      }
+    },
+    "companion-tools": {
+      "attempts": {
+        "planned": 1,
+        "executed": 1,
+        "pass": 0,
+        "fail": 0,
+        "error": 1,
+        "notRun": 0
+      },
+      "passRate": 0,
+      "schemaValidRate": null,
+      "businessValidRate": 0,
+      "keyFieldAccuracy": 0.14285714285714285,
+      "completeTaskRate": 0,
+      "calls": {
+        "total": 1,
+        "withResponse": 0,
+        "retries": 0,
+        "timeouts": 0,
+        "timedOutAttempts": 0,
+        "errors": {
+          "AI_UPSTREAM_INVALID_RESPONSE": 1
+        }
+      },
+      "latencyMs": {
+        "samples": 0,
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null,
+        "firstByteP95": null
+      },
+      "tokens": {
+        "knownCalls": 0,
+        "unknownCalls": 1,
+        "prompt": 0,
+        "completion": 0,
+        "totalKnown": 0,
+        "avgPerKnownCall": null,
+        "charged": 12543
+      }
+    }
+  },
+  "cases": [
+    {
+      "caseId": "CI01",
+      "scenario": "companion-intent",
+      "tags": [
+        "normal"
+      ],
+      "repeat": 1,
+      "status": "pass",
+      "businessValid": true,
+      "fieldsCorrect": 6,
+      "fieldsTotal": 6,
+      "failedChecks": [],
+      "observed": {
+        "mode": "search",
+        "match": {
+          "radiusKm": 3,
+          "district": null,
+          "breeds": [],
+          "sizes": [],
+          "temperaments": [
+            "温和"
+          ],
+          "activities": [
+            "散步"
+          ],
+          "excludedSizes": [],
+          "excludedBreeds": [],
+          "excludedTemperaments": [],
+          "excludedActivities": [],
+          "sort": null,
+          "unmappedTerms": [],
+          "clarifications": [],
+          "warnings": []
+        },
+        "startAt": null,
+        "endAt": null,
+        "timeText": "这周六下午在滨江散步，3公里内，想找性格温和的狗狗",
+        "activityType": "散步",
+        "placeQuery": "滨江",
+        "preferences": [
+          "性格温和"
+        ],
+        "hardRequirements": [],
+        "clarifications": [],
+        "warnings": []
+      },
+      "calls": [
+        {
+          "seq": 1,
+          "caseId": "CI01",
+          "repeat": 1,
+          "step": 1,
+          "model": "gemini-3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-10",
+          "git": "48fe8da9c1c721f5aa68736e545a315abd7d2985",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 2630,
+          "totalMs": 3322,
+          "httpStatus": 200,
+          "errorCode": null,
+          "usage": {
+            "prompt_tokens": 1017,
+            "completion_tokens": 129,
+            "total_tokens": 1146
+          },
+          "reservedTokens": 12194,
+          "chargedTokens": 1146,
+          "timedOutAttempts": 0,
+          "response": {
+            "content": "{\"mode\":\"search\",\"match\":{\"radiusKm\":3,\"district\":null,\"breeds\":[],\"sizes\":[],\"temperaments\":[\"温和\"],\"activities\":[\"散步\"],\"excludedSizes\":[],\"excludedBreeds\":[],\"excludedTemperaments\":[],\"excludedActivities\":[],\"sort\":null,\"unmappedTerms\":[],\"clarifications\":[],\"warnings\":[]},\"startAt\":null,\"endAt\":null,\"timeText\":\"这周六下午\",\"activityType\":\"散步\",\"placeQuery\":\"滨江\",\"preferences\":[\"性格温和\"],\"hardRequirements\":[],\"clarifications\":[\"未提供精确起止分钟，已保留大致时段用于搜索\"],\"warnings\":[]}"
+          },
+          "schemaValid": true,
+          "businessValid": true,
+          "keyFieldsCorrect": true
+        }
+      ]
+    },
+    {
+      "caseId": "CT04",
+      "scenario": "companion-tools",
+      "tags": [
+        "multi-tool"
+      ],
+      "repeat": 1,
+      "status": "error",
+      "businessValid": false,
+      "fieldsCorrect": 1,
+      "fieldsTotal": 7,
+      "failedChecks": [
+        "首轮并行查宠友和地点",
+        "宠友半径带入",
+        "生成活动草稿",
+        "草稿由工具成功生成",
+        "最终状态为草稿待确认",
+        "引用仅来自实际结果"
+      ],
+      "error": "AI_UPSTREAM_INVALID_RESPONSE:模型返回非法结构或非JSON内容",
+      "observed": {
+        "first": {
+          "names": [],
+          "args": {}
+        },
+        "all": {
+          "names": []
+        },
+        "draft": {
+          "created": false
+        },
+        "final": null,
+        "rounds": 0
+      },
+      "calls": [
+        {
+          "seq": 2,
+          "caseId": "CT04",
+          "repeat": 1,
+          "step": 1,
+          "model": "gemini-3.8-flash",
+          "promptVersion": "pawmeet-6.3",
+          "validationVersion": "pawmeet-validation-10",
+          "git": "48fe8da9c1c721f5aa68736e545a315abd7d2985",
+          "attempts": 1,
+          "retries": 0,
+          "firstByteMs": 1742,
+          "totalMs": 1746,
+          "httpStatus": 200,
+          "errorCode": "AI_UPSTREAM_INVALID_RESPONSE",
+          "usage": null,
+          "reservedTokens": 12543,
+          "chargedTokens": 12543,
+          "timedOutAttempts": 0,
+          "response": null,
+          "schemaValid": null,
+          "businessValid": null,
+          "keyFieldsCorrect": null,
+          "rawBodyExcerpt": "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\",\"tool_calls\":[{\"extra_content\":{\"google\":{\"thought_signature\":\"EmkKZwFpFH0TWtrVngLD+/rTfW6A8MrqYcLS5t5Jld7GKCmWU3TFWgLDgCWypDkpVALnvjvUcRG4X1WKqCqaW88oTnhO3ukpyAvrvlNDT4EqbKbiN5oi09nLS/CPipDf/Q8RmnZawDStbxs=\"}},\"function\":{\"arguments\":\"{\\\"query\\\":\\\"公园\\\"}\",\"name\":\"search_places\"},\"id\":\"call_2990326\",\"type\":\"function\"}]},\"index\":0}],\"created\":1792341946,\"id\":\"uffUateNEJOhvr0PrZ_GqQ8\",\"model\":\"gemini-3.8-flash\",\"object\":\"chat.completion.chunk\",\"usage\":{\"completion_tokens\":16,\"prompt_tokens\":2149,\"total_tokens\":2165}}\n\n"
+        }
+      ]
+    }
+  ]
+}
