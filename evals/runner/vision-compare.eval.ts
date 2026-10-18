@@ -2,7 +2,12 @@
 import { it, vi } from "vitest";
 import { readFile, writeFile } from "node:fs/promises";
 vi.mock("server-only", () => ({}));
-import { visionCompareMarkdown, type VisionReport } from "../lib/vision-runner";
+import {
+  privateOnly,
+  visionCompareMarkdown,
+  visionMarkdown,
+  type VisionReport,
+} from "../lib/vision-runner";
 
 it("vision compare", async () => {
   const files: string[] = JSON.parse(process.env.AI_EVAL_ARGS ?? "[]");
@@ -12,11 +17,22 @@ it("vision compare", async () => {
   );
   if (reports.some((r) => r.kind !== "pawmeet-vision-eval"))
     throw Error("只接受视觉评测报告");
-  const md = visionCompareMarkdown(reports);
-  const stem = `evals/reports/${new Date().toISOString().replace(/[:.]/g, "-")}-vision-compare-${reports[0].simulated ? "simulated" : "live"}.md`;
+  // Real results count only the 16 labelled private images, grouped by category; public demo
+  // photos in older reports are dropped here (their calls stay in each run's own budget).
+  const scoped = reports.map((r) => (r.simulated ? r : privateOnly(r)));
+  const md = visionCompareMarkdown(scoped);
+  const time = new Date().toISOString().replace(/[:.]/g, "-");
+  const kind = reports[0].simulated ? "simulated" : "live";
+  const stem = `evals/reports/${time}-vision-compare-${kind}.md`;
   await writeFile(
     stem,
-    `# 视觉模型对比\n\n${files.map((f) => `- ${f}`).join("\n")}\n\n${md}`,
+    `# 视觉模型对比（${kind === "live" ? "真实调用，仅私有 16 张带标签图片，按类别" : "模拟数据"}）\n\n${files.map((f) => `- ${f}`).join("\n")}\n\n${md}`,
   );
   process.stdout.write(`${stem}\n`);
+  if (kind === "live")
+    for (const [i, r] of scoped.entries()) {
+      const out = files[i].replace(/\.json$/, "-private.md");
+      await writeFile(out, visionMarkdown(r));
+      process.stdout.write(`${out}\n`);
+    }
 });

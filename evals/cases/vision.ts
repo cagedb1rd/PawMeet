@@ -24,6 +24,25 @@ export type VisionCase = {
   multiple: boolean;
   notes: string;
 };
+/** Report groups: regular single dogs by labelled size, hard cases, non-dogs. */
+export const CATEGORY_LABELS = {
+  small: "常规·小型",
+  medium: "常规·中型",
+  large: "常规·大型",
+  hard: "难例",
+  notdog: "非狗",
+  unlabelled: "无标签",
+} as const;
+export type VisionCategory = keyof typeof CATEGORY_LABELS;
+export function categoryOf(
+  c: Pick<VisionCase, "file" | "isDog" | "sizes" | "multiple">,
+): VisionCategory {
+  if (c.isDog === false) return "notdog";
+  if (c.isDog === null) return "unlabelled";
+  if (c.file.startsWith("hard") || c.multiple || !c.sizes?.length)
+    return "hard";
+  return c.sizes[0];
+}
 
 const PUBLIC: Omit<VisionCase, "id" | "source">[] = [
   {

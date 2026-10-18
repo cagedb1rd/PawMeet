@@ -13,12 +13,14 @@ import {
 } from "../../evals/lib/https-transport";
 import {
   breedMatches,
+  categoryOf,
   loadVisionCases,
   parseLabels,
   type VisionCase,
 } from "../../evals/cases/vision";
 import {
   parseVisionConfig,
+  privateOnly,
   runVisionEval,
   scoreVision,
   visionCompareMarkdown,
@@ -216,6 +218,88 @@ const raw = (o: Record<string, unknown>) =>
 const run = (c: VisionCase, text: string) =>
   scoreVision(c, reviewPetPhoto(JSON.parse(text)), text);
 
+describe("vision categories and private-only scope", () => {
+  it("groups labelled images into regular small / medium / large, hard and non-dog", () => {
+    const labels = parseLabels(
+      [
+        "file,is_dog,breed,size,notes",
+        "dog-01.jpg,true,比熊,small,",
+        "dog-09.jpg,true,金毛寻回犬,large,",
+        "hard-01.jpg,true,法国斗牛犬,small,两只狗同时入镜",
+        "hard-02.jpg,true,unknown,unknown,狗鼻特写",
+        "notdog-02.jpg,false,unknown,unknown,毛绒玩具",
+      ].join("\n"),
+    );
+    expect([...labels.values()].map((c) => categoryOf(c))).toEqual([
+      "small",
+      "large",
+      "hard",
+      "hard",
+      "notdog",
+    ]);
+    expect(
+      categoryOf({ file: "x.jpg", isDog: null, sizes: null, multiple: false }),
+    ).toBe("unlabelled");
+  });
+  it("live runs refuse the public demo photos", () => {
+    expect(() =>
+      parseVisionConfig([
+        "--mode",
+        "live",
+        "--model",
+        "gemini-3.8-flash",
+        "--token-limit",
+        "1000",
+        "--source",
+        "public",
+      ]),
+    ).toThrow("private");
+    expect(
+      parseVisionConfig([
+        "--mode",
+        "live",
+        "--model",
+        "gemini-3.8-flash",
+        "--token-limit",
+        "1000",
+        "--dry-run",
+      ]).source,
+    ).toBe("private");
+  });
+  it("privateOnly drops public cases from an older report and regroups by category", () => {
+    const attempt = (
+      caseId: string,
+      file: string,
+      source: "public" | "private",
+    ) => ({
+      caseId,
+      file,
+      source,
+      labelled: true,
+      status: "pass" as const,
+      raw: "{}",
+      draft: null,
+      checks: { schema: true },
+      failedChecks: [],
+      call: null,
+    });
+    const old = {
+      kind: "pawmeet-vision-eval",
+      simulated: false,
+      metrics: {},
+      cases: [
+        attempt("pub-dog-1", "dog-1.jpg", "public"),
+        attempt("prv-unknown", "zz-not-labelled.jpg", "private"),
+      ],
+    } as unknown as Parameters<typeof privateOnly>[0];
+    const scoped = privateOnly(old);
+    expect(scoped.cases.map((c) => c.file)).toEqual(["zz-not-labelled.jpg"]);
+    expect(scoped.cases[0].category).toBe("unlabelled");
+    expect(scoped.metrics.all.executed).toBe(1);
+    expect(Object.keys(scoped.metrics.byCategory)).toEqual(["unlabelled"]);
+  });
+});
+
 describe("vision scoring (programmatic)", () => {
   it("passes a correct dog; leaving uncertain fields empty is not a failure", () => {
     expect(run(dog, raw({})).failed).toEqual([]);
@@ -326,7 +410,7 @@ describe("vision runner", () => {
     expect(report.budget.stoppedBy).toBe("budget");
     expect(report.cases.at(-1)!.status).toBe("not_run");
     expect(report.budget.chargedAfter).toBeLessThanOrEqual(9000);
-    expect(report.metrics.public.executed).toBeGreaterThan(0);
+    expect(report.metrics.all.executed).toBeGreaterThan(0);
     const md = visionMarkdown(report);
     expect(md).toContain("模拟数据");
     expect(md).toContain("dog-1.jpg");

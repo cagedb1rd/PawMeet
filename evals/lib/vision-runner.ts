@@ -11,10 +11,13 @@ import {
 import { forbiddenClaim, photoFill } from "../../src/lib/ai/photo";
 import { inspectJpegDataUrl } from "../../src/lib/ai/jpeg";
 import {
+  CATEGORY_LABELS,
   VISION_CASE_VERSION,
   breedMatches,
+  categoryOf,
   loadVisionCases,
   type VisionCase,
+  type VisionCategory,
 } from "../cases/vision";
 import { VISION_TOKEN_CAPS, type EvalBudget, type Ticket } from "./budget";
 import { requestNotSent } from "./https-transport";
@@ -88,9 +91,16 @@ export function parseVisionConfig(argv: string[], root?: string): VisionConfig {
       raw === undefined ? null : int("--token-limit", raw, 1, 10_000_000);
   if (mode === "simulated" && values.has("--ledger"))
     throw Error("模拟运行只用内存账本");
-  const source = (values.get("--source") ?? "all") as VisionConfig["source"];
+  // Real evaluations use only the labelled private images (user decision, step 7); the public
+  // demo photos stay available for simulated runs and offline tests.
+  const source = (values.get("--source") ??
+    (mode === "live" ? "private" : "all")) as VisionConfig["source"];
   if (!["public", "private", "all"].includes(source))
     throw Error("--source 只能是 public / private / all");
+  if (mode === "live" && source !== "private")
+    throw Error(
+      "真实视觉评测只用 evals/fixtures/private-images 的带标签图片（--source private）",
+    );
   let cases = loadVisionCases(source, root);
   const spec = values.get("--cases");
   if (spec) {
@@ -202,6 +212,7 @@ export type VisionAttempt = {
   caseId: string;
   file: string;
   source: VisionCase["source"];
+  category?: VisionCategory;
   labelled: boolean;
   status: "pass" | "fail" | "error" | "not_run";
   reason?: string;
@@ -243,6 +254,7 @@ export async function runVisionEval(config: VisionConfig, deps: VisionDeps) {
       caseId: c.id,
       file: c.file,
       source: c.source,
+      category: categoryOf(c),
       labelled: c.isDog !== null,
       raw: null,
       draft: null,
@@ -489,15 +501,54 @@ export async function runVisionEval(config: VisionConfig, deps: VisionDeps) {
       unsentThisRun: after.unsent - before.unsent,
       stoppedBy: stopped,
     },
-    metrics: {
-      all: summarizeVision(attempts),
-      public: summarizeVision(attempts.filter((a) => a.source === "public")),
-      private: summarizeVision(attempts.filter((a) => a.source === "private")),
-    },
+    metrics: metricsByCategory(attempts),
     cases: attempts,
   };
 }
 export type VisionReport = Awaited<ReturnType<typeof runVisionEval>>;
+
+/** Overall plus one summary per image category present in the run. */
+export function metricsByCategory(attempts: VisionAttempt[]) {
+  const groups = (Object.keys(CATEGORY_LABELS) as VisionCategory[]).filter(
+    (k) => attempts.some((a) => a.category === k),
+  );
+  return {
+    all: summarizeVision(attempts),
+    byCategory: Object.fromEntries(
+      groups.map((k) => [
+        k,
+        summarizeVision(attempts.filter((a) => a.category === k)),
+      ]),
+    ) as Partial<Record<VisionCategory, ReturnType<typeof summarizeVision>>>,
+  };
+}
+
+/**
+ * Re-derives categories from the current labels and keeps only private images. Lets reports
+ * written before the category grouping (step 7 first runs, which also covered the 6 public
+ * photos) be re-summarised without new model calls.
+ */
+export function privateOnly(r: VisionReport): VisionReport {
+  const labels = new Map(
+    loadVisionCases("private").map((c) => [c.id, c] as const),
+  );
+  const cases = r.cases
+    .filter((a) => a.source === "private")
+    .map((a) => {
+      const c = labels.get(a.caseId);
+      return {
+        ...a,
+        category: a.category ?? (c ? categoryOf(c) : "unlabelled"),
+      };
+    });
+  const dropped = r.cases.length - cases.length;
+  return {
+    ...r,
+    cases,
+    metrics: metricsByCategory(cases),
+    ...(dropped ? { droppedPublic: dropped } : {}),
+  };
+}
 
 export function summarizeVision(attempts: VisionAttempt[]) {
   const run = attempts.filter((a) => a.status !== "not_run");
@@ -580,16 +631,23 @@ export function visionMarkdown(r: VisionReport) {
     "| 范围 | 已执行 / 用例 | 通过率 | Schema 合法 | 无违规判断 | 非狗拒识 | 体型不乱填 | 品种不乱填 | 品种填对 | 体型填对 | 总时长 p50 / p95 | 平均 / 总 Token | 网络 / 超时失败 |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     row("全部", r.metrics.all),
-    row("公开图片", r.metrics.public),
-    row("私有图片", r.metrics.private),
+    ...Object.entries(r.metrics.byCategory).map(([k, m]) =>
+      row(CATEGORY_LABELS[k as VisionCategory], m!),
+    ),
     "",
+    ...((r as { droppedPublic?: number }).droppedPublic
+      ? [
+          `说明：由同一次真实运行派生，按用户要求去掉 ${(r as { droppedPublic?: number }).droppedPublic} 张公开演示图片后只统计私有带标签图片；下面的额度行是整次运行（含公开图片的调用）。`,
+          "",
+        ]
+      : []),
     `额度：本次计入 ${r.budget.chargedThisRun}（实际 usage ${r.budget.knownThisRun}，保守计入 ${r.budget.conservativeThisRun}，未发出而释放 ${r.budget.unsentThisRun} 次），上游传输 ${r.budget.transmissionsThisRun} 次，账本累计 ${r.budget.chargedAfter} / 上限 ${r.budget.limit ?? "∞"}；停止原因：${r.budget.stoppedBy ?? "跑完"}。`,
     "",
-    "| 用例 | 来源 | 结果 | 状态 / 品种 / 体型（程序审核后） | 未通过检查 | 错误 | Token | 总时长 |",
+    "| 用例 | 类别 | 结果 | 状态 / 品种 / 体型（程序审核后） | 未通过检查 | 错误 | Token | 总时长 |",
     "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ...r.cases.map(
       (a) =>
-        `| ${a.file} | ${a.source === "public" ? "公开" : "私有"} | ${a.status}${a.reason ? `（${a.reason}）` : ""} | ${a.draft ? `${a.draft.status} / ${a.draft.breed.value ?? "—"}${a.draft.breed.accepted ? "✓" : ""} / ${a.draft.size.value}${a.draft.size.accepted ? "✓" : ""}` : "—"} | ${a.failedChecks.map((k) => CHECK_LABELS[k]).join("；") || "—"} | ${a.error ?? "—"} | ${a.call?.usage?.total_tokens ?? "—"} | ${a.call ? sec(a.call.totalMs) : "—"} |`,
+        `| ${a.file} | ${a.category ? CATEGORY_LABELS[a.category] : "—"}${a.source === "public" ? "（公开）" : ""} | ${a.status}${a.reason ? `（${a.reason}）` : ""} | ${a.draft ? `${a.draft.status} / ${a.draft.breed.value ?? "—"}${a.draft.breed.accepted ? "✓" : ""} / ${a.draft.size.value}${a.draft.size.accepted ? "✓" : ""}` : "—"} | ${a.failedChecks.map((k) => CHECK_LABELS[k]).join("；") || "—"} | ${a.error ?? "—"} | ${a.call?.usage?.total_tokens ?? "—"} | ${a.call ? sec(a.call.totalMs) : "—"} |`,
     ),
     "",
     "✓ = 通过置信度与内容规则、会填入表单。",
@@ -597,14 +655,18 @@ export function visionMarkdown(r: VisionReport) {
   return lines.join("\n") + "\n";
 }
 
+/** Cross-model table; callers pass privateOnly(...) reports for the real evaluation. */
 export function visionCompareMarkdown(reports: VisionReport[]) {
   const sim = new Set(reports.map((r) => r.simulated));
   if (sim.size > 1) throw Error("模拟与真实视觉报告不能合并对比");
   const head = `| 模型 | 范围 | 已执行 / 用例 | 通过率 | Schema 合法 | 无违规判断 | 非狗拒识 | 体型不乱填 | 品种不乱填 | 品种填对 | 体型填对 | 总时长 p50 / p95 | 平均 Token | 网络 / 超时失败 |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |`;
   const rows = reports.flatMap((r) =>
-    (["public", "private"] as const).map((k) => {
-      const m = r.metrics[k];
-      return `| ${r.model} | ${k === "public" ? "公开" : "私有"} | ${m.executed}/${m.cases} | ${pct(m.passRate)} | ${frac(m.checks.schema)} | ${frac(m.checks.no_claims_raw)} | ${frac(m.checks.not_dog_rejected)} | ${frac(m.checks.size_not_wrong)} | ${frac(m.checks.breed_not_wrong)} | ${frac(m.breedFilledCorrect)} | ${frac(m.sizeFilledCorrect)} | ${sec(m.latencyMs.totalP50)} / ${sec(m.latencyMs.totalP95)} | ${m.tokens.avg ?? "—"} | ${m.errors} |`;
+    [
+      ["all", r.metrics.all] as const,
+      ...Object.entries(r.metrics.byCategory),
+    ].map(([k, m]) => {
+      m = m!;
+      return `| ${r.model} | ${k === "all" ? "全部" : CATEGORY_LABELS[k as VisionCategory]} | ${m.executed}/${m.cases} | ${pct(m.passRate)} | ${frac(m.checks.schema)} | ${frac(m.checks.no_claims_raw)} | ${frac(m.checks.not_dog_rejected)} | ${frac(m.checks.size_not_wrong)} | ${frac(m.checks.breed_not_wrong)} | ${frac(m.breedFilledCorrect)} | ${frac(m.sizeFilledCorrect)} | ${sec(m.latencyMs.totalP50)} / ${sec(m.latencyMs.totalP95)} | ${m.tokens.avg ?? "—"} | ${m.errors} |`;
     }),
   );
   return `${[...sim][0] ? `${SIMULATED_BANNER}\n\n` : ""}${head}\n${rows.join("\n")}\n`;
