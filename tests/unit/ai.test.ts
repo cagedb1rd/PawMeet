@@ -385,7 +385,7 @@ describe("native continuation protocol", () => {
       2,
     );
   });
-  it("keeps tools available for errors and rejects a false successful status", async () => {
+  it("withholds tools after errors and rejects a false successful status", async () => {
     const mock = vi
       .fn<typeof callModel>()
       .mockResolvedValueOnce(assistant(null, [call("search_pets", emptyMatch)]))
@@ -419,7 +419,8 @@ describe("native continuation protocol", () => {
         mock,
       ),
     ).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
-    expect(mock.mock.calls[1][3]).toBeDefined();
+    expect(mock.mock.calls[1][3]).toBeUndefined();
+    expect(mock.mock.calls[1][5]).toMatchObject({ type: "object" });
   });
   it("rejects missing or fabricated tool result IDs", async () => {
     const mock = vi

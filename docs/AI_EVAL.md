@@ -1,6 +1,6 @@
 # AI 评测方案与记录
 
-状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-10，文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
+状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
 
 ## 1. 测试层次与 mock / 真实区分
 
@@ -158,9 +158,9 @@ npm run eval:models                                    # 百炼 GET /models，�
 | 我方兼容性 bug | lite CT04#2：HTTP 400 “Requests ending with a model turn are not supported” | 回答修复指令用 system 角色，Gemini 把它提到系统指令后请求以模型回合结尾；已修复（`34ede12`，单测覆盖），未重跑 |
 | 校验过严 / 用例期望有误 | 无 | 逐条核对原始响应，判定与期望一致 |
 
-**建议（均未实现、未消耗额度复测）**
+**建议（第 1 条已实现，其余未实现；均未消耗额度复测）**
 
-1. 工具失败后收尾：任一工具返回 error 时，下一轮不再携带 tools，强制模型如实报告（与“工具全部成功后下一轮不带 tools”同一机制），可直接消除 Gemini 的 CT07 循环；CT06 类无法核实的硬约束同理可在程序侧提前给出澄清。
+1. 工具失败后收尾：任一工具返回 error 时，下一轮不再携带 tools，强制模型如实报告（与“工具全部成功后下一轮不带 tools”同一机制），可直接消除 Gemini 的 CT07 循环；CT06 类无法核实的硬约束同理可在程序侧提前给出澄清。**已实现（validation-11）**：任一工具结果为 error 时下一轮不带工具、走严格总结，CT06 在 check_compatibility / create_activity_draft 返回 NEEDS_CLARIFICATION 后同样收尾；离线回归见 [companion 单测](../tests/unit/companion.test.ts)“Step 6b live eval regression”，去掉修复时共 9 项失败（含 ai 单测 1 项）。“程序侧在调用工具前提前澄清”未做。**未真实复测**，对 Gemini CT06 / CT07 的实际效果未验证。
 2. 同义词冗余：unmappedTerms 中的词若已被同义词表映射为排除条件（如“太活泼”→排除活泼），程序应忽略而不追加澄清。
 3. 评测预留：按 UTF-8 字节预留约为实际 8 倍，坏网络下 qwen3.8-flash 实际只用 7.6 万就到额。建议按字符数估算并区分“请求未发出”的连接失败，保持不低估原则并更新 DECISIONS D023。
 4. 网络：复测前用不耗 Token 的 curl 测 TLS 握手；从海外评测 Qwen 可考虑百炼国际站（新加坡）端点，但需国际站账号与型号可用性核实，属另一套授权。

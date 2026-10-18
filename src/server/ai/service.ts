@@ -191,12 +191,15 @@ export async function assistantStep(
     },
     ...(state.messages as Message[]),
   ];
+  // Any tool error ends the tool loop: the next round has no tools and must report it
+  // through the strict final answer instead of retrying until the round limit.
+  const toolFailed = !!input.results?.some((r) => r.result.kind === "error");
   const finalize =
-    (!state.workflow ||
-      state.workflow.stage === "search" ||
-      input.results?.some((r) => r.result.kind === "activity-draft")) &&
     !!input.results?.length &&
-    input.results.every((r) => r.result.kind !== "error");
+    (toolFailed ||
+      !state.workflow ||
+      state.workflow.stage === "search" ||
+      input.results.some((r) => r.result.kind === "activity-draft"));
   const result = await call(
     messages,
     session,
@@ -279,7 +282,7 @@ export async function assistantStep(
     );
     answer = checked.answer;
     if (
-      input.results?.some((r) => r.result.kind === "error") &&
+      toolFailed &&
       [
         "已查询，请查看实际结果卡片。",
         "已生成互助草稿，请编辑并确认，尚未发布。",

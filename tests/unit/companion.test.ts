@@ -934,6 +934,147 @@ describe("Step 6 live eval regression: terminal summary without tool results", (
   });
 });
 
+describe("Step 6b live eval regression: tool error ends the tool loop", () => {
+  const failed: ToolResult = {
+    kind: "error",
+    code: "TOOL_FAILED",
+    message: "注入故障",
+  };
+  const clarifyResult: ToolResult = {
+    kind: "error",
+    code: "NEEDS_CLARIFICATION",
+    message: "存在未核实的硬约束",
+  };
+  async function afterError(
+    stage: "search" | "organize",
+    calls: ToolCall[],
+    results: { toolCallId: string; result: ToolResult }[],
+    next: Awaited<ReturnType<typeof callModel>>,
+  ) {
+    const { intent } = setup(),
+      model = vi
+        .fn<typeof callModel>()
+        .mockResolvedValueOnce(response(calls))
+        .mockResolvedValue(next);
+    const first = await assistantStep(
+      { text: "约伴", workflow: { intent, stage } },
+      "s",
+      "r",
+      now,
+      model,
+    );
+    const step = assistantStep(
+      { continuation: first.data.continuation, results },
+      "s",
+      "r2",
+      now,
+      model,
+    );
+    return { model, step };
+  }
+  it("search stage sends no tools after an injected failure (Gemini CT07)", async () => {
+    const { model, step } = await afterError(
+      "search",
+      [tc("search_activities")],
+      [{ toolCallId: "search_activities", result: failed }],
+      answered("工具执行失败，请稍后重试。"),
+    );
+    const done = await step;
+    expect(done.data.toolCalls).toEqual([]);
+    expect(done.data.answer?.summary).toBe("工具执行失败，请稍后重试。");
+    expect(model).toHaveBeenCalledTimes(2);
+    expect(model.mock.calls[1][3]).toBeUndefined();
+    expect(model.mock.calls[1][5]).toMatchObject({ type: "object" });
+    const state = unseal(done.data.continuation) as { pending: unknown[] };
+    expect(state.pending).toEqual([]);
+  });
+  it("organize stage sends no tools after an unverifiable hard constraint (Gemini CT06)", async () => {
+    const { model, step } = await afterError(
+      "organize",
+      [tc("check_compatibility", { petIds: [] })],
+      [{ toolCallId: "check_compatibility", result: clarifyResult }],
+      answered("需要补充信息，请查看工具提示。"),
+    );
+    expect((await step).data.answer?.summary).toBe(
+      "需要补充信息，请查看工具提示。",
+    );
+    expect(model.mock.calls[1][3]).toBeUndefined();
+    expect(model.mock.calls[1][5]).toMatchObject({ type: "object" });
+  });
+  it("one failure among parallel organize tools still ends the tool loop", async () => {
+    const { model, step } = await afterError(
+      "organize",
+      [tc("search_pets"), tc("search_places", { query: "公园" })],
+      [
+        { toolCallId: "search_pets", result: { kind: "pets", rows: [] } },
+        { toolCallId: "search_places", result: failed },
+      ],
+      answered("工具执行失败，请稍后重试。"),
+    );
+    expect((await step).data.answer?.summary).toBe(
+      "工具执行失败，请稍后重试。",
+    );
+    expect(model.mock.calls[1][3]).toBeUndefined();
+  });
+  it("the general assistant also sends no tools after an error", async () => {
+    const model = vi
+      .fn<typeof callModel>()
+      .mockResolvedValueOnce(response([tc("search_pets")]))
+      .mockResolvedValue(answered("工具执行失败，请稍后重试。"));
+    const first = await assistantStep({ text: "查宠友" }, "s", "r", now, model);
+    const done = await assistantStep(
+      {
+        continuation: first.data.continuation,
+        results: [{ toolCallId: "search_pets", result: failed }],
+      },
+      "s",
+      "r",
+      now,
+      model,
+    );
+    expect(done.data.answer?.summary).toBe("工具执行失败，请稍后重试。");
+    expect(model.mock.calls[1][3]).toBeUndefined();
+  });
+  it("rejects a tool call returned in the no-tools round instead of sealing it", async () => {
+    const { step } = await afterError(
+      "search",
+      [tc("search_activities")],
+      [{ toolCallId: "search_activities", result: failed }],
+      response([tc("search_activities", {}, "retry")]),
+    );
+    await expect(step).rejects.toMatchObject({ code: "AI_TOOL_PROTOCOL" });
+  });
+  it.each([
+    "已查询，请查看实际结果卡片。",
+    "没有符合条件的结果，请调整条件。",
+    "已生成活动草稿，请编辑并确认，尚未创建。",
+  ])(
+    "still rejects the false status %s after a failure, including after repair",
+    async (summary) => {
+      const { model, step } = await afterError(
+        "organize",
+        [tc("search_places", { query: "公园" })],
+        [{ toolCallId: "search_places", result: failed }],
+        answered(summary),
+      );
+      await expect(step).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
+      // Repair (if any) also runs without tools.
+      for (const c of model.mock.calls.slice(1)) expect(c[3]).toBeUndefined();
+    },
+  );
+  it("rejects references to rows no tool returned after a failure", async () => {
+    const { model, step } = await afterError(
+      "search",
+      [tc("search_activities")],
+      [{ toolCallId: "search_activities", result: failed }],
+      answered("工具执行失败，请稍后重试。", ["act-invented"]),
+    );
+    await expect(step).rejects.toMatchObject({ code: "AI_INVALID_OUTPUT" });
+    expect(model).toHaveBeenCalledTimes(3);
+    expect(model.mock.calls[2][3]).toBeUndefined();
+  });
+});
+
 describe("Phase 4.5 first live extraction regression", () => {
   const text =
     "周六下午想带史宾格找3公里内性格温和的狗狗一起散步，不要大型犬，最好附近有草坪。";
