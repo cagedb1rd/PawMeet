@@ -1030,9 +1030,6 @@ textarea::placeholder {
   .page-title h1 {
     font-size: 26px;
   }
-  .page-title p {
-    margin-top: 6px;
-  }
   .ai-companion {
     padding: 16px;
     margin-bottom: 20px;
@@ -1110,9 +1107,7 @@ textarea::placeholder {
     line-height: 1.7;
   }
   .reference-panel p,
-  .filter-count,
-  .discover-filter legend,
-  .search-field input {
+  .discover-filter legend {
     font-size: 13px;
   }
   .pet-grid {
@@ -1148,10 +1143,6 @@ textarea::placeholder {
   }
   .activity-body h3 {
     font-size: 20px;
-  }
-  .activity-card .photo-label,
-  .photo-label {
-    font-size: 11px;
   }
   .activity-bottom > b {
     margin-left: auto;
