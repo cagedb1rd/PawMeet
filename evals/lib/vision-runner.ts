@@ -753,7 +753,7 @@ export function recheckMarkdown(reports: VisionReport[]) {
   const results = reports.map((r) => recheckRules(r));
   const rows = results.flatMap((x) => [
     `| ${x.model} | 运行时规则 | ${x.before.auto} | ${x.before.autoWrong} | ${x.before.auto ? `${(((x.before.auto - x.before.autoWrong) / x.before.auto) * 100).toFixed(1)}%` : "—"} | ${x.before.confirm}（低置信度，当时只显示“不确定”） | ${x.before.empty} |`,
-    `| ${x.model} | 建议 + 交叉校验 | ${x.after.auto} | ${x.after.autoWrong} | ${x.after.auto ? `${(((x.after.auto - x.after.autoWrong) / x.after.auto) * 100).toFixed(1)}%` : "—"} | ${x.after.confirm} | ${x.after.empty} |`,
+    `| ${x.model} | 建议 + 品种表校正体型 | ${x.after.auto} | ${x.after.autoWrong} | ${x.after.auto ? `${(((x.after.auto - x.after.autoWrong) / x.after.auto) * 100).toFixed(1)}%` : "—"} | ${x.after.confirm} | ${x.after.empty} |`,
   ]);
   const wrong = results
     .filter((x) => x.wrongAuto.length)

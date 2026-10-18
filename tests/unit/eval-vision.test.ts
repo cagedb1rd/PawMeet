@@ -342,7 +342,7 @@ describe("offline rules recheck (saved raw outputs, no model call)", () => {
     } as unknown as Parameters<typeof recheckRules>[0];
     const r = recheckRules(report, [beagle]);
     expect(r.before).toEqual({ auto: 2, autoWrong: 1, confirm: 0, empty: 0 });
-    expect(r.after).toEqual({ auto: 1, autoWrong: 0, confirm: 1, empty: 0 });
+    expect(r.after).toEqual({ auto: 2, autoWrong: 0, confirm: 0, empty: 0 });
     expect(r.wrongAuto).toEqual([]);
   });
 });
@@ -375,13 +375,14 @@ describe("vision scoring (programmatic)", () => {
         }),
       ).failed,
     ).toEqual(["size_not_wrong"]);
-    // A table breed (柯基: small / medium) with a contradicting size is not filled at all.
+    // A table breed (柯基: small / medium, typical small) with an out-of-range size is filled
+    // with the typical size instead, which matches this label.
     const crossChecked = run(
       dog,
       raw({ size: { value: "large", confidence: 0.9 } }),
     );
     expect(crossChecked.failed).toEqual([]);
-    expect(crossChecked.fill.size).toBeUndefined();
+    expect(crossChecked.fill.size).toBe("small");
     expect(
       run(dog, raw({ breed: { value: "柴犬", confidence: 0.9 } })).failed,
     ).toEqual(["breed_not_wrong"]);

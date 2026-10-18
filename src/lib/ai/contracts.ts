@@ -168,8 +168,8 @@ export const petPhotoDraftSchema = z.strictObject({
   dogConfidence: confidence,
   breed: reviewedField(nullable(30)),
   size: reviewedField(z.enum(sizes)).extend({
-    /** Breed table sizes when the model's size conflicts with the recognised breed. */
-    typical: z.array(z.enum(sizes)).max(3).optional(),
+    /** The model's own size when the breed table replaced it with the breed's typical size. */
+    modelValue: z.enum(sizes).optional(),
     hint: short(120).optional(),
   }),
   coatColor: reviewedField(nullable(20)),

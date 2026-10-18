@@ -335,12 +335,7 @@ describe("low-confidence suggestions and breed–size cross-check", () => {
     expect(draft.breed).toMatchObject({ accepted: false, suggested: true });
     expect(photoSuggestions(draft)).toEqual({
       breed: { value: "柴犬", confidence: 0.45 },
-      size: {
-        value: "medium",
-        confidence: 0.3,
-        options: ["medium"],
-        hint: undefined,
-      },
+      size: { value: "medium", confidence: 0.3 },
       appearance: "外观：赤色、卷尾",
     });
     expect(draft.messages.join()).toContain("AI 猜测“柴犬”，把握 45%");
@@ -375,7 +370,7 @@ describe("low-confidence suggestions and breed–size cross-check", () => {
     expect(photoSuggestions(draft).appearance).toBe("外观：浅金色");
     expect(JSON.stringify(draft)).not.toMatch(/幼犬|皮肤病|胆小/);
   });
-  it("a size that contradicts a confidently recognised breed turns into a choice with a hint", () => {
+  it("a size outside a confidently recognised breed's range is replaced by the table's typical size", () => {
     // The dog-07 case from the live run: beagle 0.95, size small 0.85.
     const draft = reviewPetPhoto(
       output({
@@ -383,28 +378,35 @@ describe("low-confidence suggestions and breed–size cross-check", () => {
         size: { value: "small", confidence: 0.85 },
       }),
     );
-    expect(photoFill(draft)).toMatchObject({
-      breed: "比格犬",
-      size: undefined,
-    });
+    expect(photoFill(draft)).toMatchObject({ breed: "比格犬", size: "medium" });
     expect(draft.size).toMatchObject({
-      accepted: false,
-      suggested: true,
-      typical: ["medium"],
-      hint: "AI 识别为比格（通常为中型），但判断为小型，请确认体型",
+      value: "medium",
+      accepted: true,
+      suggested: false,
+      modelValue: "small",
+      hint: "体型按比格的典型体型（中型）填入，AI 原判断为小型",
     });
-    expect(photoSuggestions(draft).size?.options).toEqual(["small", "medium"]);
-    expect(draft.messages.join()).toContain("通常为中型");
-    // A low-confidence size that conflicts gets the same hint and choices.
+    expect(photoSuggestions(draft).size).toBeUndefined();
+    expect(draft.messages.join()).toContain("AI 原判断为小型，请复核");
+    // A low-confidence conflicting size is replaced the same way.
     const low = reviewPetPhoto(
       output({
         breed: { value: "比格", confidence: 0.9 },
         size: { value: "large", confidence: 0.4 },
       }),
     );
-    expect(photoSuggestions(low).size?.options).toEqual(["large", "medium"]);
+    expect(photoFill(low).size).toBe("medium");
+    // Contested breed outside its range: 萨摩耶 allows medium / large, typical large.
+    const samoyed = reviewPetPhoto(
+      output({
+        breed: { value: "萨摩耶", confidence: 0.95 },
+        size: { value: "small", confidence: 0.85 },
+      }),
+    );
+    expect(photoFill(samoyed).size).toBe("large");
+    expect(samoyed.size.modelValue).toBe("small");
   });
-  it("no conflict: consistent size, multi-size breeds, breeds outside the table, unconfirmed breed", () => {
+  it("no replacement: consistent size, contested breed within range, breeds outside the table, low-confidence breed", () => {
     const fill = (
       breed: string,
       bc: number,
@@ -419,16 +421,32 @@ describe("low-confidence suggestions and breed–size cross-check", () => {
         ),
       ).size;
     expect(fill("比格", 0.95, "medium")).toBe("medium");
-    // 萨摩耶 is listed as medium or large, so the dog-11 answer is not a conflict.
+    // 萨摩耶 allows medium or large, so the model's medium (dog-11 answer) is kept.
     expect(fill("萨摩耶", 0.95, "medium")).toBe("medium");
+    expect(fill("柴犬", 0.95, "small")).toBe("small");
     expect(fill("田园犬", 0.95, "small")).toBe("small");
-    // Only a confirmed (≥0.6) breed is cross-checked.
+    // Only a confirmed (≥0.6) breed is cross-checked; a low-confidence breed never replaces.
     expect(fill("比格", 0.4, "small")).toBe("small");
+    const lowBreed = reviewPetPhoto(
+      output({
+        breed: { value: "比格", confidence: 0.4 },
+        size: { value: "small", confidence: 0.85 },
+      }),
+    );
+    expect(lowBreed.size.modelValue).toBeUndefined();
+    expect(photoSuggestions(lowBreed).breed).toEqual({
+      value: "比格",
+      confidence: 0.4,
+    });
   });
   it("synonyms and specific names resolve to the right table entry", () => {
     expect(typicalSizes("米格鲁")?.label).toBe("比格");
     expect(typicalSizes("比格犬")?.label).toBe("比格");
     expect(typicalSizes("泰迪")?.sizes).toEqual(["small"]);
+    expect(typicalSizes("萨摩耶犬")).toMatchObject({
+      typical: "large",
+      sizes: ["medium", "large"],
+    });
     expect(typicalSizes("法国斗牛犬")?.label).toBe("法国斗牛犬");
     expect(typicalSizes("英国斗牛犬")?.label).toBe("英国斗牛犬");
     expect(typicalSizes("金毛寻回犬")?.sizes).toEqual(["large"]);

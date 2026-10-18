@@ -63,8 +63,10 @@ export function reviewPetPhoto(raw: PetPhotoOutput): PetPhotoDraft {
   );
   const size = decide(raw.size.value !== "unknown", raw.size.confidence);
   const coat = decide(coatValue != null, raw.coatColor.confidence);
-  // Cross-check: a confidently recognised breed with a program-known typical size overrides an
-  // automatic size that contradicts it; the size becomes a choice for the owner.
+  // Cross-check: breed recognition is more reliable than size judgement, so for a confidently
+  // recognised breed in the program table, a size outside the breed's range (whatever its
+  // confidence) is replaced by the breed's typical size and filled automatically with a note.
+  // The owner still reviews and saves. Low-confidence or unknown breeds are never used.
   const known = breed.accepted ? typicalSizes(breedValue) : null;
   const conflict =
     !!known &&
@@ -80,10 +82,11 @@ export function reviewPetPhoto(raw: PetPhotoOutput): PetPhotoDraft {
       confidence: raw.size.confidence,
       ...(conflict
         ? {
-            accepted: false,
-            suggested: true,
-            typical: [...known!.sizes],
-            hint: `AI 识别为${known!.label}（通常为${known!.sizes.map(sizeLabel).join(" / ")}），但判断为${sizeLabel(raw.size.value)}，请确认体型`,
+            value: known!.typical,
+            accepted: true,
+            suggested: false,
+            modelValue: raw.size.value,
+            hint: `体型按${known!.label}的典型体型（${sizeLabel(known!.typical)}）填入，AI 原判断为${sizeLabel(raw.size.value)}`,
           }
         : size),
     },
@@ -116,7 +119,7 @@ export function reviewPetPhoto(raw: PetPhotoOutput): PetPhotoDraft {
       );
     else if (!breed.accepted)
       messages.push("品种不确定，请手动填写（可留空保存为“未知”）。");
-    if (conflict) messages.push(`${draft.size.hint}。`);
+    if (conflict) messages.push(`${draft.size.hint}，请复核。`);
     else if (size.suggested)
       messages.push(
         `体型不确定（AI 猜测${sizeLabel(raw.size.value)}，把握 ${pct(raw.size.confidence)}），未自动填入，可点“采用”或手动选择。`,
@@ -169,13 +172,6 @@ export function photoSuggestions(draft: PetPhotoDraft) {
         ? {
             value: draft.size.value,
             confidence: draft.size.confidence,
-            // Choices: the model's guess plus, on a breed conflict, the breed's typical sizes.
-            options: [
-              ...new Set([draft.size.value, ...(draft.size.typical ?? [])]),
-            ].filter((v) => v !== "unknown") as (
-              "small" | "medium" | "large"
-            )[],
-            hint: draft.size.hint,
           }
         : undefined,
     appearance: appearance.length

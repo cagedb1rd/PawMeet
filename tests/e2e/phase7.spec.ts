@@ -219,7 +219,9 @@ test("拍照建档：低置信度字段显示 AI 猜测，点“采用”才填�
   expect(pet).toMatchObject({ breed: "柴犬", size: "medium" });
 });
 
-test("拍照建档：品种与体型冲突时提示并让主人选择体型", async ({ page }) => {
+test("拍照建档：品种与体型冲突时按品种表的典型体型自动填入并显示提示", async ({
+  page,
+}) => {
   await page.route("**/api/ai/pet-photo", (route) =>
     route.fulfill({
       json: success(
@@ -231,40 +233,38 @@ test("拍照建档：品种与体型冲突时提示并让主人选择体型", as
             suggested: false,
           },
           size: {
-            value: "small",
+            value: "medium",
             confidence: 0.85,
-            accepted: false,
-            suggested: true,
-            typical: ["medium"],
-            hint: "AI 识别为比格（通常为中型），但判断为小型，请确认体型",
+            accepted: true,
+            suggested: false,
+            modelValue: "small",
+            hint: "体型按比格的典型体型（中型）填入，AI 原判断为小型",
           },
           coatColor: { value: "三色", confidence: 0.9, accepted: true },
           features: [],
-          messages: ["AI 识别为比格（通常为中型），但判断为小型，请确认体型。"],
+          messages: [
+            "体型按比格的典型体型（中型）填入，AI 原判断为小型，请复核。",
+          ],
         }),
       ),
     }),
   );
   await ready(page, "/me/pets/new");
   await upload(page);
+  const before = await saved(page);
   await recognize(page).click();
-  const suggestion = page.getByTestId("photo-suggest-size");
-  await expect(suggestion).toContainText(
-    "AI 识别为比格（通常为中型），但判断为小型，请确认体型",
+  await expect(page.getByTestId("photo-size-from-breed")).toContainText(
+    "体型按比格的典型体型（中型）填入，AI 原判断为小型",
   );
+  // No choice is asked for; the size is part of the automatic fill.
+  await expect(page.getByTestId("photo-suggest-size")).toHaveCount(0);
   await page.getByRole("button", { name: "填入表单（尚未保存）" }).click();
   await expect(page.getByLabel("品种", { exact: true })).toHaveValue("比格犬");
-  // The conflicting size is not filled until the owner chooses.
-  await expect(page.getByLabel("体型", { exact: true })).toHaveValue("unknown");
-  await expect(
-    page.getByRole("button", { name: "采用体型 小型" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "采用体型 中型" }).click();
-  await expect(page.getByLabel("体型", { exact: true })).toHaveValue("medium");
-  await expect(page.getByLabel("体型", { exact: true })).toHaveAttribute(
-    "data-ai-filled",
-    "true",
-  );
+  const size = page.getByLabel("体型", { exact: true });
+  await expect(size).toHaveValue("medium");
+  await expect(size).toHaveAttribute("data-ai-filled", "true");
+  // Still nothing saved until the owner confirms.
+  expect(await saved(page)).toBe(before);
   await page.getByLabel("宠物名字", { exact: true }).fill("比格豆豆");
   await page.getByRole("button", { name: "确认保存档案" }).click();
   await expect(page).toHaveURL("/me");

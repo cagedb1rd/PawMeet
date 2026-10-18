@@ -209,22 +209,25 @@ export function PhotoRecognize({
                   <dt>体型</dt>
                   <dd>
                     {draft.size.accepted ? (
-                      `${sizeLabel(draft.size.value)}（把握 ${percent(draft.size.confidence)}，将填入）`
+                      draft.size.hint ? (
+                        <span data-testid="photo-size-from-breed">
+                          {sizeLabel(draft.size.value)}（将填入）：
+                          {draft.size.hint}
+                        </span>
+                      ) : (
+                        `${sizeLabel(draft.size.value)}（把握 ${percent(draft.size.confidence)}，将填入）`
+                      )
                     ) : suggestions?.size ? (
                       <Suggestion
-                        text={
-                          suggestions.size.hint ??
-                          `AI 猜测：${sizeLabel(suggestions.size.value)}（把握 ${percent(suggestions.size.confidence)}），请确认`
-                        }
-                        choices={suggestions.size.options.map((v) => ({
-                          key: "size",
-                          label:
-                            suggestions.size!.options.length > 1
-                              ? `选${sizeLabel(v)}`
-                              : "采用",
-                          name: `采用体型 ${sizeLabel(v)}`,
-                          fill: { size: v },
-                        }))}
+                        text={`AI 猜测：${sizeLabel(suggestions.size.value)}（把握 ${percent(suggestions.size.confidence)}），请确认`}
+                        choices={[
+                          {
+                            key: "size",
+                            label: "采用",
+                            name: `采用体型 ${sizeLabel(suggestions.size.value)}`,
+                            fill: { size: suggestions.size.value },
+                          },
+                        ]}
                         {...adoptProps}
                       />
                     ) : (
