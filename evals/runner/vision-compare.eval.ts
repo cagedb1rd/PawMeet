@@ -1,6 +1,7 @@
 /** `npm run eval:ai -- vision-compare a.json b.json ...`: cross-model vision table. */
-import { it } from "vitest";
+import { it, vi } from "vitest";
 import { readFile, writeFile } from "node:fs/promises";
+vi.mock("server-only", () => ({}));
 import { visionCompareMarkdown, type VisionReport } from "../lib/vision-runner";
 
 it("vision compare", async () => {

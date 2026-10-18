@@ -1,0 +1,288 @@
+{
+  "kind": "pawmeet-vision-eval",
+  "schemaVersion": 1,
+  "simulated": false,
+  "dataLabel": "真实模型调用",
+  "runId": "2026-10-18T18-10-20-850Z",
+  "mode": "live",
+  "model": "gemini-3.5-flash-lite",
+  "promptVersion": "pawmeet-photo-1",
+  "caseVersion": "vision.v1",
+  "git": "40f6225398c15c0e94232bae8060041577b00484",
+  "gitDirty": false,
+  "startedAt": "2026-10-18T18:10:20.929Z",
+  "finishedAt": "2026-10-18T18:10:22.951Z",
+  "config": {
+    "source": "all",
+    "cases": [
+      "pub-dog-2"
+    ],
+    "tokenLimit": 50000,
+    "maxCalls": null,
+    "minIntervalMs": 1500,
+    "ledger": ".local/ai-eval/step7-vision-ledger.json"
+  },
+  "budget": {
+    "limit": 50000,
+    "chargedBefore": 0,
+    "chargedAfter": 1999,
+    "chargedThisRun": 1999,
+    "knownThisRun": 1999,
+    "conservativeThisRun": 0,
+    "transmissionsThisRun": 1,
+    "unsentThisRun": 0,
+    "stoppedBy": null
+  },
+  "metrics": {
+    "all": {
+      "cases": 1,
+      "executed": 1,
+      "notRun": 0,
+      "pass": 1,
+      "passRate": 1,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 1,
+          "total": 1
+        },
+        "no_claims_raw": {
+          "ok": 1,
+          "total": 1
+        },
+        "dog_recognized": {
+          "ok": 1,
+          "total": 1
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 1,
+          "total": 1
+        },
+        "breed_not_wrong": {
+          "ok": 1,
+          "total": 1
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 1,
+        "total": 1
+      },
+      "sizeFilledCorrect": {
+        "ok": 1,
+        "total": 1
+      },
+      "latencyMs": {
+        "totalP50": 2020,
+        "totalP95": 2020,
+        "firstByteP50": 1811
+      },
+      "tokens": {
+        "known": 1999,
+        "knownCalls": 1,
+        "avg": 1999,
+        "unknownCalls": 0,
+        "charged": 1999
+      },
+      "timeouts": 0
+    },
+    "public": {
+      "cases": 1,
+      "executed": 1,
+      "notRun": 0,
+      "pass": 1,
+      "passRate": 1,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 1,
+          "total": 1
+        },
+        "no_claims_raw": {
+          "ok": 1,
+          "total": 1
+        },
+        "dog_recognized": {
+          "ok": 1,
+          "total": 1
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 1,
+          "total": 1
+        },
+        "breed_not_wrong": {
+          "ok": 1,
+          "total": 1
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 1,
+        "total": 1
+      },
+      "sizeFilledCorrect": {
+        "ok": 1,
+        "total": 1
+      },
+      "latencyMs": {
+        "totalP50": 2020,
+        "totalP95": 2020,
+        "firstByteP50": 1811
+      },
+      "tokens": {
+        "known": 1999,
+        "knownCalls": 1,
+        "avg": 1999,
+        "unknownCalls": 0,
+        "charged": 1999
+      },
+      "timeouts": 0
+    },
+    "private": {
+      "cases": 0,
+      "executed": 0,
+      "notRun": 0,
+      "pass": 0,
+      "passRate": null,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 0,
+          "total": 0
+        },
+        "no_claims_raw": {
+          "ok": 0,
+          "total": 0
+        },
+        "dog_recognized": {
+          "ok": 0,
+          "total": 0
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 0,
+          "total": 0
+        },
+        "breed_not_wrong": {
+          "ok": 0,
+          "total": 0
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "sizeFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "latencyMs": {
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null
+      },
+      "tokens": {
+        "known": 0,
+        "knownCalls": 0,
+        "avg": null,
+        "unknownCalls": 0,
+        "charged": 0
+      },
+      "timeouts": 0
+    }
+  },
+  "cases": [
+    {
+      "caseId": "pub-dog-2",
+      "file": "dog-2.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.99\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"柯基\",\n    \"confidence\": 0.9\n  },\n  \"size\": {\n    \"value\": \"small\",\n    \"confidence\": 0.8\n  },\n  \"coatColor\": {\n    \"value\": \"黄白相间\",\n    \"confidence\": 0.95\n  },\n  \"features\": [\n    {\n      \"value\": \"立耳\",\n      \"confidence\": 0.98\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "柯基",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.98,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1811,
+        "totalMs": 2020,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1843,
+          "completion_tokens": 156,
+          "total_tokens": 1999
+        },
+        "reservedTokens": 7645,
+        "chargedTokens": 1999,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 341,
+        "height": 512,
+        "bytes": 18015
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    }
+  ]
+}

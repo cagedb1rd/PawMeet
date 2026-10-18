@@ -1,0 +1,1815 @@
+{
+  "kind": "pawmeet-vision-eval",
+  "schemaVersion": 1,
+  "simulated": false,
+  "dataLabel": "真实模型调用",
+  "runId": "2026-10-18T18-11-01-704Z",
+  "mode": "live",
+  "model": "gemini-3.5-flash-lite",
+  "promptVersion": "pawmeet-photo-2",
+  "caseVersion": "vision.v1",
+  "git": "b00fa72202cc16fbc860c185d3781c1a014f25bc",
+  "gitDirty": true,
+  "startedAt": "2026-10-18T18:11:01.786Z",
+  "finishedAt": "2026-10-18T18:11:44.454Z",
+  "config": {
+    "source": "all",
+    "cases": [
+      "pub-dog-1",
+      "pub-dog-2",
+      "pub-dog-3",
+      "pub-dog-4",
+      "pub-dog-5",
+      "pub-dog-6",
+      "prv-notdog-01",
+      "prv-notdog-02",
+      "prv-hard-01",
+      "prv-hard-02",
+      "prv-dog-01",
+      "prv-dog-02",
+      "prv-dog-03",
+      "prv-dog-04",
+      "prv-dog-05",
+      "prv-dog-06",
+      "prv-dog-07",
+      "prv-dog-08",
+      "prv-dog-09",
+      "prv-dog-10",
+      "prv-dog-11",
+      "prv-dog-12"
+    ],
+    "tokenLimit": 50000,
+    "maxCalls": null,
+    "minIntervalMs": 1500,
+    "ledger": ".local/ai-eval/step7-vision-ledger.json"
+  },
+  "budget": {
+    "limit": 50000,
+    "chargedBefore": 1999,
+    "chargedAfter": 42175,
+    "chargedThisRun": 40176,
+    "knownThisRun": 40176,
+    "conservativeThisRun": 0,
+    "transmissionsThisRun": 20,
+    "unsentThisRun": 0,
+    "stoppedBy": "budget"
+  },
+  "metrics": {
+    "all": {
+      "cases": 22,
+      "executed": 20,
+      "notRun": 2,
+      "pass": 19,
+      "passRate": 0.95,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 20,
+          "total": 20
+        },
+        "no_claims_raw": {
+          "ok": 20,
+          "total": 20
+        },
+        "dog_recognized": {
+          "ok": 15,
+          "total": 15
+        },
+        "not_dog_rejected": {
+          "ok": 2,
+          "total": 2
+        },
+        "multiple_nothing_filled": {
+          "ok": 2,
+          "total": 2
+        },
+        "size_not_wrong": {
+          "ok": 19,
+          "total": 20
+        },
+        "breed_not_wrong": {
+          "ok": 20,
+          "total": 20
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 15,
+        "total": 15
+      },
+      "sizeFilledCorrect": {
+        "ok": 14,
+        "total": 15
+      },
+      "latencyMs": {
+        "totalP50": 2071,
+        "totalP95": 2638,
+        "firstByteP50": 1778
+      },
+      "tokens": {
+        "known": 40176,
+        "knownCalls": 20,
+        "avg": 2009,
+        "unknownCalls": 0,
+        "charged": 40176
+      },
+      "timeouts": 0
+    },
+    "public": {
+      "cases": 6,
+      "executed": 6,
+      "notRun": 0,
+      "pass": 6,
+      "passRate": 1,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 6,
+          "total": 6
+        },
+        "no_claims_raw": {
+          "ok": 6,
+          "total": 6
+        },
+        "dog_recognized": {
+          "ok": 5,
+          "total": 5
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 1,
+          "total": 1
+        },
+        "size_not_wrong": {
+          "ok": 6,
+          "total": 6
+        },
+        "breed_not_wrong": {
+          "ok": 6,
+          "total": 6
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 5,
+        "total": 5
+      },
+      "sizeFilledCorrect": {
+        "ok": 5,
+        "total": 5
+      },
+      "latencyMs": {
+        "totalP50": 2039,
+        "totalP95": 2135,
+        "firstByteP50": 1672
+      },
+      "tokens": {
+        "known": 12174,
+        "knownCalls": 6,
+        "avg": 2029,
+        "unknownCalls": 0,
+        "charged": 12174
+      },
+      "timeouts": 0
+    },
+    "private": {
+      "cases": 16,
+      "executed": 14,
+      "notRun": 2,
+      "pass": 13,
+      "passRate": 0.9285714285714286,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 14,
+          "total": 14
+        },
+        "no_claims_raw": {
+          "ok": 14,
+          "total": 14
+        },
+        "dog_recognized": {
+          "ok": 10,
+          "total": 10
+        },
+        "not_dog_rejected": {
+          "ok": 2,
+          "total": 2
+        },
+        "multiple_nothing_filled": {
+          "ok": 1,
+          "total": 1
+        },
+        "size_not_wrong": {
+          "ok": 13,
+          "total": 14
+        },
+        "breed_not_wrong": {
+          "ok": 14,
+          "total": 14
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 10,
+        "total": 10
+      },
+      "sizeFilledCorrect": {
+        "ok": 9,
+        "total": 10
+      },
+      "latencyMs": {
+        "totalP50": 2082,
+        "totalP95": 2822,
+        "firstByteP50": 1871
+      },
+      "tokens": {
+        "known": 28002,
+        "knownCalls": 14,
+        "avg": 2000,
+        "unknownCalls": 0,
+        "charged": 28002
+      },
+      "timeouts": 0
+    }
+  },
+  "cases": [
+    {
+      "caseId": "pub-dog-1",
+      "file": "dog-1.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":false,\"breed\":{\"value\":\"金毛寻回犬\",\"confidence\":0.85},\"size\":{\"value\":\"large\",\"confidence\":0.8},\"coatColor\":{\"value\":\"浅金色\",\"confidence\":0.9},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"嘴含花朵\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "金毛寻回犬",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "size": {
+          "value": "large",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "浅金色",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "嘴含花朵",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1778,
+        "totalMs": 2039,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1902,
+          "completion_tokens": 89,
+          "total_tokens": 1991
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1991,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 319,
+        "height": 512,
+        "bytes": 37578
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-2",
+      "file": "dog-2.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"柯基\",\n    \"confidence\": 0.95\n  },\n  \"size\": {\n    \"value\": \"small\",\n    \"confidence\": 0.85\n  },\n  \"coatColor\": {\n    \"value\": \"黄白相间\",\n    \"confidence\": 0.95\n  },\n  \"features\": [\n    {\n      \"value\": \"立耳\",\n      \"confidence\": 0.99\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "柯基",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.99,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1529,
+        "totalMs": 1662,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1917,
+          "completion_tokens": 158,
+          "total_tokens": 2075
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2075,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 341,
+        "height": 512,
+        "bytes": 18015
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-3",
+      "file": "dog-3.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"法斗\",\"confidence\":0.95},\"size\":{\"value\":\"small\",\"confidence\":0.85},\"coatColor\":{\"value\":\"驼色\",\"confidence\":0.9},\"features\":[{\"value\":\"立耳\",\"confidence\":0.98},{\"value\":\"短鼻\",\"confidence\":0.95},{\"value\":\"短尾巴\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "法斗",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "驼色",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.98,
+            "accepted": true
+          },
+          {
+            "value": "短鼻",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "短尾巴",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1672,
+        "totalMs": 1929,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1883,
+          "completion_tokens": 98,
+          "total_tokens": 1981
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1981,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 410,
+        "height": 512,
+        "bytes": 22338
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-4",
+      "file": "dog-4.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"比格犬\",\n    \"confidence\": 0.9\n  },\n  \"size\": {\n    \"value\": \"small\",\n    \"confidence\": 0.8\n  },\n  \"coatColor\": {\n    \"value\": \"黄白相间\",\n    \"confidence\": 0.9\n  },\n  \"features\": [\n    {\n      \"value\": \"垂耳\",\n      \"confidence\": 0.95\n    },\n    {\n      \"value\": \"黑鼻头\",\n      \"confidence\": 0.95\n    },\n    {\n      \"value\": \"吐舌头\",\n      \"confidence\": 0.9\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "比格犬",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "黑鼻头",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "吐舌头",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1635,
+        "totalMs": 2071,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 207,
+          "total_tokens": 2081
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2081,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 27651
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-5",
+      "file": "dog-5.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":true,\"breed\":{\"value\":\"柯基\",\"confidence\":0.9},\"size\":{\"value\":\"small\",\"confidence\":0.8},\"coatColor\":{\"value\":\"黄白相间\",\"confidence\":0.95},\"features\":[{\"value\":\"立耳\",\"confidence\":0.99},{\"value\":\"短腿\",\"confidence\":0.8}]}",
+      "draft": {
+        "status": "multiple",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "柯基",
+          "confidence": 0.9,
+          "accepted": false
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.8,
+          "accepted": false
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.95,
+          "accepted": false
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.99,
+            "accepted": false
+          },
+          {
+            "value": "短腿",
+            "confidence": 0.8,
+            "accepted": false
+          }
+        ],
+        "removed": 0,
+        "messages": [
+          "照片里有多只狗，无法确定是哪一只，没有填入任何字段；请换单只照片或手动填写。"
+        ]
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "multiple_nothing_filled": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1777,
+        "totalMs": 2045,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1890,
+          "completion_tokens": 86,
+          "total_tokens": 1976
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1976,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 343,
+        "bytes": 43068
+      },
+      "coverage": {
+        "breedLabelled": false,
+        "breedCorrect": false,
+        "sizeLabelled": false,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "pub-dog-6",
+      "file": "dog-6.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"拉布拉多\",\n    \"confidence\": 0.85\n  },\n  \"size\": {\n    \"value\": \"large\",\n    \"confidence\": 0.8\n  },\n  \"coatColor\": {\n    \"value\": \"巧克力色\",\n    \"confidence\": 0.95\n  },\n  \"features\": [\n    {\n      \"value\": \"垂耳\",\n      \"confidence\": 0.9\n    },\n    {\n      \"value\": \"短毛\",\n      \"confidence\": 0.9\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "拉布拉多",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "size": {
+          "value": "large",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "巧克力色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.9,
+            "accepted": true
+          },
+          {
+            "value": "短毛",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 2024,
+        "totalMs": 2135,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1890,
+          "completion_tokens": 180,
+          "total_tokens": 2070
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2070,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 342,
+        "bytes": 28842
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-notdog-01",
+      "file": "notdog-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"no\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":null,\"confidence\":0.1},\"size\":{\"value\":\"unknown\",\"confidence\":0.1},\"coatColor\":{\"value\":null,\"confidence\":0.1},\"features\":[]}",
+      "draft": {
+        "status": "not_dog",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": null,
+          "confidence": 0.1,
+          "accepted": false
+        },
+        "size": {
+          "value": "unknown",
+          "confidence": 0.1,
+          "accepted": false
+        },
+        "coatColor": {
+          "value": null,
+          "confidence": 0.1,
+          "accepted": false
+        },
+        "features": [],
+        "removed": 0,
+        "messages": [
+          "无法识别：照片里看起来不是狗，没有填入任何字段，请换一张或手动填写。"
+        ]
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "not_dog_rejected": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1871,
+        "totalMs": 2082,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 59,
+          "total_tokens": 1933
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1933,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 39417
+      },
+      "coverage": {
+        "breedLabelled": false,
+        "breedCorrect": false,
+        "sizeLabelled": false,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "prv-notdog-02",
+      "file": "notdog-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"no\",\"confidence\":1},\"multipleDogs\":false,\"breed\":{\"value\":null,\"confidence\":1},\"size\":{\"value\":\"unknown\",\"confidence\":1},\"coatColor\":{\"value\":null,\"confidence\":1},\"features\":[]}",
+      "draft": {
+        "status": "not_dog",
+        "dogConfidence": 1,
+        "breed": {
+          "value": null,
+          "confidence": 1,
+          "accepted": false
+        },
+        "size": {
+          "value": "unknown",
+          "confidence": 1,
+          "accepted": false
+        },
+        "coatColor": {
+          "value": null,
+          "confidence": 1,
+          "accepted": false
+        },
+        "features": [],
+        "removed": 0,
+        "messages": [
+          "无法识别：照片里看起来不是狗，没有填入任何字段，请换一张或手动填写。"
+        ]
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "not_dog_rejected": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1914,
+        "totalMs": 2055,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1898,
+          "completion_tokens": 50,
+          "total_tokens": 1948
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1948,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 493,
+        "height": 512,
+        "bytes": 38283
+      },
+      "coverage": {
+        "breedLabelled": false,
+        "breedCorrect": false,
+        "sizeLabelled": false,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "prv-hard-01",
+      "file": "hard-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":true,\"breed\":{\"value\":\"法斗\",\"confidence\":0.9},\"size\":{\"value\":\"small\",\"confidence\":0.85},\"coatColor\":{\"value\":\"黑白相间\",\"confidence\":0.7},\"features\":[{\"value\":\"立耳\",\"confidence\":0.95},{\"value\":\"短鼻\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "multiple",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "法斗",
+          "confidence": 0.9,
+          "accepted": false
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.85,
+          "accepted": false
+        },
+        "coatColor": {
+          "value": "黑白相间",
+          "confidence": 0.7,
+          "accepted": false
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.95,
+            "accepted": false
+          },
+          {
+            "value": "短鼻",
+            "confidence": 0.9,
+            "accepted": false
+          }
+        ],
+        "removed": 0,
+        "messages": [
+          "照片里有多只狗，无法确定是哪一只，没有填入任何字段；请换单只照片或手动填写。"
+        ]
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "multiple_nothing_filled": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1760,
+        "totalMs": 2033,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1910,
+          "completion_tokens": 86,
+          "total_tokens": 1996
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1996,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 288,
+        "bytes": 41124
+      },
+      "coverage": {
+        "breedLabelled": false,
+        "breedCorrect": false,
+        "sizeLabelled": false,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "prv-hard-02",
+      "file": "hard-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.9},\"multipleDogs\":false,\"breed\":{\"value\":null,\"confidence\":0.1},\"size\":{\"value\":\"unknown\",\"confidence\":0.1},\"coatColor\":{\"value\":\"棕白相间\",\"confidence\":0.7},\"features\":[{\"value\":\"黑鼻头\",\"confidence\":0.95}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.9,
+        "breed": {
+          "value": null,
+          "confidence": 0.1,
+          "accepted": false
+        },
+        "size": {
+          "value": "unknown",
+          "confidence": 0.1,
+          "accepted": false
+        },
+        "coatColor": {
+          "value": "棕白相间",
+          "confidence": 0.7,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "黑鼻头",
+            "confidence": 0.95,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": [
+          "品种不确定，请手动填写（可留空保存为“未知”）。",
+          "体型不确定，请手动选择。"
+        ]
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1908,
+        "totalMs": 2113,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1895,
+          "completion_tokens": 73,
+          "total_tokens": 1968
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1968,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 456,
+        "height": 512,
+        "bytes": 93084
+      },
+      "coverage": {
+        "breedLabelled": false,
+        "breedCorrect": false,
+        "sizeLabelled": false,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "prv-dog-01",
+      "file": "dog-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":false,\"breed\":{\"value\":\"比熊\",\"confidence\":0.85},\"size\":{\"value\":\"small\",\"confidence\":0.9},\"coatColor\":{\"value\":\"白色\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"卷毛\",\"confidence\":0.9},{\"value\":\"吐舌头\",\"confidence\":0.95}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "比熊",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "白色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "卷毛",
+            "confidence": 0.9,
+            "accepted": true
+          },
+          {
+            "value": "吐舌头",
+            "confidence": 0.95,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1982,
+        "totalMs": 2230,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 97,
+          "total_tokens": 1971
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1971,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 384,
+        "height": 512,
+        "bytes": 40122
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-02",
+      "file": "dog-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":false,\"breed\":{\"value\":\"贵宾犬\",\"confidence\":0.75},\"size\":{\"value\":\"small\",\"confidence\":0.8},\"coatColor\":{\"value\":\"杏色\",\"confidence\":0.85},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"卷毛\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "贵宾犬",
+          "confidence": 0.75,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "杏色",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "卷毛",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1994,
+        "totalMs": 2272,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1890,
+          "completion_tokens": 86,
+          "total_tokens": 1976
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1976,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 335,
+        "height": 277,
+        "bytes": 18258
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-03",
+      "file": "dog-03.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"法斗\",\n    \"confidence\": 0.9\n  },\n  \"size\": {\n    \"value\": \"small\",\n    \"confidence\": 0.85\n  },\n  \"coatColor\": {\n    \"value\": \"黄白相间\",\n    \"confidence\": 0.9\n  },\n  \"features\": [\n    {\n      \"value\": \"立耳\",\n      \"confidence\": 0.98\n    },\n    {\n      \"value\": \"短尾\",\n      \"confidence\": 0.7\n    },\n    {\n      \"value\": \"黑脸\",\n      \"confidence\": 0.9\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "法斗",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.98,
+            "accepted": true
+          },
+          {
+            "value": "短尾",
+            "confidence": 0.7,
+            "accepted": true
+          },
+          {
+            "value": "黑脸",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1663,
+        "totalMs": 2082,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1902,
+          "completion_tokens": 204,
+          "total_tokens": 2106
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2106,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 372,
+        "height": 512,
+        "bytes": 37818
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-04",
+      "file": "dog-04.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"巴哥\",\"confidence\":0.95},\"size\":{\"value\":\"small\",\"confidence\":0.9},\"coatColor\":{\"value\":\"浅黄褐色\",\"confidence\":0.85},\"features\":[{\"value\":\"短鼻\",\"confidence\":0.95},{\"value\":\"卷尾\",\"confidence\":0.95},{\"value\":\"黑面\",\"confidence\":0.95},{\"value\":\"垂耳\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "巴哥",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "浅黄褐色",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "短鼻",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "卷尾",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "黑面",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "垂耳",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 2164,
+        "totalMs": 2433,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1898,
+          "completion_tokens": 110,
+          "total_tokens": 2008
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2008,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 480,
+        "bytes": 53478
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-05",
+      "file": "dog-05.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"柴犬\",\n    \"confidence\": 0.92\n  },\n  \"size\": {\n    \"value\": \"medium\",\n    \"confidence\": 0.8\n  },\n  \"coatColor\": {\n    \"value\": \"赤色\",\n    \"confidence\": 0.9\n  },\n  \"features\": [\n    {\n      \"value\": \"立耳\",\n      \"confidence\": 0.95\n    },\n    {\n      \"value\": \"卷尾\",\n      \"confidence\": 0.85\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "柴犬",
+          "confidence": 0.92,
+          "accepted": true
+        },
+        "size": {
+          "value": "medium",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "赤色",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "立耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "卷尾",
+            "confidence": 0.85,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 2229,
+        "totalMs": 2638,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1890,
+          "completion_tokens": 179,
+          "total_tokens": 2069
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2069,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 435,
+        "height": 512,
+        "bytes": 38226
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-06",
+      "file": "dog-06.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"边境牧羊犬\",\"confidence\":0.95},\"size\":{\"value\":\"medium\",\"confidence\":0.9},\"coatColor\":{\"value\":\"黑白相间\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.9},{\"value\":\"中长毛\",\"confidence\":0.85},{\"value\":\"长尾巴\",\"confidence\":0.8}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "边境牧羊犬",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "medium",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黑白相间",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.9,
+            "accepted": true
+          },
+          {
+            "value": "中长毛",
+            "confidence": 0.85,
+            "accepted": true
+          },
+          {
+            "value": "长尾巴",
+            "confidence": 0.8,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1794,
+        "totalMs": 2070,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1910,
+          "completion_tokens": 103,
+          "total_tokens": 2013
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2013,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 288,
+        "bytes": 45930
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-07",
+      "file": "dog-07.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"比格犬\",\"confidence\":0.9},\"size\":{\"value\":\"small\",\"confidence\":0.8},\"coatColor\":{\"value\":\"三色\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"短毛\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "比格犬",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "三色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "短毛",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": false,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [
+        "size_not_wrong"
+      ],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1670,
+        "totalMs": 1913,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1876,
+          "completion_tokens": 85,
+          "total_tokens": 1961
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1961,
+        "errorCode": null
+      },
+      "status": "fail",
+      "thumbnail": {
+        "width": 512,
+        "height": 330,
+        "bytes": 61686
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": false
+      }
+    },
+    {
+      "caseId": "prv-dog-08",
+      "file": "dog-08.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"可卡犬\",\"confidence\":0.9},\"size\":{\"value\":\"medium\",\"confidence\":0.8},\"coatColor\":{\"value\":\"金色\",\"confidence\":0.95},\"features\":[{\"value\":\"长耳\",\"confidence\":0.95},{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"吐舌头\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "可卡犬",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "medium",
+          "confidence": 0.8,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "金色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "长耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "吐舌头",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 2557,
+        "totalMs": 2822,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1898,
+          "completion_tokens": 98,
+          "total_tokens": 1996
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 1996,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 471,
+        "bytes": 54066
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-09",
+      "file": "dog-09.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\n  \"dog\": {\n    \"value\": \"yes\",\n    \"confidence\": 0.98\n  },\n  \"multipleDogs\": false,\n  \"breed\": {\n    \"value\": \"金毛\",\n    \"confidence\": 0.95\n  },\n  \"size\": {\n    \"value\": \"large\",\n    \"confidence\": 0.9\n  },\n  \"coatColor\": {\n    \"value\": \"金黄色\",\n    \"confidence\": 0.95\n  },\n  \"features\": [\n    {\n      \"value\": \"垂耳\",\n      \"confidence\": 0.95\n    },\n    {\n      \"value\": \"长毛\",\n      \"confidence\": 0.9\n    }\n  ]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "金毛",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "large",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "金黄色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "长毛",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1772,
+        "totalMs": 2184,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1874,
+          "completion_tokens": 179,
+          "total_tokens": 2053
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2053,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 80460
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-10",
+      "file": "dog-10.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":false,\"breed\":{\"value\":\"拉布拉多\",\"confidence\":0.9},\"size\":{\"value\":\"large\",\"confidence\":0.85},\"coatColor\":{\"value\":\"浅黄色\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.95},{\"value\":\"短毛\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "拉布拉多",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "size": {
+          "value": "large",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "浅黄色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.95,
+            "accepted": true
+          },
+          {
+            "value": "短毛",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 1586,
+        "totalMs": 1840,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1917,
+          "completion_tokens": 87,
+          "total_tokens": 2004
+        },
+        "reservedTokens": 7914,
+        "chargedTokens": 2004,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 340,
+        "bytes": 32172
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-dog-11",
+      "file": "dog-11.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 0,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": null,
+        "totalMs": 1,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 0,
+        "chargedTokens": 0,
+        "errorCode": "AI_EVAL_BUDGET"
+      },
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-12",
+      "file": "dog-12.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    }
+  ]
+}

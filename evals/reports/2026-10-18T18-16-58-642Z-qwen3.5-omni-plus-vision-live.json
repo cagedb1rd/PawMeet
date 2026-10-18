@@ -1,0 +1,246 @@
+{
+  "kind": "pawmeet-vision-eval",
+  "schemaVersion": 1,
+  "simulated": false,
+  "dataLabel": "真实模型调用",
+  "runId": "2026-10-18T18-16-58-642Z",
+  "mode": "live",
+  "model": "qwen3.5-omni-plus",
+  "promptVersion": "pawmeet-photo-2",
+  "caseVersion": "vision.v1",
+  "git": "b00fa72202cc16fbc860c185d3781c1a014f25bc",
+  "gitDirty": true,
+  "startedAt": "2026-10-18T18:16:58.720Z",
+  "finishedAt": "2026-10-18T18:18:19.231Z",
+  "config": {
+    "source": "all",
+    "cases": [
+      "pub-dog-4"
+    ],
+    "tokenLimit": 50000,
+    "maxCalls": null,
+    "minIntervalMs": 1500,
+    "ledger": ".local/ai-eval/step7-vision-ledger.json"
+  },
+  "budget": {
+    "limit": 50000,
+    "chargedBefore": 0,
+    "chargedAfter": 9100,
+    "chargedThisRun": 9100,
+    "knownThisRun": 0,
+    "conservativeThisRun": 9100,
+    "transmissionsThisRun": 2,
+    "unsentThisRun": 0,
+    "stoppedBy": null
+  },
+  "metrics": {
+    "all": {
+      "cases": 1,
+      "executed": 1,
+      "notRun": 0,
+      "pass": 0,
+      "passRate": 0,
+      "errors": 1,
+      "checks": {
+        "schema": {
+          "ok": 0,
+          "total": 0
+        },
+        "no_claims_raw": {
+          "ok": 0,
+          "total": 0
+        },
+        "dog_recognized": {
+          "ok": 0,
+          "total": 0
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 0,
+          "total": 0
+        },
+        "breed_not_wrong": {
+          "ok": 0,
+          "total": 0
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "sizeFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "latencyMs": {
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null
+      },
+      "tokens": {
+        "known": 0,
+        "knownCalls": 0,
+        "avg": null,
+        "unknownCalls": 1,
+        "charged": 9100
+      },
+      "timeouts": 1
+    },
+    "public": {
+      "cases": 1,
+      "executed": 1,
+      "notRun": 0,
+      "pass": 0,
+      "passRate": 0,
+      "errors": 1,
+      "checks": {
+        "schema": {
+          "ok": 0,
+          "total": 0
+        },
+        "no_claims_raw": {
+          "ok": 0,
+          "total": 0
+        },
+        "dog_recognized": {
+          "ok": 0,
+          "total": 0
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 0,
+          "total": 0
+        },
+        "breed_not_wrong": {
+          "ok": 0,
+          "total": 0
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "sizeFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "latencyMs": {
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null
+      },
+      "tokens": {
+        "known": 0,
+        "knownCalls": 0,
+        "avg": null,
+        "unknownCalls": 1,
+        "charged": 9100
+      },
+      "timeouts": 1
+    },
+    "private": {
+      "cases": 0,
+      "executed": 0,
+      "notRun": 0,
+      "pass": 0,
+      "passRate": null,
+      "errors": 0,
+      "checks": {
+        "schema": {
+          "ok": 0,
+          "total": 0
+        },
+        "no_claims_raw": {
+          "ok": 0,
+          "total": 0
+        },
+        "dog_recognized": {
+          "ok": 0,
+          "total": 0
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 0,
+          "total": 0
+        },
+        "breed_not_wrong": {
+          "ok": 0,
+          "total": 0
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "sizeFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "latencyMs": {
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null
+      },
+      "tokens": {
+        "known": 0,
+        "knownCalls": 0,
+        "avg": null,
+        "unknownCalls": 0,
+        "charged": 0
+      },
+      "timeouts": 0
+    }
+  },
+  "cases": [
+    {
+      "caseId": "pub-dog-4",
+      "file": "dog-4.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 2,
+        "firstByteMs": null,
+        "totalMs": 80510,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 9100,
+        "chargedTokens": 9100,
+        "errorCode": "AI_UPSTREAM_TIMEOUT"
+      },
+      "status": "error",
+      "error": "AI_UPSTREAM_TIMEOUT:模型长时间未开始响应，请手动重试",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 27651
+      }
+    }
+  ]
+}

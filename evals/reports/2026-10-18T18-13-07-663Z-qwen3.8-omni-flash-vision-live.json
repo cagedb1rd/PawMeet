@@ -1,0 +1,840 @@
+{
+  "kind": "pawmeet-vision-eval",
+  "schemaVersion": 1,
+  "simulated": false,
+  "dataLabel": "真实模型调用",
+  "runId": "2026-10-18T18-13-07-663Z",
+  "mode": "live",
+  "model": "qwen3.8-omni-flash",
+  "promptVersion": "pawmeet-photo-2",
+  "caseVersion": "vision.v1",
+  "git": "b00fa72202cc16fbc860c185d3781c1a014f25bc",
+  "gitDirty": true,
+  "startedAt": "2026-10-18T18:13:07.754Z",
+  "finishedAt": "2026-10-18T18:16:22.710Z",
+  "config": {
+    "source": "all",
+    "cases": [
+      "pub-dog-1",
+      "pub-dog-2",
+      "pub-dog-3",
+      "pub-dog-4",
+      "pub-dog-5",
+      "pub-dog-6",
+      "prv-notdog-01",
+      "prv-notdog-02",
+      "prv-hard-01",
+      "prv-hard-02",
+      "prv-dog-01",
+      "prv-dog-02",
+      "prv-dog-03",
+      "prv-dog-04",
+      "prv-dog-05",
+      "prv-dog-06",
+      "prv-dog-07",
+      "prv-dog-08",
+      "prv-dog-09",
+      "prv-dog-10",
+      "prv-dog-11",
+      "prv-dog-12"
+    ],
+    "tokenLimit": 50000,
+    "maxCalls": null,
+    "minIntervalMs": 1500,
+    "ledger": ".local/ai-eval/step7-vision-ledger.json"
+  },
+  "budget": {
+    "limit": 50000,
+    "chargedBefore": 0,
+    "chargedAfter": 45551,
+    "chargedThisRun": 45551,
+    "knownThisRun": 4339,
+    "conservativeThisRun": 41212,
+    "transmissionsThisRun": 13,
+    "unsentThisRun": 0,
+    "stoppedBy": "budget"
+  },
+  "metrics": {
+    "all": {
+      "cases": 22,
+      "executed": 7,
+      "notRun": 15,
+      "pass": 4,
+      "passRate": 0.5714285714285714,
+      "errors": 3,
+      "checks": {
+        "schema": {
+          "ok": 4,
+          "total": 4
+        },
+        "no_claims_raw": {
+          "ok": 4,
+          "total": 4
+        },
+        "dog_recognized": {
+          "ok": 4,
+          "total": 4
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 4,
+          "total": 4
+        },
+        "breed_not_wrong": {
+          "ok": 4,
+          "total": 4
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 4,
+        "total": 4
+      },
+      "sizeFilledCorrect": {
+        "ok": 4,
+        "total": 4
+      },
+      "latencyMs": {
+        "totalP50": 16032,
+        "totalP95": 30320,
+        "firstByteP50": 14988
+      },
+      "tokens": {
+        "known": 4339,
+        "knownCalls": 4,
+        "avg": 1085,
+        "unknownCalls": 3,
+        "charged": 40898
+      },
+      "timeouts": 3
+    },
+    "public": {
+      "cases": 6,
+      "executed": 6,
+      "notRun": 0,
+      "pass": 4,
+      "passRate": 0.6666666666666666,
+      "errors": 2,
+      "checks": {
+        "schema": {
+          "ok": 4,
+          "total": 4
+        },
+        "no_claims_raw": {
+          "ok": 4,
+          "total": 4
+        },
+        "dog_recognized": {
+          "ok": 4,
+          "total": 4
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 4,
+          "total": 4
+        },
+        "breed_not_wrong": {
+          "ok": 4,
+          "total": 4
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 4,
+        "total": 4
+      },
+      "sizeFilledCorrect": {
+        "ok": 4,
+        "total": 4
+      },
+      "latencyMs": {
+        "totalP50": 16032,
+        "totalP95": 30320,
+        "firstByteP50": 14988
+      },
+      "tokens": {
+        "known": 4339,
+        "knownCalls": 4,
+        "avg": 1085,
+        "unknownCalls": 2,
+        "charged": 31744
+      },
+      "timeouts": 2
+    },
+    "private": {
+      "cases": 16,
+      "executed": 1,
+      "notRun": 15,
+      "pass": 0,
+      "passRate": 0,
+      "errors": 1,
+      "checks": {
+        "schema": {
+          "ok": 0,
+          "total": 0
+        },
+        "no_claims_raw": {
+          "ok": 0,
+          "total": 0
+        },
+        "dog_recognized": {
+          "ok": 0,
+          "total": 0
+        },
+        "not_dog_rejected": {
+          "ok": 0,
+          "total": 0
+        },
+        "multiple_nothing_filled": {
+          "ok": 0,
+          "total": 0
+        },
+        "size_not_wrong": {
+          "ok": 0,
+          "total": 0
+        },
+        "breed_not_wrong": {
+          "ok": 0,
+          "total": 0
+        }
+      },
+      "breedFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "sizeFilledCorrect": {
+        "ok": 0,
+        "total": 0
+      },
+      "latencyMs": {
+        "totalP50": null,
+        "totalP95": null,
+        "firstByteP50": null
+      },
+      "tokens": {
+        "known": 0,
+        "knownCalls": 0,
+        "avg": null,
+        "unknownCalls": 1,
+        "charged": 9154
+      },
+      "timeouts": 1
+    }
+  },
+  "cases": [
+    {
+      "caseId": "pub-dog-1",
+      "file": "dog-1.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.98},\"multipleDogs\":false,\"breed\":{\"value\":\"金毛寻回犬\",\"confidence\":0.95},\"size\":{\"value\":\"medium\",\"confidence\":0.6},\"coatColor\":{\"value\":\"浅金色\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.9},{\"value\":\"黑色鼻头\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.98,
+        "breed": {
+          "value": "金毛寻回犬",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "medium",
+          "confidence": 0.6,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "浅金色",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.9,
+            "accepted": true
+          },
+          {
+            "value": "黑色鼻头",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 1,
+        "firstByteMs": 29233,
+        "totalMs": 30320,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 974,
+          "completion_tokens": 92,
+          "total_tokens": 1066
+        },
+        "reservedTokens": 9078,
+        "chargedTokens": 5605,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 319,
+        "height": 512,
+        "bytes": 37578
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-2",
+      "file": "dog-2.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.95},\"multipleDogs\":false,\"breed\":{\"value\":\"柯基\",\"confidence\":0.85},\"size\":{\"value\":\"small\",\"confidence\":0.75},\"coatColor\":{\"value\":\"黄白相间\",\"confidence\":0.9},\"features\":[{\"value\":\"大立耳\",\"confidence\":0.9},{\"value\":\"短吻\",\"confidence\":0.8}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.95,
+        "breed": {
+          "value": "柯基",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "size": {
+          "value": "small",
+          "confidence": 0.75,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "大立耳",
+            "confidence": 0.9,
+            "accepted": true
+          },
+          {
+            "value": "短吻",
+            "confidence": 0.8,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 1,
+        "firstByteMs": 27493,
+        "totalMs": 28710,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 990,
+          "completion_tokens": 90,
+          "total_tokens": 1080
+        },
+        "reservedTokens": 9116,
+        "chargedTokens": 5638,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 341,
+        "height": 512,
+        "bytes": 18015
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-3",
+      "file": "dog-3.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 2,
+        "firstByteMs": null,
+        "totalMs": 30507,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 9192,
+        "chargedTokens": 9192,
+        "errorCode": "AI_UPSTREAM_TIMEOUT"
+      },
+      "status": "error",
+      "error": "AI_UPSTREAM_TIMEOUT:模型长时间未开始响应，请手动重试",
+      "thumbnail": {
+        "width": 410,
+        "height": 512,
+        "bytes": 22338
+      }
+    },
+    {
+      "caseId": "pub-dog-4",
+      "file": "dog-4.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.99},\"multipleDogs\":false,\"breed\":{\"value\":\"比格犬\",\"confidence\":0.95},\"size\":{\"value\":\"medium\",\"confidence\":0.85},\"coatColor\":{\"value\":\"黄白相间\",\"confidence\":0.95},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.98},{\"value\":\"黑色鼻头\",\"confidence\":0.98},{\"value\":\"白色嘴套\",\"confidence\":0.95}]\n}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.99,
+        "breed": {
+          "value": "比格犬",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "size": {
+          "value": "medium",
+          "confidence": 0.85,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "黄白相间",
+          "confidence": 0.95,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.98,
+            "accepted": true
+          },
+          {
+            "value": "黑色鼻头",
+            "confidence": 0.98,
+            "accepted": true
+          },
+          {
+            "value": "白色嘴套",
+            "confidence": 0.95,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 11439,
+        "totalMs": 12857,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 1006,
+          "completion_tokens": 108,
+          "total_tokens": 1114
+        },
+        "reservedTokens": 4577,
+        "chargedTokens": 1114,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 27651
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "pub-dog-5",
+      "file": "dog-5.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 2,
+        "firstByteMs": null,
+        "totalMs": 30508,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 9116,
+        "chargedTokens": 9116,
+        "errorCode": "AI_UPSTREAM_TIMEOUT"
+      },
+      "status": "error",
+      "error": "AI_UPSTREAM_TIMEOUT:模型长时间未开始响应，请手动重试",
+      "thumbnail": {
+        "width": 512,
+        "height": 343,
+        "bytes": 43068
+      }
+    },
+    {
+      "caseId": "pub-dog-6",
+      "file": "dog-6.jpg",
+      "source": "public",
+      "labelled": true,
+      "raw": "{\"dog\":{\"value\":\"yes\",\"confidence\":0.95},\"multipleDogs\":false,\"breed\":{\"value\":\"拉布拉多犬\",\"confidence\":0.6},\"size\":{\"value\":\"large\",\"confidence\":0.7},\"coatColor\":{\"value\":\"巧克力色\",\"confidence\":0.9},\"features\":[{\"value\":\"垂耳\",\"confidence\":0.8},{\"value\":\"宽鼻头\",\"confidence\":0.9}]}",
+      "draft": {
+        "status": "recognized",
+        "dogConfidence": 0.95,
+        "breed": {
+          "value": "拉布拉多犬",
+          "confidence": 0.6,
+          "accepted": true
+        },
+        "size": {
+          "value": "large",
+          "confidence": 0.7,
+          "accepted": true
+        },
+        "coatColor": {
+          "value": "巧克力色",
+          "confidence": 0.9,
+          "accepted": true
+        },
+        "features": [
+          {
+            "value": "垂耳",
+            "confidence": 0.8,
+            "accepted": true
+          },
+          {
+            "value": "宽鼻头",
+            "confidence": 0.9,
+            "accepted": true
+          }
+        ],
+        "removed": 0,
+        "messages": []
+      },
+      "checks": {
+        "schema": true,
+        "no_claims_raw": true,
+        "dog_recognized": true,
+        "size_not_wrong": true,
+        "breed_not_wrong": true
+      },
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 0,
+        "firstByteMs": 14988,
+        "totalMs": 16032,
+        "httpStatus": 200,
+        "usage": {
+          "prompt_tokens": 990,
+          "completion_tokens": 89,
+          "total_tokens": 1079
+        },
+        "reservedTokens": 4558,
+        "chargedTokens": 1079,
+        "errorCode": null
+      },
+      "status": "pass",
+      "thumbnail": {
+        "width": 512,
+        "height": 342,
+        "bytes": 28842
+      },
+      "coverage": {
+        "breedLabelled": true,
+        "breedCorrect": true,
+        "sizeLabelled": true,
+        "sizeCorrect": true
+      }
+    },
+    {
+      "caseId": "prv-notdog-01",
+      "file": "notdog-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 2,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 2,
+        "firstByteMs": null,
+        "totalMs": 30510,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 9154,
+        "chargedTokens": 9154,
+        "errorCode": "AI_UPSTREAM_TIMEOUT"
+      },
+      "status": "error",
+      "error": "AI_UPSTREAM_TIMEOUT:模型长时间未开始响应，请手动重试",
+      "thumbnail": {
+        "width": 512,
+        "height": 384,
+        "bytes": 39417
+      }
+    },
+    {
+      "caseId": "prv-notdog-02",
+      "file": "notdog-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": {
+        "attempts": 1,
+        "unsentAttempts": 0,
+        "timedOutAttempts": 1,
+        "firstByteMs": null,
+        "totalMs": 15505,
+        "httpStatus": null,
+        "usage": null,
+        "reservedTokens": 4653,
+        "chargedTokens": 4653,
+        "errorCode": "AI_EVAL_BUDGET"
+      },
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-hard-01",
+      "file": "hard-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-hard-02",
+      "file": "hard-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-01",
+      "file": "dog-01.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-02",
+      "file": "dog-02.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-03",
+      "file": "dog-03.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-04",
+      "file": "dog-04.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-05",
+      "file": "dog-05.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-06",
+      "file": "dog-06.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-07",
+      "file": "dog-07.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-08",
+      "file": "dog-08.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-09",
+      "file": "dog-09.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-10",
+      "file": "dog-10.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-11",
+      "file": "dog-11.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    },
+    {
+      "caseId": "prv-dog-12",
+      "file": "dog-12.jpg",
+      "source": "private",
+      "labelled": true,
+      "raw": null,
+      "draft": null,
+      "checks": {},
+      "failedChecks": [],
+      "call": null,
+      "status": "not_run",
+      "reason": "budget"
+    }
+  ]
+}

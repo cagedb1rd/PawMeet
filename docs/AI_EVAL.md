@@ -1,6 +1,6 @@
 # AI 评测方案与记录
 
-状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
+状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。视觉（拍照建档）真实结果见[第 7 步](#第-7-步视觉评测拍照建档)：两个 Gemini 各执行 20–21/22 张、仅 1 例体型边界失败，两个 Qwen-Omni 受跨境首字节超时影响基本未得到结果。文本最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
 
 ## 1. 测试层次与 mock / 真实区分
 
@@ -50,7 +50,7 @@
 ### 预算与安全阀
 
 - 真实调用需同时满足：`--mode live`、`--token-limit` 在 1 与该模型批准上限之间（代码 [MODEL_TOKEN_CAPS](../evals/lib/budget.ts)：flash 20 万、max-0902 30 万、27b 30 万；默认 0 = 拒绝）、`PAWMEET_ALLOW_LIVE_AI=approved`；模型必须在服务端文本白名单（[models.ts](../src/server/ai/models.ts)），否则 AI_MODEL_NOT_APPROVED。
-- 独立评测账本（默认 `.local/ai-eval/budget-ledger.json`，被忽略）按模型累计，产品账本不参与（`callModel` 的评测专用 `reserve` 钩子替代产品额度；路由从不传入）。每次上游尝试前按“请求字节数 + 最大输出 1400”预留（大于实际 Token，偏保守），会越过上限就在 fetch 前拒绝；响应后以实际 usage 结算；超时、断流、HTTP 错误等用量未知时按整笔预留计入。账本在预留时即写盘，损坏则拒绝运行且不覆盖。
+- 独立评测账本（默认 `.local/ai-eval/budget-ledger.json`，被忽略）按模型累计，产品账本不参与（`callModel` 的评测专用 `reserve` 钩子替代产品额度；路由从不传入）。每次上游尝试前按“估算输入 Token + 图片 Token + 该型号最大输出”预留（第 7 步起：[estimateTextTokens](../src/lib/ai/estimate.ts) 按字符而非 UTF-8 字节，图片按厂商规则；仍不低于实际），会越过上限就在 fetch 前拒绝；响应后以实际 usage 结算；超时、断流、HTTP 错误等用量未知时按整笔预留计入，只有 live [HTTPS 传输](../evals/lib/https-transport.ts)证明 TLS 未完成 / 请求体未写出的尝试释放预留（计 `unsent`）。账本在预留时即写盘，损坏则拒绝运行且不覆盖。取舍见 [D023](DECISIONS.md)。
 - 到额（AI_EVAL_BUDGET）、`--max-calls`、连续 3 次上游失败熔断时立即停止，当前及剩余尝试标 `not_run` 并记原因。按轮次顺序执行（先全部用例跑完第 1 轮），到额时保留完整的前几轮。
 - 不自动换模型、不靠重试刷绿；自动重试只有客户端既有的一次（见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务)），同样逐次预留计额。live 默认最小间隔 1.5 秒。
 
@@ -63,6 +63,9 @@ npm run eval:ai -- --mode live --model qwen3.8-flash --token-limit 200000 --repe
 npm run eval:ai -- compare <报告1.json> <报告2.json>     # 多模型对比表；模拟与真实混合会报错
 npm run eval:ai -- legacy                              # 旧版 core.v2 mock 回归
 npm run eval:models                                    # 百炼 GET /models，只核对型号名，不消耗 Token
+npm run eval:ai -- vision --mode simulated             # 视觉模拟（公开 6 张 + 本地私有图片，标“模拟数据”）
+npm run eval:ai -- vision --mode live --model gemini-3.8-flash --token-limit 50000 [--source public|private] [--cases pub-dog-1]
+npm run eval:ai -- vision-compare <视觉报告1.json> <视觉报告2.json>
 ```
 
 ### 模型名核实（2026-10-18）
@@ -168,6 +171,58 @@ npm run eval:models                                    # 百炼 GET /models，�
 #### 结论摘要（只依据上述真实数据）
 
 同一套 41 条程序判定用例、四个模型：qwen3.8-max-0902 在拿到响应的 56 次尝试里全部通过（含 10 次多工具工作流），是效果上限；gemini-3.8-flash 与 gemini-3.5-flash-lite 跑满 82 次，通过率 87.8% / 86.6%，两者差距很小，总时长 p50 只有 2.7 / 1.6 秒，失败集中在“工具出错或硬约束无法核实时不收尾”（被程序 4 轮上限拦下）和不严格执行 JSON Schema 枚举（被业务校验拦下）。qwen3.8-flash 在海外到北京的链路上只执行了 36 次就因保守计入到额，有响应的 23/28，效果结论样本不足。四者平均每次调用约 1.4–1.8k Token。取舍：在海外本地运行用 Gemini 速度最好，lite 性价比最高；重视正确率选 max-0902；面向国内上线仍用 Qwen（合规与就近部署），flash 与 max 的差距需在国内网络下复测。所有模型输出都经同一套程序校验，模型差异只体现在“被拦下”而不是“写错数据”。
+
+### 第 7 步视觉评测（拍照建档）
+
+2026-10-19，视觉 Prompt pawmeet-photo-2、用例 vision.v1、代码 `b00fa72`（报告的 gitDirty 只因未跟踪的冒烟报告）。用户批准四个视觉模型各 ≤5 万 Token（独立账本 `.local/ai-eval/step7-vision-ledger.json`，合计 ≤20 万，经协调会话转达）。调用要求按官方文档核实后适配，见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务) 图片一条；功能与审核规则见[拍照建档](ARCHITECTURE.md#拍照建档pet-photo)。
+
+**用例（22 张）**：公开 6 张（`public/images` 演示照片，期望写在 [vision.ts](../evals/cases/vision.ts)：金毛幼犬、柯基、法斗、比格、两只柯基同框、巧克力拉布拉多）；私有 16 张（`evals/fixtures/private-images/`，Git 忽略、永不提交，期望来自其 `labels.csv`：12 张单狗小 / 中 / 大各 4，hard-01 两只法斗、hard-02 狗鼻特写，notdog-01 猫、notdog-02 毛绒玩具狗）。非狗与难例先跑，避免到额时被截掉。图片由真实 Chromium 按产品同一算法重绘为 ≤512px JPEG（去元数据），每张再过服务端 thumbnailPart 检查；报告只记文件名，不含图片或 base64。
+
+**检查（程序判定，无 LLM 裁判）**：原始输出符合 Schema；原始输出无健康 / 年龄 / 性格判断（关键词，与产品过滤同一正则）；单只狗须识别为狗；非狗须判定无法识别 / 不确定且不填；多只狗不填任何字段；体型 / 品种“不乱填”（填了就须符合标签，留空不算错）。另统计“品种填对 / 体型填对”覆盖率（填了且正确 / 有标签的单只狗）。通过 = 全部检查满足；网络失败计 error 并计入分母。
+
+| 模型 | 范围 | 已执行 / 用例 | 通过率 | Schema 合法 | 无违规判断 | 非狗拒识 | 体型不乱填 | 品种不乱填 | 品种填对 | 体型填对 | 总时长 p50 / p95 | 平均 Token | 网络 / 超时失败 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gemini-3.5-flash-lite | 公开 | 6/6 | 100% | 6/6 | 6/6 | — | 6/6 | 6/6 | 5/5 | 5/5 | 2.0 / 2.1 s | 2,029 | 0 |
+| gemini-3.5-flash-lite | 私有 | 14/16（到额） | 92.9% | 14/14 | 14/14 | 2/2 | 13/14 | 14/14 | 10/10 | 9/10 | 2.1 / 2.8 s | 2,000 | 0 |
+| gemini-3.8-flash | 公开 | 6/6 | 100% | 6/6 | 6/6 | — | 6/6 | 6/6 | 5/5 | 5/5 | 2.9 / 3.1 s | 2,000 | 0 |
+| gemini-3.8-flash | 私有 | 15/16（到额） | 93.3% | 15/15 | 15/15 | 2/2 | 14/15 | 15/15 | 10/11 | 10/11 | 3.1 / 4.7 s | 2,019 | 0 |
+| qwen3.8-omni-flash | 公开 | 6/6 | 66.7% | 4/4 | 4/4 | — | 4/4 | 4/4 | 4/4 | 4/4 | 16.0 / 30.3 s | 1,085 | 2 |
+| qwen3.8-omni-flash | 私有 | 1/16（到额） | 0% | — | — | — | — | — | — | — | — | — | 1 |
+| qwen3.5-omni-plus | 公开（冒烟） | 1/1 | 0% | — | — | — | — | — | — | — | — | — | 1 |
+
+报告：[gemini-3.5-flash-lite](../evals/reports/2026-10-18T18-11-01-704Z-gemini-3.5-flash-lite-vision-live.md)、[gemini-3.8-flash](../evals/reports/2026-10-18T18-11-53-353Z-gemini-3.8-flash-vision-live.md)、[qwen3.8-omni-flash](../evals/reports/2026-10-18T18-13-07-663Z-qwen3.8-omni-flash-vision-live.md)、[qwen3.5-omni-plus 冒烟](../evals/reports/2026-10-18T18-16-58-642Z-qwen3.5-omni-plus-vision-live.md)（同名 JSON 含每次调用的原始 JSON 输出与计时）、[对比表](../evals/reports/2026-10-18T18-18-46-073Z-vision-compare-live.md)。另有 1 次 gemini-3.5-flash-lite 冒烟（pub-dog-2，旧 Prompt pawmeet-photo-1，[报告](../evals/reports/2026-10-18T18-10-20-850Z-gemini-3.5-flash-lite-vision-live.md)，通过，1,999 Token）；冒烟后发现示例品种恰为“柯基”可能诱导答案，改为评测集外的“雪纳瑞”并加一个“拿不准”示例（pawmeet-photo-2），冒烟不计入上表。
+
+**网络**：开跑前 curl（不耗 Token）测 TLS 握手：Gemini 0.13–0.53 s，百炼北京 5.1–5.3 s（3 次均完成，所以没有直接跳过 Qwen）。
+
+**额度（对照每模型 5 万）**
+
+| 模型 | 上游传输（含重试） | 账本计入 | 其中实际 usage | 保守计入（超时，用量未知） | 未发出释放 | 停止 |
+| --- | --- | --- | --- | --- | --- | --- |
+| gemini-3.5-flash-lite | 21（含冒烟 1） | 42,175 | 42,175 | 0 | 0 | 到额：剩 7,825，小于下一次预留约 7,600–7,700 Token，dog-11、dog-12 未执行 |
+| gemini-3.8-flash | 21 | 42,283 | 42,283 | 0 | 0 | 到额：dog-12 未执行 |
+| qwen3.8-omni-flash | 13 | 45,551 | 4,339 | 41,212 | 0 | 到额：执行 7 张中 4 张有响应；notdog-02 首次尝试已发出并超时，重试预留被拒，记 not_run |
+| qwen3.5-omni-plus | 2 | 9,100 | 0 | 9,100 | 0 | 冒烟两次尝试都无响应，按要求停止，其余标待执行 |
+| 合计 | 57 | 139,109 / 200,000 | 88,797 | 50,312 | 0 | — |
+
+Gemini 每次约 2,000 Token（prompt 约 1,850，含图片），而预留约 7,600（文本估算约 4,400 + 图片 1,120 + 最大输出 2,048），因此每个模型额度末端约 7–8k 用不上；按“不低估”原则接受。
+
+#### 第 7 步失败分类
+
+| 类别 | 用例（模型） | 说明 |
+| --- | --- | --- |
+| 跨境首字节超时（网络） | qwen3.8-omni-flash：dog-3、dog-5、notdog-01（各 2 次尝试），notdog-02（1 次）；qwen3.5-omni-plus：dog-4（2 次） | omni-flash 有响应的 4 张：2 张一次成功（首字节 11.4 / 15.0 s，贴着默认 15 s 首字节超时），2 张首次超时后重试成功（从调用开始计 27.5 / 29.2 s）；omni-plus 用 40 s / 60 s 冒烟仍两次都没有收到响应头。请求均已发出（TLS 完成、请求体写出），模型可能已计费，因此按整笔计入。只说明从海外到北京端点不可用，**不说明 Qwen-Omni 的识别能力** |
+| 体型边界 | gemini-3.5-flash-lite dog-07（比格，标签 medium，答 small 0.8）；gemini-3.8-flash dog-11（萨摩耶，标签 large，答 medium 0.85） | 品种都对；比格、萨摩耶本就处在小 / 中、中 / 大边界，属模型与标签口径差异，按规则仍判失败 |
+| Schema / 违规判断 / 非狗误识 / 多只狗误填 | 无 | 两个 Gemini 有响应的 41 次全部 Schema 合法、无诊断 / 年龄 / 性格内容（程序过滤一次也没触发）；猫和毛绒玩具狗均判为非狗；两只狗的图（公开 dog-5、私有 hard-01）均判 multipleDogs，不填；狗鼻特写 hard-02 未填品种与体型 |
+
+**发现与建议（均未实现，未消耗额度复测）**
+
+1. 网络：Qwen-Omni 从海外基本不可用（首字节常 >15 s）；要得到可信的 Qwen 视觉结果，需在国内网络复测，或经用户授权使用百炼国际站（新加坡）端点（另一套账号与型号核实）。是否单独为视觉放宽首字节超时，涉及产品体验取舍，须用户决定。
+2. 预留偏高：Gemini 实际约为预留的 26%，主因是文本按字符估算对 JSON Schema 与示例仍很保守、且最大输出 2,048 基本用不上（实际输出约 150）。可考虑视觉任务把 max_tokens 降到 1,024（需评估思考 Token 截断风险），或对固定 system prompt 用一次真实 usage 校准；均须保持不低估。
+3. 体型标签口径：比格、萨摩耶这类边界犬种，可在 labels 中允许两个体型（runner 已支持多值，公开用例即如此），或在产品侧对边界犬种降低体型置信度。改标签须由用户确认。
+
+#### 结论摘要（只依据上述真实数据）
+
+拍照建档只把用户点击后重绘的 ≤512px JPEG（服务端再查无 EXIF）发给视觉模型，模型输出经 strict Schema 和程序审核（单只狗、置信度 ≥0.6、移除诊断 / 年龄 / 性格内容）后才作为表单草稿，保存仍由主人点击。22 张图（6 公开 + 16 私有授权图）上：gemini-3.5-flash-lite 执行 20 张通过 19 张，gemini-3.8-flash 执行 21 张通过 20 张，失败都是比格 / 萨摩耶这类边界犬种的体型相差一档；两者 41 次输出全部 Schema 合法、没有一次越界给出健康或性格判断，猫、玩具狗、多只狗、局部特写都正确“拒绝填写”。lite 总时长 p50 约 2.1 s，3.8-flash 约 3.0 s，每次约 2k Token，lite 更快更省、效果相当。Qwen-Omni 两个型号从海外调用时首字节常超过 15 s，额度大多耗在超时的保守计入上，因此没有可比的 Qwen 视觉结论——这本身也说明了为什么评测要把“网络失败”和“模型答错”分开统计、并按是否真正发出请求来计费。
 
 ## 3. 旧版 core.v2 核心用例（35 条，历史基线）
 
