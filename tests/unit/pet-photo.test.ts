@@ -503,7 +503,7 @@ describe("POST /api/ai/pet-photo", () => {
     expect(json.meta).toMatchObject({
       provider: "qwen",
       model: "qwen3.8-omni-flash",
-      promptVersion: "pawmeet-photo-1",
+      promptVersion: "pawmeet-photo-2",
     });
     expect(json.data.status).toBe("recognized");
     expect(json.data.breed.accepted).toBe(true);

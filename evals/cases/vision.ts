@@ -151,7 +151,13 @@ export function loadVisionCases(
     const labels = existsSync(labelFile)
       ? parseLabels(readFileSync(labelFile, "utf8"))
       : new Map();
-    for (const file of readdirSync(dir).sort())
+    // Non-dog and hard photos first: a budget stop must not drop the cases that test refusal.
+    const rank = (f: string) =>
+      f.startsWith("notdog") ? 0 : f.startsWith("hard") ? 1 : 2;
+    const files = readdirSync(dir).sort(
+      (a, b) => rank(a) - rank(b) || a.localeCompare(b),
+    );
+    for (const file of files)
       if (/\.(jpe?g|png|webp)$/i.test(file))
         cases.push({
           ...(labels.get(file) ?? {

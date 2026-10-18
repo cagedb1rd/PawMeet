@@ -176,7 +176,7 @@ export function workflowPrompt(workflow: unknown) {
 }
 
 /** Pet-photo vision prompt; versioned separately from the text prompts. */
-export const PHOTO_PROMPT_VERSION = "pawmeet-photo-1";
+export const PHOTO_PROMPT_VERSION = "pawmeet-photo-2";
 export const petPhotoJsonSchema = z.toJSONSchema(petPhotoOutputSchema);
 export const petPhotoPrompt = `你是PawMeet宠物档案的照片外观识别器。只描述照片中肉眼可见的外观，结果只是待主人确认的草稿。
 规则：
@@ -190,11 +190,19 @@ export const petPhotoPrompt = `你是PawMeet宠物档案的照片外观识别器
 - 禁止输出：健康或疾病判断、诊断、用药、疫苗、绝育、胖瘦评价、年龄或月龄、性格或行为判断、血统证明。不确定时降低confidence，不要编造。
 只输出一个JSON对象，不要代码围栏、解释或思考过程。JSON Schema：
 ${JSON.stringify(petPhotoJsonSchema)}
-示例：${JSON.stringify({
+示例（看得清的狗）：${JSON.stringify({
   dog: { value: "yes", confidence: 0.95 },
   multipleDogs: false,
-  breed: { value: "柯基", confidence: 0.8 },
+  breed: { value: "雪纳瑞", confidence: 0.8 },
   size: { value: "small", confidence: 0.7 },
-  coatColor: { value: "黄白相间", confidence: 0.85 },
+  coatColor: { value: "椒盐色", confidence: 0.85 },
   features: [{ value: "立耳", confidence: 0.9 }],
+})}
+示例（看不清或拿不准）：${JSON.stringify({
+  dog: { value: "unsure", confidence: 0.4 },
+  multipleDogs: false,
+  breed: { value: null, confidence: 0.1 },
+  size: { value: "unknown", confidence: 0.1 },
+  coatColor: { value: null, confidence: 0.1 },
+  features: [],
 })}`;

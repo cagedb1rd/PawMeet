@@ -196,7 +196,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 入口为档案表单照片区的 [PhotoRecognize](../src/features/ai/photo.tsx)。只有主人点击“识别照片”才会调用：[makeThumbnail](../src/lib/ai/thumbnail.ts) 按 Exif 方向解码后在新 canvas 上绘制（最长边 ≤512px）并重新编码为 JPEG（质量 0.85 → 0.55，≤100KB），原图及其 EXIF / GPS 不离开浏览器；发送前用 [inspectJpeg](../src/lib/ai/jpeg.ts) 自检。浏览器只发 `{image}`（strict Schema，不能附带模型名或其他数据）；服务端 [thumbnailPart](../src/server/ai/client.ts) 再次检查是 JPEG、最长边 ≤512、最短边 ≥16、无 APP1 Exif / XMP，否则 400。
 
-[recognizePetPhoto](../src/server/ai/service.ts) 用视觉组模型（AI_VISION_MODEL，默认 qwen3.8-omni-flash）与 [petPhotoPrompt](../src/server/ai/prompts.ts)（pawmeet-photo-1）调用，抽取式任务可自动重试一次；输出先过 [petPhotoOutputSchema](../src/lib/ai/contracts.ts)（strict：dog、multipleDogs、breed、size、coatColor、features，各带 0–1 置信度，没有健康 / 年龄 / 性格字段），不合法为 AI_INVALID_OUTPUT。再由 [reviewPetPhoto](../src/lib/ai/photo.ts) 做业务审核：不是“确信是一只狗”（非狗、拿不准、多只狗）一律不填；每个字段置信度 ≥0.6 才可填入，unknown / 混血不填；看起来像诊断、年龄、性格或胖瘦评价的文字不论置信度一律移除并提示；提示语由程序生成，不回显模型原文。浏览器只收到审核后的草稿（petPhotoDraftSchema）。
+[recognizePetPhoto](../src/server/ai/service.ts) 用视觉组模型（AI_VISION_MODEL，默认 qwen3.8-omni-flash）与 [petPhotoPrompt](../src/server/ai/prompts.ts)（pawmeet-photo-2）调用，抽取式任务可自动重试一次；输出先过 [petPhotoOutputSchema](../src/lib/ai/contracts.ts)（strict：dog、multipleDogs、breed、size、coatColor、features，各带 0–1 置信度，没有健康 / 年龄 / 性格字段），不合法为 AI_INVALID_OUTPUT。再由 [reviewPetPhoto](../src/lib/ai/photo.ts) 做业务审核：不是“确信是一只狗”（非狗、拿不准、多只狗）一律不填；每个字段置信度 ≥0.6 才可填入，unknown / 混血不填；看起来像诊断、年龄、性格或胖瘦评价的文字不论置信度一律移除并提示；提示语由程序生成，不回显模型原文。浏览器只收到审核后的草稿（petPhotoDraftSchema）。
 
 “填入表单（尚未保存）”只写入表单：品种、体型和“外观：毛色、特征”（追加到见面前的小提醒），沿用 `data-ai-filled` 标记，手改即清除；点击“确认保存档案”才走原 save-pet 命令。失败（未配置、超时、额度、Schema 不过）显示真实错误码，表单仍可完整手填。
 
