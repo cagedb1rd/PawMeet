@@ -14,8 +14,20 @@ import {
   PetPhotoRequest,
   PetPhotoDraft,
   petPhotoOutputSchema,
+  PostMetaRequest,
+  PostMetaDraft,
+  postMetaOutputSchema,
+  PostSafetyRequest,
+  PostSafetyResult,
+  postSafetyOutputSchema,
 } from "@/lib/ai/contracts";
 import { reviewPetPhoto } from "@/lib/ai/photo";
+import {
+  PostMetaReviewError,
+  PostSafetyReviewError,
+  reviewPostMeta,
+  reviewPostSafety,
+} from "@/lib/ai/community";
 import { validateOutput } from "@/lib/ai/validation";
 import { callModel, CallOptions, Message, thumbnailPart } from "./client";
 import {
@@ -28,6 +40,10 @@ import {
   workflowPrompt,
   petPhotoPrompt,
   petPhotoJsonSchema,
+  postMetaPrompt,
+  postMetaJsonSchema,
+  postSafetyPrompt,
+  postSafetyJsonSchema,
 } from "./prompts";
 import { AiError } from "./errors";
 import { seal, unseal } from "./session";
@@ -136,6 +152,112 @@ export async function recognizePetPhoto(
     usage: result.usage,
     model: result.model,
   };
+}
+
+const parseJson = (text: string | null) => {
+  try {
+    return JSON.parse(unfence(text ?? ""));
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * Community post title / tags draft. With a thumbnail the vision model (AI_VISION_MODEL) is
+ * used, otherwise the text model (AI_MODEL); the output is program-reviewed and only fills
+ * the form. Nothing is published here.
+ */
+export async function generatePostMeta(
+  input: PostMetaRequest,
+  session: string,
+  requestId: string,
+  call = callModel,
+  options: Pick<CallOptions, "onProgress" | "signal" | "model"> = {},
+): Promise<{ data: PostMetaDraft; usage: unknown; model: string }> {
+  const text = `为下面这篇帖子起草标题和话题标签，按要求只输出JSON。\n正文：${JSON.stringify(input.text)}`;
+  const result = await call(
+    [
+      { role: "system", content: postMetaPrompt },
+      {
+        role: "user",
+        content: input.image
+          ? [{ type: "text", text }, thumbnailPart(input.image)]
+          : text,
+      },
+    ],
+    session,
+    requestId,
+    undefined,
+    undefined,
+    postMetaJsonSchema,
+    { ...options, kind: input.image ? "vision" : "text", retry: "idempotent" },
+  );
+  const parsed = postMetaOutputSchema.safeParse(
+    parseJson(result.message.content),
+  );
+  if (!parsed.success)
+    throw new AiError(
+      "AI_INVALID_OUTPUT",
+      "标题和标签草稿未通过结构校验，表单没有改动；可以重试或手动填写",
+    );
+  try {
+    return {
+      data: reviewPostMeta(parsed.data, input.text),
+      usage: result.usage,
+      model: result.model,
+    };
+  } catch (e) {
+    if (!(e instanceof PostMetaReviewError)) throw e;
+    throw new AiError(
+      "AI_INVALID_OUTPUT",
+      `标题和标签草稿未通过检查（${e.message}），表单没有改动；可以重试或手动填写`,
+    );
+  }
+}
+
+/**
+ * Model layer of the pre-publish precheck: a structured judgement on the user's own title /
+ * text / tags only. Program rules run in the browser independently of this call.
+ */
+export async function precheckPost(
+  input: PostSafetyRequest,
+  session: string,
+  requestId: string,
+  call = callModel,
+  options: Pick<CallOptions, "onProgress" | "signal" | "model"> = {},
+): Promise<{ data: PostSafetyResult; usage: unknown; model: string }> {
+  const result = await call(
+    [
+      { role: "system", content: postSafetyPrompt },
+      {
+        role: "user",
+        content: `检查下面这篇待发布帖子，按要求只输出JSON。\n${JSON.stringify(input)}`,
+      },
+    ],
+    session,
+    requestId,
+    undefined,
+    undefined,
+    postSafetyJsonSchema,
+    { ...options, kind: "text", retry: "idempotent" },
+  );
+  const parsed = postSafetyOutputSchema.safeParse(
+    parseJson(result.message.content),
+  );
+  try {
+    if (!parsed.success) throw new PostSafetyReviewError("结构不合法");
+    return {
+      data: reviewPostSafety(parsed.data, input),
+      usage: result.usage,
+      model: result.model,
+    };
+  } catch (e) {
+    if (!(e instanceof PostSafetyReviewError)) throw e;
+    throw new AiError(
+      "AI_INVALID_OUTPUT",
+      `AI 预检结果未通过校验（${e.message}），这次没有得到 AI 结论`,
+    );
+  }
 }
 
 const messageSchema = z.strictObject({

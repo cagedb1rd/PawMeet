@@ -1284,3 +1284,22 @@ textarea::placeholder {
     bottom: calc(82px + env(safe-area-inset-bottom));
   }
 }
+/* Community AI: topic tags and the pre-publish precheck panel. */
+.note-topics {
+  color: var(--green);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.precheck-list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+.precheck-list mark {
+  background: #fde7a8;
+  border-radius: 4px;
+  padding: 0 2px;
+}

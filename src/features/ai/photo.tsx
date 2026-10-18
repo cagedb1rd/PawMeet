@@ -8,7 +8,7 @@ import { makeThumbnail } from "@/lib/ai/thumbnail";
 import { getImage } from "@/lib/storage/images";
 import { AiProgressHint, useAiProgress } from "./progress";
 
-async function photoBlob(image: ImageRef): Promise<Blob> {
+export async function photoBlob(image: ImageRef): Promise<Blob> {
   if (image.kind === "upload") {
     const blob = await getImage(image.imageId);
     if (!blob) throw new Error("找不到这张照片，请重新选择");

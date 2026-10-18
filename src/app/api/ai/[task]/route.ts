@@ -7,16 +7,24 @@ import {
   taskRequestSchema,
   assistantRequestSchema,
   petPhotoRequestSchema,
+  postMetaRequestSchema,
+  postSafetyRequestSchema,
 } from "@/lib/ai/contracts";
 import {
   generateTask,
   assistantStep,
   recognizePetPhoto,
+  generatePostMeta,
+  precheckPost,
 } from "@/server/ai/service";
 import { aiConfig } from "@/server/ai/client";
 import { AiError } from "@/server/ai/errors";
 import { sessionId } from "@/server/ai/session";
-import { PHOTO_PROMPT_VERSION, PROMPT_VERSION } from "@/server/ai/prompts";
+import {
+  COMMUNITY_PROMPT_VERSION,
+  PHOTO_PROMPT_VERSION,
+  PROMPT_VERSION,
+} from "@/server/ai/prompts";
 import { PROVIDERS } from "@/server/ai/models";
 export const runtime = "nodejs";
 export async function POST(
@@ -35,7 +43,13 @@ export async function POST(
       throw new AiError("AI_ORIGIN", "AI请求来源未获允许", 403);
     const { task } = await params;
     const photo = task === "pet-photo";
-    if (task !== "assistant" && !photo && !Object.hasOwn(outputSchemas, task))
+    const community = task === "post-meta" || task === "post-safety";
+    if (
+      task !== "assistant" &&
+      !photo &&
+      !community &&
+      !Object.hasOwn(outputSchemas, task)
+    )
       throw new AiError("AI_TASK", "未知AI任务", 400);
     if (
       [
@@ -53,7 +67,7 @@ export async function POST(
       );
     // Bound the stream itself, rather than trusting Content-Length. A ≤512px JPEG thumbnail
     // is about 30–80KB of base64; text tasks stay at 48KB.
-    const limit = photo ? 170000 : 48000;
+    const limit = photo || task === "post-meta" ? 170000 : 48000;
     const reader = request.body?.getReader();
     if (!reader) throw new AiError("AI_INPUT", "请求不能为空", 400);
     const parts: Uint8Array[] = [];
@@ -85,49 +99,78 @@ export async function POST(
         ? assistantRequestSchema.safeParse(raw)
         : photo
           ? petPhotoRequestSchema.safeParse(raw)
-          : taskRequestSchema.safeParse(raw);
+          : task === "post-meta"
+            ? postMetaRequestSchema.safeParse(raw)
+            : task === "post-safety"
+              ? postSafetyRequestSchema.safeParse(raw)
+              : taskRequestSchema.safeParse(raw);
     if (!parsed.success)
       throw new AiError("AI_INPUT", "请求字段或长度不合法", 400);
-    const config = aiConfig(photo ? "vision" : "text");
+    // Post title / tags with a thumbnail go to the vision model; everything else is text.
+    const vision =
+      photo ||
+      (task === "post-meta" &&
+        !!postMetaRequestSchema.parse(parsed.data).image);
+    const config = aiConfig(vision ? "vision" : "text");
     const session = sessionId(request.cookies.get("pawmeet-ai")?.value);
     // The browser never selects a model: only progress/signal are passed down.
-    const run = (onProgress?: (p: AiProgress) => void) =>
-      photo
-        ? recognizePetPhoto(
-            petPhotoRequestSchema.parse(parsed.data),
+    const run = (
+      onProgress?: (p: AiProgress) => void,
+    ): Promise<{ data: unknown; usage: unknown; model: string }> =>
+      task === "post-meta"
+        ? generatePostMeta(
+            postMetaRequestSchema.parse(parsed.data),
             session.id,
             requestId,
             undefined,
             { onProgress, signal: request.signal },
           )
-        : task === "assistant"
-          ? assistantStep(
-              assistantRequestSchema.parse(parsed.data),
+        : task === "post-safety"
+          ? precheckPost(
+              postSafetyRequestSchema.parse(parsed.data),
               session.id,
               requestId,
-              undefined,
               undefined,
               { onProgress, signal: request.signal },
             )
-          : generateTask(
-              task as AiTask,
-              taskRequestSchema.parse(parsed.data),
-              session.id,
-              requestId,
-              undefined,
-              undefined,
-              { onProgress, signal: request.signal },
-            );
+          : photo
+            ? recognizePetPhoto(
+                petPhotoRequestSchema.parse(parsed.data),
+                session.id,
+                requestId,
+                undefined,
+                { onProgress, signal: request.signal },
+              )
+            : task === "assistant"
+              ? assistantStep(
+                  assistantRequestSchema.parse(parsed.data),
+                  session.id,
+                  requestId,
+                  undefined,
+                  undefined,
+                  { onProgress, signal: request.signal },
+                )
+              : generateTask(
+                  task as AiTask,
+                  taskRequestSchema.parse(parsed.data),
+                  session.id,
+                  requestId,
+                  undefined,
+                  undefined,
+                  { onProgress, signal: request.signal },
+                );
     const success = (result: Awaited<ReturnType<typeof run>>) => ({
       ok: true,
       requestId,
       data: result.data,
       meta: {
-        provider: photo
-          ? PROVIDERS[config.profile.provider].label.toLowerCase()
-          : "qwen",
+        provider: PROVIDERS[config.profile.provider].label.toLowerCase(),
         model: result.model,
-        promptVersion: photo ? PHOTO_PROMPT_VERSION : PROMPT_VERSION,
+        promptVersion: photo
+          ? PHOTO_PROMPT_VERSION
+          : community
+            ? COMMUNITY_PROMPT_VERSION
+            : PROMPT_VERSION,
         schemaVersion: 1,
         latencyMs: Date.now() - start,
         usage: result.usage,

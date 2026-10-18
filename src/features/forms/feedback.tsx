@@ -21,6 +21,7 @@ const fields: Record<string, [string, string]> = {
   details: ["details", "需求说明"],
   type: ["type", "互助类型"],
   petIds: ["pets", "关联宠物"],
+  tags: ["tags", "话题标签"],
 };
 export function describeFormError(error: Error) {
   if (!(error instanceof z.ZodError))

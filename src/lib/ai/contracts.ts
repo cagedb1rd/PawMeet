@@ -173,6 +173,86 @@ export const petPhotoDraftSchema = z.strictObject({
   messages: z.array(short(120)).max(8),
 });
 export type PetPhotoDraft = z.infer<typeof petPhotoDraftSchema>;
+const thumbnailDataUrl = z
+  .string()
+  .max(160000)
+  .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/);
+/**
+ * Community AI (post title / tags draft). Input is the post body; the optional image is the
+ * same ≤512px re-encoded thumbnail as pet-photo, sent only when the user ticks it and clicks.
+ */
+export const postMetaRequestSchema = z.strictObject({
+  text: short(1000).min(1),
+  image: thumbnailDataUrl.optional(),
+});
+export type PostMetaRequest = z.infer<typeof postMetaRequestSchema>;
+/** Raw model output; limits are reviewed by the program (src/lib/ai/community.ts). */
+export const postMetaOutputSchema = z.strictObject({
+  title: short(40).min(1),
+  tags: z.array(short(30).min(1)).max(8),
+  note: short(80).nullable(),
+});
+export type PostMetaOutput = z.infer<typeof postMetaOutputSchema>;
+export const POST_META_LIMITS = {
+  titleMax: 20,
+  tagsMin: 3,
+  tagsMax: 5,
+} as const;
+/** What the browser receives: program-reviewed draft. */
+export const postMetaDraftSchema = z.strictObject({
+  title: short(POST_META_LIMITS.titleMax).min(1),
+  tags: z
+    .array(z.string().regex(/^[一-鿿A-Za-z0-9_]{1,12}$/))
+    .min(POST_META_LIMITS.tagsMin)
+    .max(POST_META_LIMITS.tagsMax),
+  note: short(80).nullable(),
+  /** Tags the program dropped (format, ungrounded health / identity claims, extras). */
+  removed: z.number().int().min(0).max(10),
+});
+export type PostMetaDraft = z.infer<typeof postMetaDraftSchema>;
+
+const precheckCategory = z.enum([
+  "personal_info",
+  "ad_redirect",
+  "abuse",
+  "animal_cruelty",
+  "dangerous_advice",
+  "other",
+]);
+/** Only the user's own title / text / tags of this post; no images, no other data. */
+export const postSafetyRequestSchema = z.strictObject({
+  title: short(60),
+  text: short(1000).min(1),
+  tags: z.array(short(12).min(1)).max(5),
+});
+export type PostSafetyRequest = z.infer<typeof postSafetyRequestSchema>;
+export const postSafetyOutputSchema = z.strictObject({
+  verdict: z.enum(["pass", "revise"]),
+  issues: z
+    .array(
+      z.strictObject({
+        category: precheckCategory,
+        excerpt: short(60),
+        reason: short(80).min(1),
+      }),
+    )
+    .max(5),
+});
+export type PostSafetyOutput = z.infer<typeof postSafetyOutputSchema>;
+export const postSafetyResultSchema = z.strictObject({
+  verdict: z.enum(["pass", "revise"]),
+  issues: z
+    .array(
+      z.strictObject({
+        category: precheckCategory,
+        field: z.enum(["title", "text", "tags"]).nullable(),
+        excerpt: short(60).nullable(),
+        reason: short(80).min(1),
+      }),
+    )
+    .max(5),
+});
+export type PostSafetyResult = z.infer<typeof postSafetyResultSchema>;
 export type AiData<T extends AiTask> = z.infer<(typeof outputSchemas)[T]>;
 export type MatchIntent = z.infer<typeof matchIntentSchema>;
 export type HelpDraft = z.infer<typeof helpDraftSchema>;

@@ -14,6 +14,12 @@ import {
   assistantAnswerSchema,
   PetPhotoDraft,
   petPhotoDraftSchema,
+  PostMetaDraft,
+  PostMetaRequest,
+  postMetaDraftSchema,
+  PostSafetyRequest,
+  PostSafetyResult,
+  postSafetyResultSchema,
 } from "./contracts";
 const assistantStepSchema = z.strictObject({
   continuation: z.string().max(40000),
@@ -138,6 +144,34 @@ export function aiPetPhoto(
     "pet-photo",
     { image: thumbnail },
     petPhotoDraftSchema,
+    signal,
+    onProgress,
+  );
+}
+/** Title / tags draft; the thumbnail is only included when the user ticked it. */
+export function aiPostMeta(
+  body: PostMetaRequest,
+  signal?: AbortSignal,
+  onProgress?: ProgressHandler,
+) {
+  return request<PostMetaDraft>(
+    "post-meta",
+    body,
+    postMetaDraftSchema,
+    signal,
+    onProgress,
+  );
+}
+/** Model layer of the pre-publish precheck: this post's title / text / tags only. */
+export function aiPostSafety(
+  body: PostSafetyRequest,
+  signal?: AbortSignal,
+  onProgress?: ProgressHandler,
+) {
+  return request<PostSafetyResult>(
+    "post-safety",
+    body,
+    postSafetyResultSchema,
     signal,
     onProgress,
   );

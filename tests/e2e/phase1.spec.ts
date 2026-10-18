@@ -87,6 +87,8 @@ test("发布含照片动态、点赞切换与重置", async ({ page }) => {
     .setInputFiles(path.resolve("public/images/dog-3.jpg"));
   await expect(page.getByRole("img", { name: "已选照片 1" })).toBeVisible();
   await page.getByRole("button", { name: "确认发布动态" }).click();
+  // E2E runs with AI_ENABLED=false: the AI precheck layer is reported as not run.
+  await page.getByRole("button", { name: "不经 AI 预检发布" }).click();
   await expect(page).toHaveURL("/");
   const post = page.locator(".post-card").first();
   await expect(post).toContainText("测试日常");
@@ -266,6 +268,8 @@ test("模拟身份草稿保护与浏览器副本独立", async ({ page, browser 
     .click();
   await expect(page.getByLabel("动态内容")).toHaveValue("未保存的草稿");
   await page.getByRole("button", { name: "确认发布动态" }).click();
+  // E2E runs with AI_ENABLED=false: the AI precheck layer is reported as not run.
+  await page.getByRole("button", { name: "不经 AI 预检发布" }).click();
   await expect(page).toHaveURL("/");
   const isolated = await browser.newContext();
   const other = await isolated.newPage();
@@ -326,6 +330,8 @@ test("localStorage 配额失败保留表单，原状态不变（故障注入）"
   });
   await page.getByLabel("动态内容").fill("失败时不要丢失这段草稿");
   await page.getByRole("button", { name: "确认发布动态" }).click();
+  // E2E runs with AI_ENABLED=false: the AI precheck layer is reported as not run.
+  await page.getByRole("button", { name: "不经 AI 预检发布" }).click();
   await expect(page.getByRole("status")).toContainText("保存失败");
   await expect(page.getByLabel("动态内容")).toHaveValue(
     "失败时不要丢失这段草稿",

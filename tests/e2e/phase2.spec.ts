@@ -335,7 +335,10 @@ test("旧版数据浏览器迁移与过期需求禁止申请", async ({ page }) 
   old.schemaVersion = 1;
   delete old.follows;
   old.posts = old.posts.map((p: Record<string, unknown>) =>
-    Object.fromEntries(Object.entries(p).filter(([key]) => key !== "title")),
+    // v1 posts had neither a title nor topic tags.
+    Object.fromEntries(
+      Object.entries(p).filter(([key]) => !["title", "tags"].includes(key)),
+    ),
   );
   old.pets[0].name = "保留的旧档案";
   old.helpRequests = old.helpRequests.map((h: Record<string, unknown>) =>
@@ -369,6 +372,10 @@ test("旧版数据浏览器迁移与过期需求禁止申请", async ({ page }) 
   expect(migrated.schemaVersion).toBe(2);
   expect(migrated.pets[0].name).toBe("保留的旧档案");
   expect(migrated.posts).toEqual(
-    old.posts.map((p: Record<string, unknown>) => ({ ...p, title: "" })),
+    old.posts.map((p: Record<string, unknown>) => ({
+      ...p,
+      title: "",
+      tags: [],
+    })),
   );
 });

@@ -64,6 +64,8 @@ test("发布标题、搜索标题与正文、用户昵称、空结果与刷新",
     .getByLabel("动态内容", { exact: true })
     .fill("今天在公园看到了蓝色蜻蜓。");
   await page.getByRole("button", { name: "确认发布动态" }).click();
+  // E2E runs with AI_ENABLED=false: the AI precheck layer is reported as not run.
+  await page.getByRole("button", { name: "不经 AI 预检发布" }).click();
   await expect(page.locator(".note-card").first()).toContainText(
     "小蝴蝶观察日记",
   );

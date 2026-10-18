@@ -89,9 +89,22 @@ export const petSchema = petInputSchema.extend({
   ownerId: id,
   archivedAt: iso.nullable(),
 });
+/** Topic tag stored without "#": CJK, letters, digits or underscore, at most 12 characters. */
+export const POST_TAG_PATTERN = /^[一-鿿A-Za-z0-9_]{1,12}$/;
+export const postTagSchema = z
+  .string()
+  .regex(
+    POST_TAG_PATTERN,
+    "话题标签只能含中文、字母、数字或下划线，每个最多 12 字",
+  );
 export const postInputSchema = z.strictObject({
   title: z.string().trim().max(60).default(""),
   text: text(1000),
+  tags: z
+    .array(postTagSchema)
+    .max(5, "话题标签最多 5 个")
+    .refine((t) => new Set(t).size === t.length, "话题标签不能重复")
+    .default([]),
   petIds: z.array(id).max(3),
   images: z.array(imageSchema).max(3),
 });
@@ -383,6 +396,7 @@ export type PetInput = z.infer<typeof petInputSchema>;
 export type Pet = z.infer<typeof petSchema>;
 export type DemoState = z.infer<typeof stateSchema>;
 export type Post = DemoState["posts"][number];
+export type PostInput = z.infer<typeof postInputSchema>;
 export type Activity = DemoState["activities"][number];
 export type ActivityInput = z.infer<typeof activityInputSchema>;
 export const sizeLabels = {

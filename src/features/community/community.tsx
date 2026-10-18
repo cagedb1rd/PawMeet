@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useDemo } from "@/features/demo/provider";
 import { PetImage, Empty, formatTime } from "@/components/ui";
 import { Post } from "@/domain/schemas";
-import { communityPosts, postTitle } from "@/domain/community";
+import { communityPosts, formatTags, postTitle } from "@/domain/community";
 
 export function FollowButton({ userId }: { userId: string }) {
   const { state, run, writable } = useDemo();
@@ -73,6 +73,11 @@ export function PostCard({
         </div>
         <h1>{postTitle(post)}</h1>
         <p className="note-body">{post.text}</p>
+        {post.tags.length > 0 && (
+          <p className="note-topics" aria-label="话题标签">
+            {formatTags(post.tags)}
+          </p>
+        )}
         <div className="tags">
           {pets.map((p) => (
             <Link key={p.id} href={`/pets/${p.id}`}>
@@ -108,10 +113,14 @@ export function PostCard({
           </div>
         )}
         <h2>{postTitle(post)}</h2>
-        {pets.length > 0 && (
+        {pets.length > 0 ? (
           <p className="note-tag">
             #{pets[0].name} · {pets[0].breed}
           </p>
+        ) : (
+          post.tags.length > 0 && (
+            <p className="note-tag">{formatTags(post.tags.slice(0, 2))}</p>
+          )
         )}
       </Link>
       <div className="note-meta">

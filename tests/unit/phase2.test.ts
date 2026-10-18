@@ -535,7 +535,8 @@ describe("v1 → v2 无损迁移", () => {
       ),
       posts: seed.posts.map((p) =>
         Object.fromEntries(
-          Object.entries(p).filter(([key]) => key !== "title"),
+          // v1 posts had neither a title nor topic tags.
+          Object.entries(p).filter(([key]) => !["title", "tags"].includes(key)),
         ),
       ),
       schemaVersion: 1,
@@ -588,7 +589,8 @@ describe("v1 → v2 无损迁移", () => {
       ),
       posts: seed.posts.map((p) =>
         Object.fromEntries(
-          Object.entries(p).filter(([key]) => key !== "title"),
+          // v1 posts had neither a title nor topic tags.
+          Object.entries(p).filter(([key]) => !["title", "tags"].includes(key)),
         ),
       ),
       schemaVersion: 1,

@@ -5,7 +5,7 @@ import { AiError } from "../../src/server/ai/errors";
 
 /**
  * Per-model token caps approved in AGENTS「AI 与模型」. A run's --token-limit can only lower
- * them; 0 (the default) allows no real call. Vision / community smoke are not text evals here.
+ * them; 0 (the default) allows no real call. Vision and community smoke have their own caps below.
  */
 export const MODEL_TOKEN_CAPS: Record<string, number> = {
   "qwen3.8-flash": 300000,
@@ -25,6 +25,12 @@ export const VISION_TOKEN_CAPS: Record<string, number> = {
   "gemini-3.5-flash-lite": 50000,
   "gemini-3.8-flash": 50000,
 };
+
+/**
+ * Community AI smoke (step 8): one pooled ≤50k budget for all models together, in its own
+ * ledger (default .local/ai-eval/step8-community-ledger.json).
+ */
+export const COMMUNITY_SMOKE_CAP = 50000;
 
 const entrySchema = z.strictObject({
   /** Everything charged so far: actual usage plus conservative charges and open reservations. */
