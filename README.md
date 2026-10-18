@@ -1,75 +1,194 @@
 # PawMeet
 
-遇见同频的毛孩子。一个移动优先的宠物社区 Web Demo：分享日常、认识宠友、相约活动，重点展示大模型在业务流程中的接入与校验。
+**遇见同频的毛孩子。** 一个移动端优先的宠物社交与临时互助 Web Demo：分享日常、找附近宠友、约伴遛狗、临时帮忙照看。项目重点是把大模型接进真实业务流程：模型只生成草稿和查询参数，程序负责校验，主人确认后才写入数据。
 
-当前已实现 **Phase 4.5 AI 精简与智能约伴**，保留已完成的新版五栏 UI。主要 AI 场景为活动智能约伴、宠物档案填写、临时互助填表，模型为 qwen3.8-flash。可体验 5 个模拟身份、25 个虚构宠物、社区、地图、活动和互助；数据仅存当前浏览器，刷新保留，身份切换不是登录。约伴支持大概日期与时段直接查活动，发布时再确认具体时间。真实小样本包含成功和超时，人工验收待用户确认；历史模型失败与自动化证据见 [PROGRESS](docs/PROGRESS.md)。
+技术栈：Next.js（App Router）· React · TypeScript strict · Tailwind · Zod · Qwen / Gemini（OpenAI 兼容接口）· 高德地图 JS API · Vitest · Playwright
 
-## 本地启动
+## 核心亮点
 
-使用 Node.js 24.x 和 npm，在项目根目录运行：
+- **AI 智能约伴：原生多工具调用循环。** 用一句话描述需求（“周六下午 5 公里内散步，最好有草坪”），模型先调用工具查询已有活动；没有合适的就并行查宠友和地点，再做规则比较，最后生成活动草稿。工具在浏览器里只读执行，每一步都显示在“执行过程”时间线上。
+- **拍照建档：视觉识别 + 程序交叉校验。** 点击“识别照片”后，只把压缩到 512px、去掉 EXIF 的缩略图发给视觉模型。识别结果先经过 Schema 和业务审核：低置信度字段要主人点“采用”才填入；体型和程序维护的品种体型表冲突时，以表为准。
+- **社区 AI：标题标签草稿 + 两层发布前预检。** 一键生成标题和话题标签草稿。发布前先跑浏览器端的程序规则（手机号、微信号这类个人信息直接拦截），再由模型做语义判断。AI 失败时只显示“AI 预检未执行”，不会显示成“已通过”。
+- **结构化输出 + Zod 业务校验 + 多模型真实评测。** 所有输出都经过 strict JSON Schema 和共享 Zod 校验，再过事实、引用和业务规则检查。同一套 41 条程序判定用例在 Qwen 和 Gemini 的 4 个模型上真实跑过，每个模型有 Token 上限，失败也如实记录。
 
-```powershell
+## 界面截图
+
+> 界面截图（手机宽度，生产构建）。AI 结果为演示数据（固定的 mock 响应），照片来自项目自带的演示素材。
+
+| 首页 | 附近宠友 | 约伴执行过程 |
+| --- | --- | --- |
+| ![首页双列瀑布流](docs/screenshots/home.png) | ![附近宠友：距离与筛选](docs/screenshots/nearby.png) | ![智能约伴工具调用时间线](docs/screenshots/companion-timeline.png) |
+
+| 拍照建档草稿 | 发布前预检 |
+| --- | --- |
+| ![拍照建档：识别草稿与低置信度采用](docs/screenshots/photo-draft.png) | ![发布前预检：程序规则与 AI 判断](docs/screenshots/post-precheck.png) |
+
+## 架构
+
+```mermaid
+flowchart LR
+  subgraph Browser["浏览器"]
+    UI["页面与表单"]
+    Tools["只读工具执行器<br/>查活动 / 宠友 / 地点<br/>规则比较 / 活动草稿"]
+    Store[("localStorage 业务数据<br/>IndexedDB 照片")]
+    UI --> Store
+    Tools --> Store
+  end
+  subgraph Server["Next.js Route Handler"]
+    API["/api/ai/task<br/>固定任务白名单"]
+    Guard["同源检查 · 匿名会话<br/>额度账本 · 模型白名单"]
+    Client["模型客户端<br/>流式 · 超时 · 重试一次"]
+    Check["strict Schema + Zod<br/>事实 / 引用 / 业务校验"]
+    Proxy["高德安全代理<br/>安全码只在服务端"]
+    API --> Guard --> Client --> Check
+  end
+  UI -->|"需求文本 / 缩略图"| API
+  Check -->|"草稿或 tool_calls（签名续传）"| UI
+  UI --> Tools
+  Tools -->|"结果摘要"| API
+  Client --> Qwen["阿里云百炼 Qwen"]
+  Client --> Gemini["Google Gemini"]
+  UI --> Amap["高德 JS API"]
+  Amap --> Proxy
+```
+
+- 没有服务端业务数据库：业务数据在浏览器本地，服务端只做模型调用、限额和地图代理。工具在浏览器执行，只回传必要的摘要，不上传完整 localStorage、照片原图或住址。
+- 模型只能从服务端白名单中选择（文本 `AI_MODEL`、视觉 `AI_VISION_MODEL`），浏览器不能指定模型，也不会自动回退到其他模型。
+- 详细契约见 [ARCHITECTURE](docs/ARCHITECTURE.md)，关键取舍见 [DECISIONS](docs/DECISIONS.md)。
+
+## AI 设计要点
+
+1. **AI 只出草稿。** 模型返回的内容只用于填表单或生成查询参数，并带“AI 填入”标记，手改后标记消失。主人点确认后，才走正式的业务命令、Schema 和角色 / 状态校验。模型不产生宠友、地点、距离、安全结论或诊断。
+2. **不信任模型输出。** strict Schema 只保证格式，所以另有程序校验：排斥条件不能被展开成白名单，工具参数由程序用已确认的条件覆盖，最终回答只能引用本次工具真实返回的行。工具调用有轮数和次数上限。
+3. **置信度没校准，就交给程序规则。** 视觉评测里两次失败都是“自信地错了”：品种认对（0.95），体型却错一档（0.85）。因此加入了程序维护的品种体型表做交叉校验（[D026](docs/DECISIONS.md)）。社区预检同理：个人信息由确定性规则拦截，模型判断只作建议（[D025](docs/DECISIONS.md)）。
+4. **评测里发现、已修复的问题：**
+   - 模型没有调用工具，却回答“已查询，没有结果”。修复后，没有工具结果的一轮只接受澄清类回答。
+   - Gemini 遇到工具报错后反复调用同一工具。修复后，工具出错的下一轮不再提供工具，强制如实收尾。
+   - 接 Gemini 时的两处兼容问题：流式 tool_calls 不带 `index`；回答修复指令用 system 角色时，Gemini 返回 HTTP 400。
+
+开发过程中具体的例子和对应提交见 [AI_CODING](docs/AI_CODING.md)。
+
+## 评测结果（真实调用）
+
+所有检查都由程序判定，不用 LLM 当裁判。下面只列真实调用结果，不包含任何模拟数据。方法、原始报告和失败明细见 [AI_EVAL](docs/AI_EVAL.md)。
+
+**文本：智能约伴、档案填写、互助填表**（41 条用例 × 2 轮 = 82 次尝试，每个模型 ≤30 万 Token）
+
+| 模型 | 已执行 / 计划 | 通过率（网络失败计入） | 只看有响应的尝试 | 总时长 p50 |
+| --- | --- | --- | --- | --- |
+| gemini-3.8-flash | 82 / 82 | 87.8% | 72 / 82 | 2.7 s |
+| gemini-3.5-flash-lite | 82 / 82 | 86.6% | 71 / 82 | 1.6 s |
+| qwen3.8-max-0902 | 61 / 82（额度耗尽） | 91.8% | 56 / 56 | 10.1 s |
+| qwen3.8-flash | 36 / 82（额度耗尽） | 63.9% | 23 / 28 | 9.7 s |
+
+结论：qwen3.8-max-0902 在有响应的尝试里全部通过；两个 Gemini 跑满全部尝试，失败集中在两类：工具出错后不收尾（被 4 轮上限拦下），以及不严格执行 Schema 枚举（被业务校验拦下）。没有错误数据被写入。局限：评测在海外进行，到百炼北京端点的跨境连接经常失败或超时，Qwen 的延迟主要反映网络。超时请求按整笔预留计入额度，所以两个 Qwen 模型没能跑完，qwen3.8-flash 的样本不足以下结论。上面提到的“出错后强制收尾”修复，还没有用真实调用复测。
+
+**视觉：拍照建档**（16 张带标签的授权图片：常规小 / 中 / 大型各 4 张、难例 2 张、非狗 2 张）
+
+| 模型 | 通过 | 总时长 p50 | 失败 |
+| --- | --- | --- | --- |
+| gemini-3.5-flash-lite | 15 / 16 | 1.7 s | 比格判成小型 |
+| gemini-3.8-flash | 15 / 16 | 2.9 s | 萨摩耶判成中型 |
+| qwen3.8-omni-flash / qwen3.5-omni-plus | 未完成 | — | 从海外连接百炼北京端点失败 / 超时 |
+
+结论：32 次输出全部符合 Schema，没有给出健康或性格判断。猫、毛绒玩具狗、两只狗同框、只拍到狗鼻子，都正确地没有填写。用两次运行保存的原始输出离线复算加入品种体型表后的规则：lite 自动填入的错误从 1 个降到 0；3.8-flash 仍是 1 个，因为萨摩耶在表中允许中型和大型。局限：只有 16 张图；Qwen-Omni 没有可比结果，这不代表它的识别能力。
+
+**社区 AI：冒烟**（9 条标题标签 + 10 条发布前预检，两个模型共用 5 万 Token）
+
+| 模型 | 通过 | 标题标签 / 预检 p50 |
+| --- | --- | --- |
+| gemini-3.5-flash-lite | 19 / 19 | 1.5 s / 1.5 s |
+| gemini-3.8-flash | 19 / 19 | 2.1 s / 2.2 s |
+
+结论：冒烟全部通过。程序规则层漏掉了两条词表外的虐待说法（“饿它三天”“老鼠药拌在肉里”），模型层都判了出来；用例里的提示注入，两个模型都没有照做。局限：样本小，检查是关键词和结构规则，不评估标题质量；冒烟通过不等于准确率。
+
+## 本地运行
+
+需要 Node.js 24.x 和 npm。
+
+```bash
 npm ci
+```
+
+```bash
 npm run dev
 ```
 
-打开 [http://localhost:3000](http://localhost:3000)。本地业务和距离筛选不需要密钥；在线地图按下节配置。建议使用新版 Chrome / Edge；单个同源标签页持有编辑权，其他标签页只读。关闭原编辑页后刷新即可接管。不支持 Web Locks 的浏览器关闭写入，以保护数据一致性。手机真机访问需另行配置可信 HTTPS，普通局域网 HTTP 不保证定位 / Web Locks / crypto 能力。
+打开 <http://localhost:3000>。不配置任何密钥，社区、附近（距离筛选与列表）、活动、互助等人工流程都能完整使用；AI 和在线地图未配置时会显示明确的错误，不会伪装成功。
 
-生产模式：`npm run build` 后执行 `npm start`。不要同时在相同端口运行开发和生产服务。
+要启用 AI 或地图，复制 `.env.example` 为 `.env.local` 并按需填写（密钥只在服务端使用，不要提交）：
 
-## 可以体验
+| 变量 | 作用 |
+| --- | --- |
+| `AI_ENABLED` | 设为 `true` 才会调用模型，默认关闭 |
+| `AI_MODEL` / `AI_VISION_MODEL` | 文本 / 视觉模型，必须在白名单内；代码默认 `qwen3.8-flash` / `qwen3.8-omni-flash` |
+| `DASHSCOPE_API_KEY` / `AI_BASE_URL` | 阿里云百炼的密钥与兼容端点（使用 Qwen 时需要） |
+| `GEMINI_API_KEY` | Google AI Studio 密钥（使用 `gemini-*` 模型时需要） |
+| `AI_STREAM`、`AI_FIRST_BYTE_TIMEOUT_MS`、`AI_TOTAL_TIMEOUT_MS` | 流式开关、首字节超时与单次总超时 |
+| `AI_MAX_DAILY_CALLS`、`AI_MAX_DAILY_TOKENS`、`QUOTA_STORE_PATH` | 每日调用 / Token 上限，以及本地额度账本的位置 |
+| `DEMO_SESSION_SECRET` | 匿名会话签名密钥（可选） |
+| `APP_ORIGIN` | 浏览器访问源，例如 `http://localhost:3000`，必须与实际地址一致 |
+| `NEXT_PUBLIC_AMAP_JS_KEY` / `AMAP_SECURITY_JSCODE` | 高德 Web 端（JS API）Key 与安全密钥（可选）；安全密钥只经服务端代理使用 |
 
-- 首页：双列瀑布流浏览宠物日常，「发现」查看全部帖子，「关注」查看已关注主人的帖子；进入详情点赞或关注作者。右上角搜索帖子标题、正文和用户昵称。
-- ＋：发布标题、正文与最多 3 张照片，刷新后保留；无标题的旧帖子以正文首行展示。
-- 附近 → 附近宠友：1 / 3 / 5 / 10 公里、品种、体型、性格与活动偏好多选，按大致直线距离排序；地图与列表共享同一集合。卡片可进入名片、档案、偏好比较与约伴。
-- 地图：默认杭州滨江，手动切换公共参考点；点击“使用当前位置”才请求浏览器定位，交由高德转换后临时使用。四类普通地点搜索、地址详情、公共集合点选择与高德导航。普通地点的宠物准入均未知。
-- 活动：纵向卡片浏览时间、地点、人数与从滨江公共参考点计算的大致距离；创建未来活动，选择地图地点、演示公共点或文字地点，切换身份报名 / 取消报名；组织者可取消活动，历史记录保留。
-- 我的：查看个人资料、帖子、关注与粉丝、活动和互助记录；创建、查看、编辑和删除本人宠物，切换演示身份、清理未引用照片，确认后重置演示数据。
-- 社交名片：从宠物档案进入，主人手工编辑性格 / 喜好 / 不喜欢的行为 / 习惯和初见建议，确认后下载 PNG 或分享文件；修改档案后须重新确认。
-- 附近 → 临时互助：发布临时遛狗 / 简单喂食，确认交接清单，切换身份申请 / 撤回，主人选择帮助者，帮助者标完成后主人再确认，双方可查历史。
-- 地图不可用时错误可见，本地列表和距离筛选仍可用；活动 / 互助可填写文字公共点。无坐标的文字地点不能导航。AI 失败会显示错误，保留手工流程；没有真实认证、支付或即时聊天。
+在海外网络下运行时，建议设 `AI_MODEL=gemini-3.5-flash-lite`、`AI_VISION_MODEL=gemini-3.5-flash-lite`，并配置 `GEMINI_API_KEY`：速度最快，效果与 gemini-3.8-flash 相当。在国内网络下可用默认的 Qwen。高德需要在[高德控制台](https://console.amap.com/)创建“Web端（JS API）”Key，并限制来源域名。修改配置后要重启服务，生产模式还要重新 build。浏览器地址必须与 `APP_ORIGIN` 完全一致（`localhost` 和 `127.0.0.1` 算不同的源）。同一浏览器同时只有一个标签页可以编辑，其他标签页只读。
 
-删除使用归档机制保留历史引用；有未结束活动、未来开放互助或进行中互助引用的宠物不能删除。可新建一份宠物档案体验完整 CRUD。浏览器清除站点数据会丢失本地记录；损坏 / 未知版本数据会进入恢复界面，支持导出原文，不会自动覆盖。
+生产模式：
 
-上传仅支持 JPEG / PNG / WebP：原图 ≤8MiB、最长边压缩至 1280、输出 ≤250KiB，最多 30 张且总量 ≤10MiB。照片保存于 IndexedDB，localStorage 只存引用。静态照片随项目提供，[来源与许可](public/images/SOURCES.md)。
-
-## 高德本地配置
-
-1. 按[官方准备文档](https://lbs.amap.com/api/javascript-api-v2/prerequisites)登录[高德控制台](https://console.amap.com/)，没有账号先注册，并按控制台提示完成认证。
-2. 在「应用管理 → 我的应用」创建 PawMeet 应用、添加 Key，服务平台选择 **Web端（JS API）**，取得 JS Key 和安全密钥。不要用 Web 服务 Key 替代 JS Key。
-3. 按控制台可用设置限制来源域名，添加实际使用的 localhost / 未来部署域名；核对服务权限、可用配额和授权要求。不自动开通付费服务或购买资源。
-4. 复制 `.env.example` 为本地 `.env.local`（已有文件只补对应字段）：`NEXT_PUBLIC_AMAP_JS_KEY` 填 JS Key、`AMAP_SECURITY_JSCODE` 填安全密钥、`APP_ORIGIN` 填完整访问源（协议、主机、端口），例如 `http://localhost:3103`。密钥不要发到聊天或提交 Git。
-5. 重启开发服务：`npm run dev -- --port 3103`。生产模式改配置后重新 `npm run build`，再 `npm run start -- --port 3103`。访问源须与 APP_ORIGIN 一致；localhost 和 127.0.0.1 不是同一个源。
-
-安全码只由 Node 的 `/_AMapService` 代理追加；浏览器只得到公开 JS Key。[官方代理说明](https://lbs.amap.com/api/javascript-api-v2/guide/abc/jscode)。代理固定高德上游、限制路径 / 参数，每个 Node 进程全局最多 60 次 / 分钟、3000 次 / 北京自然日，账本在被忽略的 `.runtime/map-quota.json`；只支持单实例单进程，不能当成平台硬费用保证。部署前仍需核对平台配额，禁止多进程共享此账本。
-
-当前位置仅作本页参考，不写入档案、不持久化、不发送给 AI。地图选点只更新表单草稿，提交活动 / 求助后才保存约定公共点。不需要精确家庭位置。重置或首次打开会使用新分布的演示坐标；已有浏览器档案和位置原样保留。
-
-## Qwen 本地配置
-
-在已有 `.env.local` 中配置 `DASHSCOPE_API_KEY`、`AI_MODEL=qwen3.8-flash`、`AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1`、`AI_ENABLED=true`；`APP_ORIGIN` 须与浏览器访问源一致。密钥仅在 Next 服务端使用，禁止 `NEXT_PUBLIC` 前缀。配置后重启，生产模式先重新 build。用户已授权使用此型号；它按百炼账户规则计费，不能视为永久免费。程序只接受服务端白名单型号（见 [AGENTS](AGENTS.md#ai-与模型)），其他型号直接报错且无自动回退；旧 `GLM_*` 配置不参与调用。
-
-“我的”档案编辑和互助发布支持自然语言填写可编辑草稿，填入不保存，点击原确认按钮才写入。社交适配直接展示规则比较，照看交接清单使用已有资料模板，不消耗模型 Token。
-
-“活动 → AI 智能约伴”输入需求后，有大概日期与时段就先查询当前浏览器已有活动；例如“周六下午或晚上”无需填写精确分钟，缺少日期才补日期。合适或部分符合的活动展示真实卡片和差异，由你进入详情报名；无合适活动可选择“自己组局”。组局按需原生调用宠友、地点、规则比较和活动草稿工具，粗略时段不会自动填成活动起止，发布前再补具体时间，确认创建前不持久化；不会发送真实邀请。高德地点准入未知，失败可手动操作或明确选演示地点。“扩大到5公里”保留其他已确认条件，其他复杂修改需重新描述复核。旧 /assistant 自动进入活动页。
-
-全局10次/分钟、200次/日、保守token预留300000/日、并发2；session为6次/分钟和20次/日。可以用AI_MAX_DAILY_CALLS / AI_MAX_DAILY_TOKENS降低限制，AI_ENABLED=false关闭调用。账本需要可写持久磁盘、单实例单进程；不是平台费用保证，公开部署仍需平台配额控制。可设置独立DEMO_SESSION_SECRET；不配置则用服务端Qwen key签名。
-
-日常开发仅运行离线测试。普通 Playwright 服务关闭 AI；不要为回归测试启用真实 API。历史评测报告保留在 evals/reports，当前离线覆盖见 [AI_EVAL](docs/AI_EVAL.md#phase-45-当前离线验证)。真实验证默认阻断；每轮必须先获用户明确批准并限制实际传输数，不能沿用历史授权或旧版大批量评测命令。
-
-## 检查与验收
-
-```powershell
-npm run lint
-npm run typecheck
-npm run test
+```bash
 npm run build
-npx playwright install chromium
-npm run test:e2e
-# 显式真实地图检查（需要上述配置，会访问高德；与 SDK mock 分开）
-npm run test:maps:live
 ```
 
-Playwright 使用生产构建，会在 3000 端口自动启动服务；测试拒绝复用已有服务；默认 3000 端口被占用时，可先设置 `$env:PAWMEET_E2E_PORT='3102'` 再运行测试。真实结果、未验证项和逐步验收清单见 [PROGRESS](docs/PROGRESS.md)。
+```bash
+npm run start
+```
 
-[产品与验收](docs/PRD.md) · [架构与接口契约](docs/ARCHITECTURE.md) · [阶段计划](docs/PLAN.md) · [交接](docs/HANDOFF.md)
+测试（Playwright 使用生产构建并自动启动服务；AI 和地图全部是 mock，不调用真实模型）：
+
+```bash
+npm run lint
+```
+
+```bash
+npm run typecheck
+```
+
+```bash
+npm run test
+```
+
+```bash
+npx playwright install chromium
+```
+
+```bash
+npm run test:e2e
+```
+
+当前结果：Vitest 485 项、Playwright 120 项（桌面 + 手机）通过，见 [PROGRESS](docs/PROGRESS.md#当前工程检查)。真实模型评测需要显式授权和 Token 上限，命令见 [AI_EVAL 复现](docs/AI_EVAL.md#复现)。
+
+## 目录结构
+
+```text
+src/app/            页面路由；api/ai/[task] 是 AI 接口，%5FAMapService 是高德安全代理
+src/features/       业务界面：社区、附近、活动、互助、档案、AI（约伴 / 拍照 / 时间线）
+src/domain/         纯数据模型与规则：Zod Schema、业务命令、距离、匹配、发布预检
+src/lib/ai/         前后端共享的 AI 契约、校验、只读工具、同义词表、品种体型表
+src/server/ai/      仅服务端：模型白名单、客户端（流式 / 重试）、Prompt、额度
+src/lib/storage/    localStorage 仓库与 IndexedDB 照片
+evals/              评测用例、多模型 runner、分模型额度、真实与模拟报告
+tests/              Vitest 单测与 Playwright 端到端测试
+docs/               需求、架构、决策、评测、进度与交接文档
+```
+
+## 演示边界
+
+- 数据只保存在当前浏览器，刷新后保留；换浏览器就是独立的一份。可以在“我的”里一键重置。
+- 5 个可切换的模拟身份，切换不是登录。25 个宠物档案、坐标和互动都是虚构的。
+- 没有真实注册登录、聊天、支付或寄养交易；普通地点的“宠物能否进入”一律显示未知。
+- 暂不部署，本地运行演示。
+
+## 用 AI Coding 开发
+
+这个项目整体用 AI Coding 工具开发：[AGENTS.md](AGENTS.md) 写长期规则，[HANDOFF](docs/HANDOFF.md) 和 [PROGRESS](docs/PROGRESS.md) 负责跨会话交接，每一步在独立会话中按“读文档 → 小任务 → 看差异 → 跑测试 → 写证据 → 提交”推进。测试兜住 AI 生成代码的例子见 [docs/AI_CODING.md](docs/AI_CODING.md)。
+
+文档：[产品需求](docs/PRD.md) · [架构](docs/ARCHITECTURE.md) · [技术决策](docs/DECISIONS.md) · [AI 评测](docs/AI_EVAL.md) · [进度](docs/PROGRESS.md) · [计划](docs/PLAN.md) · 演示照片[来源与许可](public/images/SOURCES.md)

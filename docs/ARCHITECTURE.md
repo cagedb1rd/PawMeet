@@ -236,7 +236,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 ## 8. 环境配置与部署
 
-已提供 [.env.example](../.env.example)。地图与AI配置均已接入，实际服务状态见AI_EVAL；配置步骤见 [README](../README.md#高德本地配置)：
+已提供 [.env.example](../.env.example)。地图与AI配置均已接入，实际服务状态见AI_EVAL；配置步骤见 [README](../README.md#本地运行)：
 
 | 变量 | 可见性 / 用途 |
 | --- | --- |
