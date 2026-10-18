@@ -50,6 +50,7 @@ function Suggestion({
             <button
               key={c.name}
               type="button"
+              className="button secondary small"
               aria-label={c.name}
               disabled={disabled}
               onClick={() => onAdopt(c.key, c.label, c.fill)}
