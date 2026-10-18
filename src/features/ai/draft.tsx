@@ -219,7 +219,7 @@ export function AiDraft<T extends AiTask>({
           <div className="button-row">
             <button
               type="button"
-              className="button secondary"
+              className="button"
               disabled={disabled || applied}
               onClick={() => {
                 onApply(data);
@@ -228,7 +228,11 @@ export function AiDraft<T extends AiTask>({
             >
               {applied ? "已填入，请检查下方表单" : applyLabel}
             </button>
-            <button type="button" onClick={() => setData(null)}>
+            <button
+              type="button"
+              className="text-link"
+              onClick={() => setData(null)}
+            >
               丢弃草稿
             </button>
           </div>

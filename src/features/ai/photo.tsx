@@ -271,7 +271,7 @@ export function PhotoRecognize({
           <div className="button-row">
             <button
               type="button"
-              className="button secondary"
+              className="button"
               disabled={disabled || applied || !fillable}
               onClick={() => {
                 onApply(fill!);
@@ -288,6 +288,7 @@ export function PhotoRecognize({
             </button>
             <button
               type="button"
+              className="text-link"
               onClick={() => {
                 setDraft(null);
                 setApplied(false);

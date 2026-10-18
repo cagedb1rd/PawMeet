@@ -2333,3 +2333,6 @@ textarea {
 .photo-suggestion .button-row { margin: 0; }
 .ai-preview dd { margin: 0; }
 @media(max-width: 500px) { .ai-preview > div { grid-template-columns: 1fr; gap: .2rem; } }
+/* AI panels share the panel's pale green, so secondary buttons need their own surface. */
+.ai-panel .button.secondary { background: #fff; border-color: var(--green); box-shadow: 0 1px 2px rgb(41 52 46 / 0.08); }
+.ai-panel .button.secondary:hover:not(:disabled) { background: #e4ecdf; }
