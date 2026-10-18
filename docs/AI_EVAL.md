@@ -1,6 +1,6 @@
 # AI 评测方案与记录
 
-状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。社区 AI（第 8 步，Prompt pawmeet-community-1）真实冒烟见[第 8 步](#第-8-步社区-ai-冒烟)：按用户要求只用 Gemini，gemini-3.8-flash 与 gemini-3.5-flash-lite 各 19/19 通过，合计 27,598 / 50,000 Token，样本小、检查宽松，不代表大规模效果。视觉（拍照建档）真实结果见[第 7 步](#第-7-步视觉评测拍照建档)：只用 16 张私有带标签图片，两个 Gemini 各执行 14–15 张、各 1 例体型边界失败，两个 Qwen-Omni 受跨境首字节超时影响没有得到私有图片结果。文本最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
+状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。社区 AI（第 8 步，Prompt pawmeet-community-1）真实冒烟见[第 8 步](#第-8-步社区-ai-冒烟)：按用户要求只用 Gemini（gemini-3.5-flash-lite 为主、gemini-3.8-flash 对照），两者各 19/19 通过，合计 27,598 / 50,000 Token，样本小、检查宽松，不代表大规模效果。视觉（拍照建档）真实结果见[第 7 步](#第-7-步视觉评测拍照建档)：只用 16 张私有带标签图片，两个 Gemini 各执行 14–15 张、各 1 例体型边界失败，两个 Qwen-Omni 受跨境首字节超时影响没有得到私有图片结果。文本最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
 
 ## 1. 测试层次与 mock / 真实区分
 
@@ -237,14 +237,14 @@ gemini-3.8-flash 常规小型“品种填对”为 3/4：dog-02（玩具贵宾�
 
 ### 第 8 步社区 AI 冒烟
 
-2026-10-19，Prompt pawmeet-community-1，用例 [community.v1](../evals/cases/community.ts)，runner [community-runner](../evals/lib/community-runner.ts)（检查全部由程序判定，无 LLM 评审）。用户要求本步真实冒烟直接用 Gemini、不再先试百炼；开跑前 curl 测 Gemini 端点 TLS 握手 3 次约 0.12–0.13 s。两个模型共用独立账本 `.local/ai-eval/step8-community-ledger.json` 的一个 5 万池（`community-smoke-all-models`），每次请求前按“估算输入 + 最大输出（+ 图片 1120）”预留（文本约 6,000、带图约 5,100），事后按实际 usage 结算。报告注明“工作区有改动”是因为运行时 DECISIONS.md 尚未提交，代码即提交 `78de6cc`。
+2026-10-19，Prompt pawmeet-community-1，用例 [community.v1](../evals/cases/community.ts)，runner [community-runner](../evals/lib/community-runner.ts)（检查全部由程序判定，无 LLM 评审）。用户要求本步真实冒烟直接用 Gemini、不再先试百炼，随后指定 gemini-3.5-flash-lite 为主模型、gemini-3.8-flash 仅在额度有余时作对照；该指示到达时两个模型已按 3.8-flash → lite 的顺序各跑满 19 条，合计远低于上限，因此保留结果、未重跑；开跑前 curl 测 Gemini 端点 TLS 握手 3 次约 0.12–0.13 s。两个模型共用独立账本 `.local/ai-eval/step8-community-ledger.json` 的一个 5 万池（`community-smoke-all-models`），每次请求前按“估算输入 + 最大输出（+ 图片 1120）”预留（文本约 6,000、带图约 5,100），事后按实际 usage 结算。报告注明“工作区有改动”是因为运行时 DECISIONS.md 尚未提交，代码即提交 `78de6cc`。
 
 用例：标题标签 9 条（普通日常 3、正文自带疫苗信息 1、极短正文 1、提示注入要求写“兽医认证”和微信号 1、照片 + 一句话 3：金毛、柴犬、猫，图片来自私有带标签素材的 ≤512px 缩略图）；安全预检 10 条（正常 1、易误报的安全提醒 / 就医分享 2、手机号、微信号 + 拉群、代购 + 外链、辱骂、给狗喂布洛芬、规则词表外的虐待说法、提示注入 + 投毒各 1）。检查项：原始输出 Schema、程序审核（标题 ≤20 字、3–5 个合规标签）、用到正文要点、原始输出不含指定的编造身份 / 联系方式 / 健康词、照片用例不写标签外的品种；安全预检看通过 / 建议修改是否正确、类别是否命中、片段是否能在原文中定位。每条用例同时记录程序规则层结果。
 
 | 模型 | 已执行 / 用例 | 通过 | 标题标签 p50 / p95 | 安全预检 p50 / p95 | 平均 Token（文本 / 带图） | 计入 | 报告 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| gemini-3.8-flash | 19/19 | 19（标题标签 9/9，预检 10/10） | 2.1 s / 3.2 s | 2.2 s / 6.9 s | 约 560 / 1,576 | 13,769 | [md](../evals/reports/2026-10-18T18-52-31-550Z-gemini-3.8-flash-community-live.md) |
-| gemini-3.5-flash-lite | 19/19 | 19（标题标签 9/9，预检 10/10） | 1.5 s / 2.0 s | 1.5 s / 1.7 s | 约 570 / 1,580 | 13,829 | [md](../evals/reports/2026-10-18T18-53-28-929Z-gemini-3.5-flash-lite-community-live.md) |
+| gemini-3.5-flash-lite（主） | 19/19 | 19（标题标签 9/9，预检 10/10） | 1.5 s / 2.0 s | 1.5 s / 1.7 s | 约 570 / 1,580 | 13,829 | [md](../evals/reports/2026-10-18T18-53-28-929Z-gemini-3.5-flash-lite-community-live.md) |
+| gemini-3.8-flash（对照） | 19/19 | 19（标题标签 9/9，预检 10/10） | 2.1 s / 3.2 s | 2.2 s / 6.9 s | 约 560 / 1,576 | 13,769 | [md](../evals/reports/2026-10-18T18-52-31-550Z-gemini-3.8-flash-community-live.md) |
 
 合计 38 次上游传输、实际 usage 27,598 Token，保守计入 0，无重试、无网络失败；账本剩余 22,402，未继续调用。qwen3.8-flash 本步未调用（用户决定）。
 
