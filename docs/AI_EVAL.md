@@ -176,7 +176,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 
 ### 第 7 步视觉评测（拍照建档）
 
-2026-10-19，视觉 Prompt pawmeet-photo-2、用例 vision.v1。调用要求按官方文档核实后适配，见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务) 图片一条；功能与审核规则见[拍照建档](ARCHITECTURE.md#拍照建档pet-photo)。额度（经协调会话转达的用户批准）：四个视觉模型各 ≤5 万（账本 `.local/ai-eval/step7-vision-ledger.json`）；之后用户追加批准两个 Gemini 各 ≤6 万，用于在新账本 `step7b-vision-ledger.json` 上完整重跑 16 张。
+2026-10-19，视觉 Prompt pawmeet-photo-2、用例 vision.v1。调用要求按官方文档核实后适配，见 [ARCHITECTURE](ARCHITECTURE.md#统一服务与任务) 图片一条；功能与审核规则见[拍照建档](ARCHITECTURE.md#拍照建档pet-photo)。额度（经批准）：四个视觉模型各 ≤5 万（账本 `.local/ai-eval/step7-vision-ledger.json`）；之后追加批准两个 Gemini 各 ≤6 万，用于在新账本 `step7b-vision-ledger.json` 上完整重跑 16 张。
 
 **用例**：真实评测只用 `evals/fixtures/private-images/` 的 16 张带标签授权图片（Git 忽略、永不提交，期望来自 `labels.csv`），按类别统计：常规小型 / 中型 / 大型各 4 张、难例 2 张（hard-01 两只法斗、hard-02 狗鼻特写）、非狗 2 张（notdog-01 猫、notdog-02 毛绒玩具狗）。`public/images` 的 6 张演示照片只用于模拟运行与离线测试，live 模式代码拒绝。非狗与难例先跑。图片由真实 Chromium 按产品同一算法重绘为 ≤512px JPEG（去元数据），每张再过服务端 thumbnailPart 检查；报告只记文件名，不含图片或 base64。
 
