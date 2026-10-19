@@ -1,12 +1,12 @@
 # PawMeet 开发约定
 
-PawMeet 是面向中国年轻养宠人群的移动端优先宠物社交与临时互助 Web Demo，重点展示大模型在真实业务流程中的接入、校验与评测。默认中文，业务时区 Asia/Shanghai。当前按 [PLAN](docs/PLAN.md) 中用户已确认的展示改进步骤推进，进度与交接见 `docs/PROGRESS.md`、`docs/HANDOFF.md`；以用户最新指令确定授权范围。
+PawMeet 是面向中国年轻养宠人群的移动端优先宠物社交与临时互助 Web Demo，重点展示大模型在真实业务流程中的接入、校验与评测。默认中文，业务时区 Asia/Shanghai。计划、进度与交接文档（`docs/PLAN.md`、`docs/PROGRESS.md`、`docs/HANDOFF.md`）只保存在本地、不入库；以维护者最新指令确定授权范围。
 
 ## 每次会话
 
-1. 先读本文件，以及 `docs/HANDOFF.md`、`docs/PROGRESS.md`、`docs/PLAN.md`；按任务阅读 PRD、ARCHITECTURE、DECISIONS、AI_EVAL。
-2. 检查 `git status --short --branch`、最近提交、现有文件和 package.json；保护用户及其他会话未提交的修改，不重复初始化项目、不覆盖现有配置。
-3. 每个会话只做被分配的那一步，确认其完成标准后推进；PLAN 之外的新阶段或扩大范围必须先获得用户确认。有问题先自主定位和修复；需要账号授权、密钥或付费资源时说明具体用途，密钥通过本地环境文件配置，不写入聊天或文档。
+1. 先读本文件，以及本地存在的 `docs/HANDOFF.md`、`docs/PROGRESS.md`、`docs/PLAN.md`；按任务阅读 PRD、ARCHITECTURE、DECISIONS、AI_EVAL。
+2. 检查 `git status --short --branch`、最近提交、现有文件和 package.json；保护维护者及其他会话未提交的修改，不重复初始化项目、不覆盖现有配置。
+3. 每个会话只做被分配的那一步，确认其完成标准后推进；PLAN 之外的新阶段或扩大范围必须先获得维护者确认。有问题先自主定位和修复；需要账号授权、密钥或付费资源时说明具体用途，密钥通过本地环境文件配置，不写入聊天或文档。
 
 ## 长期规则
 
@@ -19,11 +19,11 @@ PawMeet 是面向中国年轻养宠人群的移动端优先宠物社交与临时
 
 ### AI 与模型
 
-- 只调用服务端配置白名单内的模型，不自动回退到白名单外型号。文本：`qwen3.8-flash`（产品默认 / 基线）、`qwen3.8-max-0902`（上限对照）、`qwen3.8-27b`（可选中间档）、`gemini-3.5-flash-lite` 与 `gemini-3.8-flash`（跨厂商对照，Google Gemini OpenAI 兼容接口）；视觉：`qwen3.8-omni-flash`（默认）、`qwen3.5-omni-plus`（对照）、`gemini-3.5-flash-lite` 与 `gemini-3.8-flash`（跨厂商对照）。型号名以各厂商模型列表核实结果为准，变更白名单须用户确认。
+- 只调用服务端配置白名单内的模型，不自动回退到白名单外型号。文本：`qwen3.8-flash`（产品默认 / 基线）、`qwen3.8-max-0902`（上限对照）、`qwen3.8-27b`（可选中间档）、`gemini-3.5-flash-lite` 与 `gemini-3.8-flash`（跨厂商对照，Google Gemini OpenAI 兼容接口）；视觉：`qwen3.8-omni-flash`（默认）、`qwen3.5-omni-plus`（对照）、`gemini-3.5-flash-lite` 与 `gemini-3.8-flash`（跨厂商对照）。型号名以各厂商模型列表核实结果为准，变更白名单须维护者确认。
 - AI 只生成草稿或查询参数；业务写入必须经主人确认，再通过业务 Schema、角色与状态校验。模型不产生权威实体、距离、安全结论、诊断或用药剂量。
 - 不信任客户端与模型输出。共享 Zod Schema，限制输入、输出、候选数量和调用次数；服务端只接收最少任务数据。
 - 禁止把原图、完整 localStorage、真实住址发送给模型。只有用户主动点击识别后，才可发送压缩缩略图（最长边 ≤512px、已去除 EXIF / 位置信息）给视觉模型。
-- 真实模型调用只在用户批准的分模型预算内执行。当前批准（跨厂商复测，独立新账本）：`qwen3.8-flash`、`qwen3.8-max-0902`、`gemini-3.5-flash-lite`、`gemini-3.8-flash` 各 ≤30 万 Token；视觉评测（第 7 步，独立账本）`qwen3.8-omni-flash`、`qwen3.5-omni-plus`、`gemini-3.5-flash-lite`、`gemini-3.8-flash` 各 ≤5 万，用户追加批准两个 Gemini 各 ≤6 万用于 16 张私有图片的完整重跑（新账本 `step7b-vision-ledger.json`）；社区 AI 冒烟 ≤5 万。第 6 步首轮账本（含 `qwen3.8-27b`）已用完，不再追加。到额度即停，不靠重试刷绿；没有批准额度的模型不调用，历史授权不沿用。
+- 真实模型调用只在维护者批准的分模型 Token 预算内执行（具体额度记录在本地交接文档），评测使用独立账本。到额度即停，不靠重试刷绿；没有批准额度的模型不调用，历史授权不沿用。
 - 难做或高耗 Token 的评测可用模拟数据，但文件名带 `-mock` / `-simulated`，表格与报告标注“模拟”；不得与真实数据合并计算，不得冒充真实结果。单元 mock、端到端 mock、真实模型评测分别报告。
 
 ### 密钥、数据与地图
@@ -35,9 +35,10 @@ PawMeet 是面向中国年轻养宠人群的移动端优先宠物社交与临时
 ### 交付、Git 与发布
 
 - 代码变更后运行相关测试；不删测试、放宽断言或伪造结果掩盖错误。一般代码步骤结束执行 lint、typecheck、相关 Vitest、build，关键用户流程执行 Playwright；实际命令以 package.json 为准。纯文档步骤检查链接、范围、差异和敏感信息，不伪装为业务测试。
-- 每步结束更新 PROGRESS、HANDOFF 及受影响文档，分别标记“已实现 / 已测试 / 已验收”；用户验收不能由代理代签。给出可执行验收步骤、真实检查结果与未验证项。
+- 每步结束更新 PROGRESS、HANDOFF 及受影响文档，分别标记“已实现 / 已测试 / 已验收”；人工验收由维护者确认，代理不能代签。给出可执行验收步骤、真实检查结果与未验证项。
 - 每步完成后创建本地 Git Commit，提交前审查暂存差异与敏感信息。Git 只用仓库本地身份，不修改全局配置，不编造作者。
-- 暂不部署。代码仅以公开 GitHub 仓库 <https://github.com/cagedb1rd/PawMeet> 展示，本地运行演示；未经用户同意不 push、不发布、不购买或执行付费调用。
+- 暂不部署，代码公开在 GitHub 仓库 <https://github.com/cagedb1rd/PawMeet>，本地运行演示；未经维护者同意不 push、不发布、不购买或执行付费调用。
+- 本地私有材料（交接文档、私有评测素材等）只放在被忽略的位置，永不提交。
 
 ## 实施约定
 

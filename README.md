@@ -81,7 +81,7 @@ flowchart LR
 | qwen3.8-max-0902 | 61 / 82（额度耗尽） | 91.8% | 56 / 56 | 10.1 s |
 | qwen3.8-flash | 36 / 82（额度耗尽） | 63.9% | 23 / 28 | 9.7 s |
 
-结论：qwen3.8-max-0902 在有响应的尝试里全部通过；两个 Gemini 跑满全部尝试，失败集中在两类：工具出错后不收尾（被 4 轮上限拦下），以及不严格执行 Schema 枚举（被业务校验拦下）。没有错误数据被写入。局限：评测在海外进行，到百炼北京端点的跨境连接经常失败或超时，Qwen 的延迟主要反映网络。超时请求按整笔预留计入额度，所以两个 Qwen 模型没能跑完，qwen3.8-flash 的样本不足以下结论。上面提到的“出错后强制收尾”修复，还没有用真实调用复测。
+结论：qwen3.8-max-0902 在有响应的尝试里全部通过；两个 Gemini 跑满全部尝试，失败集中在两类：工具出错后不收尾（被 4 轮上限拦下），以及不严格执行 Schema 枚举（被业务校验拦下）。没有错误数据被写入。局限：评测在海外网络下进行，到百炼北京端点的跨境连接经常失败或超时，Qwen 的延迟主要反映网络。超时请求按整笔预留计入额度，所以两个 Qwen 模型没能跑完，qwen3.8-flash 的样本不足以下结论。上面提到的“出错后强制收尾”修复，还没有用真实调用复测。
 
 **视觉：拍照建档**（16 张带标签的授权图片：常规小 / 中 / 大型各 4 张、难例 2 张、非狗 2 张）
 
@@ -89,7 +89,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | gemini-3.5-flash-lite | 15 / 16 | 1.7 s | 比格判成小型 |
 | gemini-3.8-flash | 15 / 16 | 2.9 s | 萨摩耶判成中型 |
-| qwen3.8-omni-flash / qwen3.5-omni-plus | 未完成 | — | 从海外连接百炼北京端点失败 / 超时 |
+| qwen3.8-omni-flash / qwen3.5-omni-plus | 未完成 | — | 跨境连接百炼北京端点失败 / 超时 |
 
 结论：32 次输出全部符合 Schema，没有给出健康或性格判断。猫、毛绒玩具狗、两只狗同框、只拍到狗鼻子，都正确地没有填写。用两次运行保存的原始输出离线复算加入品种体型表后的规则：lite 自动填入的错误从 1 个降到 0；3.8-flash 仍是 1 个，因为萨摩耶在表中允许中型和大型。局限：只有 16 张图；Qwen-Omni 没有可比结果，这不代表它的识别能力。
 
@@ -164,7 +164,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-当前结果：Vitest 485 项、Playwright 120 项（桌面 + 手机）通过，见 [PROGRESS](docs/PROGRESS.md#当前工程检查)。真实模型评测需要显式授权和 Token 上限，命令见 [AI_EVAL 复现](docs/AI_EVAL.md#复现)。
+当前结果：Vitest 485 项、Playwright 120 项（桌面 + 手机）通过。真实模型评测需要显式开启并设置 Token 上限，命令见 [AI_EVAL 复现](docs/AI_EVAL.md#复现)。
 
 ## 目录结构
 
@@ -177,7 +177,7 @@ src/server/ai/      仅服务端：模型白名单、客户端（流式 / 重试
 src/lib/storage/    localStorage 仓库与 IndexedDB 照片
 evals/              评测用例、多模型 runner、分模型额度、真实与模拟报告
 tests/              Vitest 单测与 Playwright 端到端测试
-docs/               需求、架构、决策、评测、进度与交接文档
+docs/               需求、架构、决策、评测与 AI Coding 说明
 ```
 
 ## 演示边界
@@ -185,10 +185,10 @@ docs/               需求、架构、决策、评测、进度与交接文档
 - 数据只保存在当前浏览器，刷新后保留；换浏览器就是独立的一份。可以在“我的”里一键重置。
 - 5 个可切换的模拟身份，切换不是登录。25 个宠物档案、坐标和互动都是虚构的。
 - 没有真实注册登录、聊天、支付或寄养交易；普通地点的“宠物能否进入”一律显示未知。
-- 暂不部署，本地运行演示。
+- 未部署线上环境，按上文在本地运行。
 
 ## 用 AI Coding 开发
 
-这个项目整体用 AI Coding 工具开发：[AGENTS.md](AGENTS.md) 写长期规则，[HANDOFF](docs/HANDOFF.md) 和 [PROGRESS](docs/PROGRESS.md) 负责跨会话交接，每一步在独立会话中按“读文档 → 小任务 → 看差异 → 跑测试 → 写证据 → 提交”推进。测试兜住 AI 生成代码的例子见 [docs/AI_CODING.md](docs/AI_CODING.md)。
+这个项目整体用 AI Coding 工具开发：[AGENTS.md](AGENTS.md) 写长期规则，本地交接与进度文档负责跨会话衔接，每一步在独立会话中按“读文档 → 小任务 → 看差异 → 跑测试 → 写证据 → 提交”推进。测试兜住 AI 生成代码的例子见 [docs/AI_CODING.md](docs/AI_CODING.md)。
 
-文档：[产品需求](docs/PRD.md) · [架构](docs/ARCHITECTURE.md) · [技术决策](docs/DECISIONS.md) · [AI 评测](docs/AI_EVAL.md) · [进度](docs/PROGRESS.md) · [计划](docs/PLAN.md) · 演示照片[来源与许可](public/images/SOURCES.md)
+文档：[产品需求](docs/PRD.md) · [架构](docs/ARCHITECTURE.md) · [技术决策](docs/DECISIONS.md) · [AI 评测](docs/AI_EVAL.md) · [AI Coding](docs/AI_CODING.md) · 演示照片[来源与许可](public/images/SOURCES.md)

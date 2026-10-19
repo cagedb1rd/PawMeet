@@ -1,6 +1,6 @@
 # AI 评测方案与记录
 
-状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。社区 AI（第 8 步，Prompt pawmeet-community-1）真实冒烟见[第 8 步](#第-8-步社区-ai-冒烟)：按用户要求只用 Gemini（gemini-3.5-flash-lite 为主、gemini-3.8-flash 对照），两者各 19/19 通过，合计 27,598 / 50,000 Token，样本小、检查宽松，不代表大规模效果。视觉（拍照建档）真实结果见[第 7 步](#第-7-步视觉评测拍照建档)：16 张私有带标签图片上两个 Gemini 完整运行均 15/16（各 1 例体型边界失败），两个 Qwen-Omni 因跨境网络连接失败 / 超时未完成。文本最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)，阶段状态见 [PROGRESS](PROGRESS.md)。
+状态：2026-10-19。当前代码为 Prompt pawmeet-6.3 / validation-11（validation-11 只改了工具出错后的收尾，即下文第 6b 步建议 1，尚无真实结果），文本白名单含 Qwen 3 个与 Gemini 2 个型号（均经各自模型列表核实）。社区 AI（第 8 步，Prompt pawmeet-community-1）真实冒烟见[第 8 步](#第-8-步社区-ai-冒烟)：只用 Gemini（gemini-3.5-flash-lite 为主、gemini-3.8-flash 对照），两者各 19/19 通过，合计 27,598 / 50,000 Token，样本小、检查宽松，不代表大规模效果。视觉（拍照建档）真实结果见[第 7 步](#第-7-步视觉评测拍照建档)：16 张私有带标签图片上两个 Gemini 完整运行均 15/16（各 1 例体型边界失败），两个 Qwen-Omni 因跨境网络连接失败 / 超时未完成。文本最新真实结果是[第 6b 步跨厂商复测](#第-6b-步跨厂商复测)：gemini-3.8-flash / 3.5-flash-lite 跑满 82 次（87.8% / 86.6%），qwen3.8-max-0902 有响应的 56/56 通过但因跨境网络与保守计入只执行 61 次，qwen3.8-flash 只执行 36 次。更早的[第 6 步](#第-6-步真实结果)（validation-9，含 qwen3.8-27b）在劣化网络下均未跑完。第 3–6 节为更早版本、只用 qwen3.8-flash 的历史结果：核心 35 条最近一次完整真实评测 31/35，未达门槛。不同版本、模拟与真实结果分别列出，不合并计算准确率。产品场景与工具契约见 [ARCHITECTURE](ARCHITECTURE.md#6-qwen-调用与确认机制)。
 
 ## 1. 测试层次与 mock / 真实区分
 
@@ -126,7 +126,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 
 ### 第 6b 步跨厂商复测
 
-2026-10-18，cases.v3 / Prompt 6.3 / validation-10，用户追加批准：qwen3.8-flash、qwen3.8-max-0902、gemini-3.5-flash-lite、gemini-3.8-flash 各 ≤30 万 Token（新账本 `.local/ai-eval/step6b-ledger.json`（Gemini）与 `step6b-qwen-ledger.json`（Qwen），分开是为了两条链并行时不互相覆盖），均 `--repeat 2`。评测环境在海外：到百炼北京端点的 TLS 握手仍为 3.7–8.5 秒，而到 Gemini 端点为 0.13–0.23 秒，所以 **Qwen 的延迟与网络失败反映的是跨境链路，不是模型**。Gemini 型号经 `npm run eval:models -- gemini` 核实（[报告](../evals/reports/2026-10-18T16-43-15-412Z-gemini-model-list.json)）；接入方式见 [DECISIONS D024](DECISIONS.md)。报告：[qwen3.8-flash](../evals/reports/2026-10-18T16-47-58-109Z-qwen3.8-flash-live.md)、[qwen3.8-max-0902](../evals/reports/2026-10-18T16-59-44-552Z-qwen3.8-max-0902-live.md)、[gemini-3.5-flash-lite](../evals/reports/2026-10-18T16-53-04-250Z-gemini-3.5-flash-lite-live.md)、[gemini-3.8-flash](../evals/reports/2026-10-18T16-47-58-108Z-gemini-3.8-flash-live.md)（同名 JSON 含原始响应）、[四模型对比表](../evals/reports/2026-10-18T17-16-17-753Z-compare-live.md)。
+2026-10-18，cases.v3 / Prompt 6.3 / validation-10，追加额度：qwen3.8-flash、qwen3.8-max-0902、gemini-3.5-flash-lite、gemini-3.8-flash 各 ≤30 万 Token（新账本 `.local/ai-eval/step6b-ledger.json`（Gemini）与 `step6b-qwen-ledger.json`（Qwen），分开是为了两条链并行时不互相覆盖），均 `--repeat 2`。评测环境在海外网络：到百炼北京端点的 TLS 握手仍为 3.7–8.5 秒，而到 Gemini 端点为 0.13–0.23 秒，所以 **Qwen 的延迟与网络失败反映的是跨境链路，不是模型**。Gemini 型号经 `npm run eval:models -- gemini` 核实（[报告](../evals/reports/2026-10-18T16-43-15-412Z-gemini-model-list.json)）；接入方式见 [DECISIONS D024](DECISIONS.md)。报告：[qwen3.8-flash](../evals/reports/2026-10-18T16-47-58-109Z-qwen3.8-flash-live.md)、[qwen3.8-max-0902](../evals/reports/2026-10-18T16-59-44-552Z-qwen3.8-max-0902-live.md)、[gemini-3.5-flash-lite](../evals/reports/2026-10-18T16-53-04-250Z-gemini-3.5-flash-lite-live.md)、[gemini-3.8-flash](../evals/reports/2026-10-18T16-47-58-108Z-gemini-3.8-flash-live.md)（同名 JSON 含原始响应）、[四模型对比表](../evals/reports/2026-10-18T17-16-17-753Z-compare-live.md)。
 
 | 模型 | 已执行 / 计划 | 通过率 | Schema 合法率 | 业务校验 | 关键字段 | 完整任务（两轮都过） | 总时长 p50 / p95 | 首字节 p50 / p95 | 平均 / 总 Token（已知） | 超时 / 网络失败 | 停止 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -168,11 +168,11 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 1. 工具失败后收尾：任一工具返回 error 时，下一轮不再携带 tools，强制模型如实报告（与“工具全部成功后下一轮不带 tools”同一机制），可直接消除 Gemini 的 CT07 循环；CT06 类无法核实的硬约束同理可在程序侧提前给出澄清。**已实现（validation-11）**：任一工具结果为 error 时下一轮不带工具、走严格总结，CT06 在 check_compatibility / create_activity_draft 返回 NEEDS_CLARIFICATION 后同样收尾；离线回归见 [companion 单测](../tests/unit/companion.test.ts)“Step 6b live eval regression”，去掉修复时共 9 项失败（含 ai 单测 1 项）。“程序侧在调用工具前提前澄清”未做。**未真实复测**，对 Gemini CT06 / CT07 的实际效果未验证。
 2. 同义词冗余：unmappedTerms 中的词若已被同义词表映射为排除条件（如“太活泼”→排除活泼），程序应忽略而不追加澄清。
 3. 评测预留：按 UTF-8 字节预留约为实际 8 倍，坏网络下 qwen3.8-flash 实际只用 7.6 万就到额。建议按字符数估算并区分“请求未发出”的连接失败，保持不低估原则并更新 DECISIONS D023。
-4. 网络：复测前用不耗 Token 的 curl 测 TLS 握手；从海外评测 Qwen 可考虑百炼国际站（新加坡）端点，但需国际站账号与型号可用性核实，属另一套授权。
+4. 网络：复测前用不耗 Token 的 curl 测 TLS 握手；在海外评测 Qwen 可考虑百炼国际站（新加坡）端点，但需国际站账号与型号可用性核实，属另一套授权。
 
 #### 结论摘要（只依据上述真实数据）
 
-同一套 41 条程序判定用例、四个模型：qwen3.8-max-0902 在拿到响应的 56 次尝试里全部通过（含 10 次多工具工作流），是效果上限；gemini-3.8-flash 与 gemini-3.5-flash-lite 跑满 82 次，通过率 87.8% / 86.6%，两者差距很小，总时长 p50 只有 2.7 / 1.6 秒，失败集中在“工具出错或硬约束无法核实时不收尾”（被程序 4 轮上限拦下）和不严格执行 JSON Schema 枚举（被业务校验拦下）。qwen3.8-flash 在海外到北京的链路上只执行了 36 次就因保守计入到额，有响应的 23/28，效果结论样本不足。四者平均每次调用约 1.4–1.8k Token。取舍：在海外本地运行用 Gemini 速度最好，lite 性价比最高；重视正确率选 max-0902；面向国内上线仍用 Qwen（合规与就近部署），flash 与 max 的差距需在国内网络下复测。所有模型输出都经同一套程序校验，模型差异只体现在“被拦下”而不是“写错数据”。
+同一套 41 条程序判定用例、四个模型：qwen3.8-max-0902 在拿到响应的 56 次尝试里全部通过（含 10 次多工具工作流），是效果上限；gemini-3.8-flash 与 gemini-3.5-flash-lite 跑满 82 次，通过率 87.8% / 86.6%，两者差距很小，总时长 p50 只有 2.7 / 1.6 秒，失败集中在“工具出错或硬约束无法核实时不收尾”（被程序 4 轮上限拦下）和不严格执行 JSON Schema 枚举（被业务校验拦下）。qwen3.8-flash 在跨境到北京的链路上只执行了 36 次就因保守计入到额，有响应的 23/28，效果结论样本不足。四者平均每次调用约 1.4–1.8k Token。取舍：在海外本地运行用 Gemini 速度最好，lite 性价比最高；重视正确率选 max-0902；面向国内上线仍用 Qwen（合规与就近部署），flash 与 max 的差距需在国内网络下复测。所有模型输出都经同一套程序校验，模型差异只体现在“被拦下”而不是“写错数据”。
 
 ### 第 7 步视觉评测（拍照建档）
 
@@ -243,7 +243,7 @@ gemini-3.8-flash 常规小型“品种填对”为 3/4：dog-02（玩具贵宾�
 
 **发现与建议（均未实现，未消耗额度复测）**
 
-1. 网络：要得到 Qwen-Omni 视觉结果，需在国内网络复测，或经用户授权使用百炼国际站（新加坡）端点（另一套账号与型号核实）。是否为视觉放宽首字节超时，涉及产品体验取舍，须用户决定。
+1. 网络：要得到 Qwen-Omni 视觉结果，需在国内网络复测，或经授权使用百炼国际站（新加坡）端点（另一套账号与型号核实）。是否为视觉放宽首字节超时，涉及产品体验取舍，须用户决定。
 2. 预留偏高：Gemini 实际约为预留的 25%，主因是文本按字符估算对 JSON Schema 与示例仍保守、最大输出 2,048 基本用不上（实际输出约 150）。可考虑视觉任务把 max_tokens 降到 1,024（需评估思考截断风险），或对固定 system prompt 用一次真实 usage 校准；均须保持不低估。
 3. 体型标签口径：比格已由品种体型表校正（见上方离线复算）；萨摩耶这类边界犬种可在 labels 中允许两个体型（runner 已支持多值），或把表收紧为单一体型。改标签或改表须由用户确认。
 
@@ -262,7 +262,7 @@ gemini-3.8-flash 常规小型“品种填对”为 3/4：dog-02（玩具贵宾�
 | gemini-3.5-flash-lite（主） | 19/19 | 19（标题标签 9/9，预检 10/10） | 1.5 s / 2.0 s | 1.5 s / 1.7 s | 约 570 / 1,580 | 13,829 | [md](../evals/reports/2026-10-18T18-53-28-929Z-gemini-3.5-flash-lite-community-live.md) |
 | gemini-3.8-flash（对照） | 19/19 | 19（标题标签 9/9，预检 10/10） | 2.1 s / 3.2 s | 2.2 s / 6.9 s | 约 560 / 1,576 | 13,769 | [md](../evals/reports/2026-10-18T18-52-31-550Z-gemini-3.8-flash-community-live.md) |
 
-合计 38 次上游传输、实际 usage 27,598 Token，保守计入 0，无重试、无网络失败；账本剩余 22,402，未继续调用。qwen3.8-flash 本步未调用（用户决定）。
+合计 38 次上游传输、实际 usage 27,598 Token，保守计入 0，无重试、无网络失败；账本剩余 22,402，未继续调用。qwen3.8-flash 本步未调用。
 
 #### 第 8 步观察与失败分类
 
@@ -367,7 +367,7 @@ Phase 4.5 后社交名片与交接清单改为规则 / 模板，附近 AI 筛选
 
 ## Phase 4.5 当前离线验证
 
-Phase 4.5 将 AI 收敛为智能约伴、档案填写、互助填表，新增 127 项 Vitest（[companion 单测](../tests/unit/companion.test.ts)），覆盖单 / 多工具、参数结构、活动优先 / 直接组局、真实候选引用、名额 / 时间 / 距离 / 排斥、模糊时间、单半径修改、地点错误与空结果区分、限流 / 超时映射、签名续传 / 越阶段 / 4 轮 / 9 工具上限、无自动写入。[工作流 E2E](../tests/e2e/phase45.spec.ts) 用 route / SDK fixture 在桌面与手机各跑 13 个场景（含第 4 步新增的时间线顺序 / 出错 / 取消 3 个）。当前全量工程检查数字见 [PROGRESS](PROGRESS.md#当前工程检查)；这些都是 mock，不能称 Qwen 准确率。
+Phase 4.5 将 AI 收敛为智能约伴、档案填写、互助填表，新增 127 项 Vitest（[companion 单测](../tests/unit/companion.test.ts)），覆盖单 / 多工具、参数结构、活动优先 / 直接组局、真实候选引用、名额 / 时间 / 距离 / 排斥、模糊时间、单半径修改、地点错误与空结果区分、限流 / 超时映射、签名续传 / 越阶段 / 4 轮 / 9 工具上限、无自动写入。[工作流 E2E](../tests/e2e/phase45.spec.ts) 用 route / SDK fixture 在桌面与手机各跑 13 个场景（含第 4 步新增的时间线顺序 / 出错 / 取消 3 个）。当前全量工程检查为 Vitest 485 项、Playwright 120 项；这些都是 mock，不能称 Qwen 准确率。
 
 ## 6. 智能约伴真实验证
 

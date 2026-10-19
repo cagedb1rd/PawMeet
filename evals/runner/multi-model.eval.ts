@@ -64,7 +64,7 @@ it("PawMeet multi-model evaluation", async () => {
   if (config.mode === "live") {
     if (process.env.PAWMEET_ALLOW_LIVE_AI !== "approved")
       throw Error(
-        "真实评测默认关闭；获得用户批准后设置 PAWMEET_ALLOW_LIVE_AI=approved",
+        "真实评测默认关闭；获得批准后设置 PAWMEET_ALLOW_LIVE_AI=approved",
       );
     const keyEnv =
       PROVIDERS[resolveModel("text", config.model).provider].keyEnv;

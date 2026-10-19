@@ -1,6 +1,6 @@
 # PawMeet 技术架构
 
-状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4.5 精简为智能约伴、档案填写、互助填表三个 AI 场景，复用原 Qwen 服务和原生工具调用循环；新版导航及人工业务保持。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md) 与 [PROGRESS](PROGRESS.md)。原 Phase 5 已由 [展示改进计划](PLAN.md#7-展示改进计划) 取代。
+状态：2026-10-17。Phase 1–3 本地业务与地图保留；Phase 4.5 精简为智能约伴、档案填写、互助填表三个 AI 场景，复用原 Qwen 服务和原生工具调用循环；新版导航及人工业务保持。真实模型仍存在额度 / 超时和输出错误，不能标为阶段完成；证据见 [AI_EVAL](AI_EVAL.md)。
 
 ## 1. 选型与边界
 
@@ -108,7 +108,7 @@ Phase 3 对 v2 的 PlaceRef 作兼容扩展，不重写已有 demo 地点或档�
 
 Phase 4.6 兼容扩展 `title` 和 `follows`：Zod 对旧 v2 缺失字段补空标题 / 空关系，保留 key 和 schemaVersion=2；读取不改写磁盘，下一次成功命令才落盘。v1 仍先通过冻结旧 Schema 再迁移。损坏字段、未知属性及无效关注引用仍拒绝读取，不靠默认值掩盖损坏。关注由 `toggle-follow` 命令和同一 Repository 提交，失败不更新视图；不新增独立存储系统。标题为空只在展示时取正文首行，不重写原正文。
 
-页面与组件边界见 [UI_REDESIGN](UI_REDESIGN.md)：`PostFeed` 将帖子交替分入两列，各列自然堆叠；`PostCard` 复用列表 / 详情点赞，`FollowButton` 在用户主页和详情复用，`NearbyTabs` 保留原业务 URL。搜索只读当前快照，不调用 AI；新关注关系不会作为额外模型上下文发送。活动距离用 `DEFAULT_REFERENCE`（杭州滨江公共演示点）和现有 GCJ02 Haversine，不冒充实时位置；无坐标显示未知。智能约伴在活动页复用该卡片风格，不改变首页与导航。
+页面与组件边界：`PostFeed` 将帖子交替分入两列，各列自然堆叠；`PostCard` 复用列表 / 详情点赞，`FollowButton` 在用户主页和详情复用，`NearbyTabs` 保留原业务 URL。搜索只读当前快照，不调用 AI；新关注关系不会作为额外模型上下文发送。活动距离用 `DEFAULT_REFERENCE`（杭州滨江公共演示点）和现有 GCJ02 Haversine，不冒充实时位置；无坐标显示未知。智能约伴在活动页复用该卡片风格，不改变首页与导航。
 
 引用完整性：宠物必须引用存在主人；报名引用存在活动和该身份拥有的宠物，组织者必须占一个名额，报名和点赞去重。档案删除使用 `archivedAt` 归档，不物理删除，历史动态引用保留；有未结束活动、未来开放互助或 assigned / helper_done 互助引用时阻止删除。归档宠物不出现在发现和选择器，不能再编辑 / 新报名。帖子无删除入口。名片仅主人可确认且 petRevision 必须当前；清单仅求助人可编辑，引用当前宠物版本与需求 contentRevision。实体引用、有效申请唯一性、已选帮助者 / acceptedApplicationId 一致性由 Schema 校验；具体操作的角色与状态在命令层校验。
 
@@ -217,7 +217,7 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 
 .runtime/ai-quota.json按mutex串行、临时写入和原子rename，在上游前持久预留；损坏或写失败fail closed，重启不清零。多进程 / serverless 不得沿用该账本；部署属于未授权Phase 5。平台配额也须独立限制。
 
-普通 Playwright 服务显式 AI_ENABLED=false；所有日常测试使用 mock。历史 live runner / 页面套件默认阻断，需用户先明确批准，再由操作者设置 PAWMEET_ALLOW_LIVE_AI=approved；每轮按用户明确授权限制实际传输数（包含重试），不沿用历史批准或旧大批量命令。companion专用冒烟硬上限6，其他live套件上限3；上限不等于授权。实际用量、失败及真实 / mock 边界见 AI_EVAL。
+普通 Playwright 服务显式 AI_ENABLED=false；所有日常测试使用 mock。历史 live runner / 页面套件默认阻断，需维护者先明确批准，再由操作者设置 PAWMEET_ALLOW_LIVE_AI=approved；每轮按维护者明确授权限制实际传输数（包含重试），不沿用历史批准或旧大批量命令。companion专用冒烟硬上限6，其他live套件上限3；上限不等于授权。实际用量、失败及真实 / mock 边界见 AI_EVAL。
 
 ## 7. 高德地图接入
 
@@ -248,13 +248,13 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 | NEXT_PUBLIC_AMAP_JS_KEY | 浏览器公开；仍限制来源，真实值不入 Git |
 | AMAP_SECURITY_JSCODE | 服务端；禁止 NEXT_PUBLIC 前缀 |
 
-当前暂不部署，只在本地运行演示（见 [DECISIONS D012](DECISIONS.md)）。以下为未来如需部署的参考方案：国内网络可达的香港区域 Linux Node 单实例 + HTTPS 反向代理，自带持久磁盘，无云数据库；须用户另行授权服务商 / 域名和预算。内地部署、域名 / 接入要求按选定平台官方说明核查后决定；不在 Phase 0 承诺合规状态或零费用。Vercel 只作备选，需解决持久限额和国内可达性再采用。不能静态导出，因为 AI / 高德代理需要 Node 服务。
+当前暂不部署，只在本地运行演示（见 [DECISIONS D012](DECISIONS.md)）。以下为未来如需部署的参考方案：国内网络可达的香港区域 Linux Node 单实例 + HTTPS 反向代理，自带持久磁盘，无云数据库；须维护者另行授权服务商 / 域名和预算。内地部署、域名 / 接入要求按选定平台官方说明核查后决定；不在 Phase 0 承诺合规状态或零费用。Vercel 只作备选，需解决持久限额和国内可达性再采用。不能静态导出，因为 AI / 高德代理需要 Node 服务。
 
 不自动部署、不自动购买。代码和图片本地托管，不依赖 Google Fonts 或海外图片热链。HTTPS 为定位与文件分享能力提供基础，浏览器不支持的分享自动降级下载。上线前在国内移动 / 桌面网络实测首页、Qwen、高德、导航和冷启动；开发机成功不代表国内 HR 可访问。
 
 ## 9. 外部依据与待验证项
 
-以下官方资料于 2026-10-17 查阅；高德准备、安全代理、POI、坐标转换和 URI 已于本阶段重新核对。实现与真实联调证据见 PROGRESS，已执行真实Qwen评测，存在失败与未完成项。
+以下官方资料于 2026-10-17 查阅；高德准备、安全代理、POI、坐标转换和 URI 已于本阶段重新核对。已执行真实Qwen评测，存在失败与未完成项。
 
 - [Next.js 安装](https://nextjs.org/docs/app/getting-started/installation)：App Router 与环境要求；版本最终以 Phase 1 lockfile / 构建为准。
 - [Next.js 项目结构](https://nextjs.org/docs/app/getting-started/project-structure)：下划线路由需使用 `%5F` 目录前缀，避免被识别为私有目录。
@@ -266,4 +266,4 @@ POST /api/ai/{task} 接受 {text, context}，当前公开结构化任务仅 pet-
 - [高德坐标基础类](https://lbs.amap.com/api/javascript-api-v2/guide/abc/basetype)、[定位](https://lbs.amap.com/api/javascript-api-v2/guide/services/geolocation)：坐标口径与定位能力。
 - [POI 搜索](https://lbs.amap.com/api/javascript-api-v2/guide/services/autocomplete)、[URI 路径规划](https://lbs.amap.com/api/uri-api/guide/travel/route)：地点与导航接口。
 
-本机 Chromium 的实际检查、SDK mock 与真实高德结果分别维护在 [PROGRESS](PROGRESS.md)。待验证：未通过的真实地图子项、物理 GPS 与系统高德 App 唤起、平台额度耗尽、Safari / Android 真机、国内网络；Qwen稳定性 / 全量通过与部署仍未验证。不能用文档推理、mock 或 HTTP 200 代替真实渲染 / 联调证据。
+SDK mock 与真实高德结果分开记录；待验证：未通过的真实地图子项、物理 GPS 与系统高德 App 唤起、平台额度耗尽、Safari / Android 真机、国内网络；Qwen稳定性 / 全量通过与部署仍未验证。不能用文档推理、mock 或 HTTP 200 代替真实渲染 / 联调证据。

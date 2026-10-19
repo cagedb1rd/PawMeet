@@ -641,7 +641,7 @@ export function visionMarkdown(r: VisionReport) {
     "",
     ...((r as { droppedPublic?: number }).droppedPublic
       ? [
-          `说明：由同一次真实运行派生，按用户要求去掉 ${(r as { droppedPublic?: number }).droppedPublic} 张公开演示图片后只统计私有带标签图片；下面的额度行是整次运行（含公开图片的调用）。`,
+          `说明：由同一次真实运行派生，按评测口径去掉 ${(r as { droppedPublic?: number }).droppedPublic} 张公开演示图片后只统计私有带标签图片；下面的额度行是整次运行（含公开图片的调用）。`,
           "",
         ]
       : []),
