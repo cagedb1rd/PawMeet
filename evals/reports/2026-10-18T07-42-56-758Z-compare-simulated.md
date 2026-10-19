@@ -13,5 +13,5 @@
 
 | 模型 | 报告 | Prompt / validation / 用例 | Git | 重复 | 本次计入 Token | 提前停止 |
 | --- | --- | --- | --- | --- | --- | --- |
-| qwen3.8-flash | 2026-10-18T07-42-22-384Z-qwen3.8-flash-simulated.json | pawmeet-6.3 / pawmeet-validation-9 / cases.v3 | cdf63aa | 1 | 107,244 | 否 |
-| qwen3.8-max-0902 | 2026-10-18T07-42-38-775Z-qwen3.8-max-0902-simulated.json | pawmeet-6.3 / pawmeet-validation-9 / cases.v3 | cdf63aa | 1 | 85,512 | 否 |
+| qwen3.8-flash | 2026-10-18T07-42-22-384Z-qwen3.8-flash-simulated.json | pawmeet-6.3 / pawmeet-validation-9 / cases.v3 | f12432e | 1 | 107,244 | 否 |
+| qwen3.8-max-0902 | 2026-10-18T07-42-38-775Z-qwen3.8-max-0902-simulated.json | pawmeet-6.3 / pawmeet-validation-9 / cases.v3 | f12432e | 1 | 85,512 | 否 |

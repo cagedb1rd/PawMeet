@@ -32,13 +32,13 @@ AI 写的代码看起来合理，不等于真的对。以下是开发中由评�
 
 | 问题 | 怎么发现的 | 修复与证据 |
 | --- | --- | --- |
-| 模型根本没调用工具，却回答“已查询…”“没有符合条件的结果”，而生产代码照单全收 | 多模型真实评测：qwen3.8-27b 在 6 个工具用例里都没返回 `tool_calls`（[报告](../evals/reports/2026-10-18T15-43-35-749Z-qwen3.8-27b-live.md)） | 没有工具结果的一轮只接受两种澄清回答，否则判为非法输出；新增 10 项回归测试，撤掉修复后其中 8 项失败（[`48fe8da`](https://github.com/cagedb1rd/PawMeet/commit/48fe8da)） |
-| 接入 Gemini 后工具调用直接报“上游响应非法” | 正式评测前的小额冒烟（[修复前](../evals/reports/2026-10-18T16-45-41-815Z-gemini-3.8-flash-live.md) / [修复后](../evals/reports/2026-10-18T16-46-33-380Z-gemini-3.8-flash-live.md)） | Gemini 的流式 tool_calls 不带 `index`，解析器却把它当必填字段；改为缺 `index` 时按 id 归并，并用 mock 单测覆盖（[`5420f83`](https://github.com/cagedb1rd/PawMeet/commit/5420f83)） |
-| “回答修复”那一轮在 Gemini 上返回 HTTP 400 | 跨厂商评测中 gemini-3.5-flash-lite 的一次失败 | 修复指令用了 system 角色，Gemini 把它移出对话后，请求变成以模型回合结尾；改为 user 角色并加单测（[`34ede12`](https://github.com/cagedb1rd/PawMeet/commit/34ede12)） |
-| 工具报错后，模型反复调用同一工具，直到撞上 4 轮上限 | 跨厂商评测：两个 Gemini 的 CT06 / CT07（[对比表](../evals/reports/2026-10-18T17-16-17-753Z-compare-live.md)） | 任一工具出错，下一轮就不再提供工具，强制如实收尾；撤掉修复后 9 项回归测试失败（[`278a79d`](https://github.com/cagedb1rd/PawMeet/commit/278a79d)）。尚未用真实调用复测 |
-| 用户说“不要大型犬”，模型却输出“只要小型和中型” | 首次约伴真实调用：JSON 和 Zod 都合法，被事实守卫拒绝（[报告](../evals/reports/2026-10-16T21-57-40-954Z-live.json)） | 守卫保持不放宽，Prompt 改为只记录明确的包含 / 排斥值，禁止把排斥展开为正向补集，并新增离线回归（[`59534df`](https://github.com/cagedb1rd/PawMeet/commit/59534df)） |
-| 弹窗关闭后，键盘焦点没有回到触发按钮 | 新增的 Playwright 键盘用例首轮失败（全套 86/94，其中 2 项是这个问题） | 改为在布局阶段关闭弹窗并恢复触发元素的焦点，此后全套 94/94（[`381bf24`](https://github.com/cagedb1rd/PawMeet/commit/381bf24)） |
-| 视觉模型对体型“自信地错了”：品种认对（0.95），体型错一档（0.85） | 16 张带标签图片的真实视觉评测 | 加入程序维护的品种体型表做交叉校验，再用已保存的原始输出离线复算：lite 自动填入的错误从 1 个降到 0 个（[`3f5c284`](https://github.com/cagedb1rd/PawMeet/commit/3f5c284)、[`0122de1`](https://github.com/cagedb1rd/PawMeet/commit/0122de1)，[复算报告](../evals/reports/2026-10-18T19-55-06-421Z-vision-recheck-offline.md)） |
+| 模型根本没调用工具，却回答“已查询…”“没有符合条件的结果”，而生产代码照单全收 | 多模型真实评测：qwen3.8-27b 在 6 个工具用例里都没返回 `tool_calls`（[报告](../evals/reports/2026-10-18T15-43-35-749Z-qwen3.8-27b-live.md)） | 没有工具结果的一轮只接受两种澄清回答，否则判为非法输出；新增 10 项回归测试，撤掉修复后其中 8 项失败（[`37f2339`](https://github.com/cagedb1rd/PawMeet/commit/37f2339)） |
+| 接入 Gemini 后工具调用直接报“上游响应非法” | 正式评测前的小额冒烟（[修复前](../evals/reports/2026-10-18T16-45-41-815Z-gemini-3.8-flash-live.md) / [修复后](../evals/reports/2026-10-18T16-46-33-380Z-gemini-3.8-flash-live.md)） | Gemini 的流式 tool_calls 不带 `index`，解析器却把它当必填字段；改为缺 `index` 时按 id 归并，并用 mock 单测覆盖（[`f90715f`](https://github.com/cagedb1rd/PawMeet/commit/f90715f)） |
+| “回答修复”那一轮在 Gemini 上返回 HTTP 400 | 跨厂商评测中 gemini-3.5-flash-lite 的一次失败 | 修复指令用了 system 角色，Gemini 把它移出对话后，请求变成以模型回合结尾；改为 user 角色并加单测（[`3cdd8c4`](https://github.com/cagedb1rd/PawMeet/commit/3cdd8c4)） |
+| 工具报错后，模型反复调用同一工具，直到撞上 4 轮上限 | 跨厂商评测：两个 Gemini 的 CT06 / CT07（[对比表](../evals/reports/2026-10-18T17-16-17-753Z-compare-live.md)） | 任一工具出错，下一轮就不再提供工具，强制如实收尾；撤掉修复后 9 项回归测试失败（[`5dcee95`](https://github.com/cagedb1rd/PawMeet/commit/5dcee95)）。尚未用真实调用复测 |
+| 用户说“不要大型犬”，模型却输出“只要小型和中型” | 首次约伴真实调用：JSON 和 Zod 都合法，被事实守卫拒绝（[报告](../evals/reports/2026-10-16T21-57-40-954Z-live.json)） | 守卫保持不放宽，Prompt 改为只记录明确的包含 / 排斥值，禁止把排斥展开为正向补集，并新增离线回归（[`0aff581`](https://github.com/cagedb1rd/PawMeet/commit/0aff581)） |
+| 弹窗关闭后，键盘焦点没有回到触发按钮 | 新增的 Playwright 键盘用例首轮失败（全套 86/94，其中 2 项是这个问题） | 改为在布局阶段关闭弹窗并恢复触发元素的焦点，此后全套 94/94（[`4d29204`](https://github.com/cagedb1rd/PawMeet/commit/4d29204)） |
+| 视觉模型对体型“自信地错了”：品种认对（0.95），体型错一档（0.85） | 16 张带标签图片的真实视觉评测 | 加入程序维护的品种体型表做交叉校验，再用已保存的原始输出离线复算：lite 自动填入的错误从 1 个降到 0 个（[`dacdfd6`](https://github.com/cagedb1rd/PawMeet/commit/dacdfd6)、[`c0daaae`](https://github.com/cagedb1rd/PawMeet/commit/c0daaae)，[复算报告](../evals/reports/2026-10-18T19-55-06-421Z-vision-recheck-offline.md)） |
 
 共同的做法：
 

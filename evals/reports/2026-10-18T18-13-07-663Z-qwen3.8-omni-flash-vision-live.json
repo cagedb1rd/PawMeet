@@ -8,7 +8,7 @@
   "model": "qwen3.8-omni-flash",
   "promptVersion": "pawmeet-photo-2",
   "caseVersion": "vision.v1",
-  "git": "b00fa72202cc16fbc860c185d3781c1a014f25bc",
+  "git": "3fd37d0f7321473089de13315b59464ec98c4153",
   "gitDirty": true,
   "startedAt": "2026-10-18T18:13:07.754Z",
   "finishedAt": "2026-10-18T18:16:22.710Z",

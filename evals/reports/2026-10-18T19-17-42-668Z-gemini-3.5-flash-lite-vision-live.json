@@ -8,7 +8,7 @@
   "model": "gemini-3.5-flash-lite",
   "promptVersion": "pawmeet-photo-2",
   "caseVersion": "vision.v1",
-  "git": "926b5a21382e93a20d52c155a0cb7b028a7809d4",
+  "git": "2ab10d3ca7f19bb44bfba359522296fdad5762b6",
   "gitDirty": false,
   "startedAt": "2026-10-18T19:17:42.754Z",
   "finishedAt": "2026-10-18T19:18:10.929Z",

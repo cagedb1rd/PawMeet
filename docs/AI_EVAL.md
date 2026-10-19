@@ -91,7 +91,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 
 2026-10-18，cases.v3 / Prompt 6.3 / validation-9。
 
-三个文本模型按批准额度各跑一次（`--repeat 2`，独立账本 `.local/ai-eval/step6-ledger.json`），**都没有跑完**：flash、max-0902 因连续 3 次上游失败熔断（circuit_open），27b 跑完第 1 轮 41 条和第 2 轮 4 条后到额（budget）；其余尝试为 not_run。运行期间本机到百炼端点的网络明显劣化：不带密钥、不耗 Token 的 curl 测得 dashscope TLS 握手 3.7–11.8 秒、401 响应 6.4–13.2 秒，6 次中 1 次 20 秒无响应；同时 aliyun.com 的 TLS 约 0.8 秒，本机无代理。flash 熔断后经用户确认，max-0902 / 27b 照常运行，网络失败如实计入。没有重跑、改用例或改账本。报告：[flash](../evals/reports/2026-10-18T12-30-45-759Z-qwen3.8-flash-live.md)、[max-0902](../evals/reports/2026-10-18T15-33-41-723Z-qwen3.8-max-0902-live.md)、[27b](../evals/reports/2026-10-18T15-43-35-749Z-qwen3.8-27b-live.md)（同名 JSON 含原始响应）、[对比表](../evals/reports/2026-10-18T15-56-58-707Z-compare-live.md)。max-0902 / 27b 报告标“工作区有未提交修改”，原因是前一个模型的报告文件尚未提交，代码与 3c06c52 相同。
+三个文本模型按批准额度各跑一次（`--repeat 2`，独立账本 `.local/ai-eval/step6-ledger.json`），**都没有跑完**：flash、max-0902 因连续 3 次上游失败熔断（circuit_open），27b 跑完第 1 轮 41 条和第 2 轮 4 条后到额（budget）；其余尝试为 not_run。运行期间本机到百炼端点的网络明显劣化：不带密钥、不耗 Token 的 curl 测得 dashscope TLS 握手 3.7–11.8 秒、401 响应 6.4–13.2 秒，6 次中 1 次 20 秒无响应；同时 aliyun.com 的 TLS 约 0.8 秒，本机无代理。flash 熔断后经用户确认，max-0902 / 27b 照常运行，网络失败如实计入。没有重跑、改用例或改账本。报告：[flash](../evals/reports/2026-10-18T12-30-45-759Z-qwen3.8-flash-live.md)、[max-0902](../evals/reports/2026-10-18T15-33-41-723Z-qwen3.8-max-0902-live.md)、[27b](../evals/reports/2026-10-18T15-43-35-749Z-qwen3.8-27b-live.md)（同名 JSON 含原始响应）、[对比表](../evals/reports/2026-10-18T15-56-58-707Z-compare-live.md)。max-0902 / 27b 报告标“工作区有未提交修改”，原因是前一个模型的报告文件尚未提交，代码与 ba21f79 相同。
 
 | 模型 | 已执行 / 计划尝试 | 通过率 | Schema 合法率 | 业务校验 | 关键字段 | 完整任务 | 总时长 p50 / p95 | 首字节 p50 / p95 | 平均 / 总 Token（已知） | 超时 / 网络失败 | 停止 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -148,7 +148,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 
 冒烟：正式运行前用 gemini-3.8-flash 跑 CI01、CT04（[修复前](../evals/reports/2026-10-18T16-45-41-815Z-gemini-3.8-flash-live.md)、[修复后](../evals/reports/2026-10-18T16-46-33-380Z-gemini-3.8-flash-live.md)）。修复前 CT04 报 AI_UPSTREAM_INVALID_RESPONSE：Gemini 流式 tool_calls 不带 `index`，解析器把它当必填；修复后 4 轮工具调用与思考签名回传正常（该次因宠友半径未带入判失败）。
 
-**版本差异**：qwen3.8-max-0902 在 `34ede12`（回答修复指令改为 user 角色）之后启动，其余三个模型在 `5420f83`。该改动只影响需要“回答修复”的那一轮；Qwen 侧接受两种角色，Gemini 侧修复前会报 HTTP 400（lite CT04#2）。未为此重跑。
+**版本差异**：qwen3.8-max-0902 在 `3cdd8c4`（回答修复指令改为 user 角色）之后启动，其余三个模型在 `f90715f`。该改动只影响需要“回答修复”的那一轮；Qwen 侧接受两种角色，Gemini 侧修复前会报 HTTP 400（lite CT04#2）。未为此重跑。
 
 #### 第 6b 步失败分类
 
@@ -160,7 +160,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 | 工具参数遗漏 / 时间窗错误 | gemini-3.8-flash CT04 ×2（search_pets 未带半径）；lite CT01 ×2（未带半径、时间窗按 UTC 理解）；qwen3.8-flash CT01（结束时间窗） | 模型理解 |
 | 多余澄清 | gemini-3.8-flash CI07#1（“太活泼”已映射为排除活泼，又放进 unmappedTerms，程序因此追加澄清）、HI01#2；qwen3.8-flash HI01#1 | 模型；CI07 可由程序优化（见建议 2） |
 | 字段归属 / 格式 | lite PP09 ×2（“不喜欢被陌生人摸”放进 cautions 而非 dislikes）；qwen3.8-flash PP09（原始 Schema 不合法）、CT06（最终回答写成自由文本）、CI11（距离矛盾未澄清） | 模型；PP09 原文是“不喜欢”，期望 dislikes 合理 |
-| 我方兼容性 bug | lite CT04#2：HTTP 400 “Requests ending with a model turn are not supported” | 回答修复指令用 system 角色，Gemini 把它提到系统指令后请求以模型回合结尾；已修复（`34ede12`，单测覆盖），未重跑 |
+| 我方兼容性 bug | lite CT04#2：HTTP 400 “Requests ending with a model turn are not supported” | 回答修复指令用 system 角色，Gemini 把它提到系统指令后请求以模型回合结尾；已修复（`3cdd8c4`，单测覆盖），未重跑 |
 | 校验过严 / 用例期望有误 | 无 | 逐条核对原始响应，判定与期望一致 |
 
 **建议（第 1 条已实现，其余未实现；均未消耗额度复测）**
@@ -182,7 +182,7 @@ npm run eval:ai -- community --mode live --model gemini-3.8-flash --token-limit 
 
 **检查（程序判定，无 LLM 裁判）**：原始输出符合 Schema；原始输出无健康 / 年龄 / 性格判断（关键词，与产品过滤同一正则）；单只狗须识别为狗；非狗须判定无法识别 / 不确定且不填；多只狗不填任何字段；体型 / 品种“不乱填”（填了就须符合标签，留空不算错）。另统计“品种填对 / 体型填对”覆盖率（程序审核后填入且正确 / 有标签的单只狗）。通过 = 全部检查满足；网络失败计 error 并计入分母。
 
-**主结果**：两个 Gemini 为同一代码版本 `926b5a2` 的完整运行（16/16，未重试、未挑选）；两个 Qwen-Omni 为原运行（`b00fa72`）。
+**主结果**：两个 Gemini 为同一代码版本 `2ab10d3` 的完整运行（16/16，未重试、未挑选）；两个 Qwen-Omni 为原运行（`3fd37d0`）。
 
 | 模型 | 类别 | 已执行 / 用例 | 通过率 | Schema 合法 | 无违规判断 | 非狗拒识 | 体型不乱填 | 品种不乱填 | 品种填对 | 体型填对 | 总时长 p50 / p95 | 平均 Token | 网络 / 超时失败 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -253,7 +253,7 @@ gemini-3.8-flash 常规小型“品种填对”为 3/4：dog-02（玩具贵宾�
 
 ### 第 8 步社区 AI 冒烟
 
-2026-10-19，Prompt pawmeet-community-1，用例 [community.v1](../evals/cases/community.ts)，runner [community-runner](../evals/lib/community-runner.ts)（检查全部由程序判定，无 LLM 评审）。用户要求本步真实冒烟直接用 Gemini、不再先试百炼，随后指定 gemini-3.5-flash-lite 为主模型、gemini-3.8-flash 仅在额度有余时作对照；该指示到达时两个模型已按 3.8-flash → lite 的顺序各跑满 19 条，合计远低于上限，因此保留结果、未重跑；开跑前 curl 测 Gemini 端点 TLS 握手 3 次约 0.12–0.13 s。两个模型共用独立账本 `.local/ai-eval/step8-community-ledger.json` 的一个 5 万池（`community-smoke-all-models`），每次请求前按“估算输入 + 最大输出（+ 图片 1120）”预留（文本约 6,000、带图约 5,100），事后按实际 usage 结算。报告注明“工作区有改动”是因为运行时 DECISIONS.md 尚未提交，代码即提交 `78de6cc`。
+2026-10-19，Prompt pawmeet-community-1，用例 [community.v1](../evals/cases/community.ts)，runner [community-runner](../evals/lib/community-runner.ts)（检查全部由程序判定，无 LLM 评审）。用户要求本步真实冒烟直接用 Gemini、不再先试百炼，随后指定 gemini-3.5-flash-lite 为主模型、gemini-3.8-flash 仅在额度有余时作对照；该指示到达时两个模型已按 3.8-flash → lite 的顺序各跑满 19 条，合计远低于上限，因此保留结果、未重跑；开跑前 curl 测 Gemini 端点 TLS 握手 3 次约 0.12–0.13 s。两个模型共用独立账本 `.local/ai-eval/step8-community-ledger.json` 的一个 5 万池（`community-smoke-all-models`），每次请求前按“估算输入 + 最大输出（+ 图片 1120）”预留（文本约 6,000、带图约 5,100），事后按实际 usage 结算。报告注明“工作区有改动”是因为运行时 DECISIONS.md 尚未提交，代码即提交 `b684992`。
 
 用例：标题标签 9 条（普通日常 3、正文自带疫苗信息 1、极短正文 1、提示注入要求写“兽医认证”和微信号 1、照片 + 一句话 3：金毛、柴犬、猫，图片来自私有带标签素材的 ≤512px 缩略图）；安全预检 10 条（正常 1、易误报的安全提醒 / 就医分享 2、手机号、微信号 + 拉群、代购 + 外链、辱骂、给狗喂布洛芬、规则词表外的虐待说法、提示注入 + 投毒各 1）。检查项：原始输出 Schema、程序审核（标题 ≤20 字、3–5 个合规标签）、用到正文要点、原始输出不含指定的编造身份 / 联系方式 / 健康词、照片用例不写标签外的品种；安全预检看通过 / 建议修改是否正确、类别是否命中、片段是否能在原文中定位。每条用例同时记录程序规则层结果。
 
@@ -350,7 +350,7 @@ Phase 4.5 后社交名片与交接清单改为规则 / 模板，附近 AI 筛选
 
 ### 迭代中暴露的真实问题
 
-以下报告已移出 Git 跟踪（本地副本在被忽略的 `.local/eval-archive/`），可用 `git show 17134e1:evals/reports/<runId>.json` 查看。
+以下报告已移出 Git 跟踪（本地副本在被忽略的 `.local/eval-archive/`），可用 `git show 929dfec:evals/reports/<runId>.json` 查看。
 
 | 阶段 / 报告 | 实际问题 | 处理 |
 | --- | --- | --- |
@@ -371,7 +371,7 @@ Phase 4.5 将 AI 收敛为智能约伴、档案填写、互助填表，新增 12
 
 ## 6. 智能约伴真实验证
 
-两轮都使用生产 service 与原生 Qwen 客户端，读取全新浏览器的 localStorage 快照，在 Node 执行共享只读工具；只传任务摘要，不上传完整数据；单次输出 ≤1400 Token，无格式修复。浏览器业务快照前后不变。不是 live UI 或真实组局多工具验收。当时的一次性入口 `companion-live.test.ts` 已在第 5 步删除（可用 `git show cdf63aa:evals/runner/companion-live.test.ts` 查看），其样例已并入 cases.v3（CI02 / CI05 / CI09 / CT01），之后统一由预算受控的 runner 执行。
+两轮都使用生产 service 与原生 Qwen 客户端，读取全新浏览器的 localStorage 快照，在 Node 执行共享只读工具；只传任务摘要，不上传完整数据；单次输出 ≤1400 Token，无格式修复。浏览器业务快照前后不变。不是 live UI 或真实组局多工具验收。当时的一次性入口 `companion-live.test.ts` 已在第 5 步删除（可用 `git show f12432e:evals/runner/companion-live.test.ts` 查看），其样例已并入 cases.v3（CI02 / CI05 / CI09 / CT01），之后统一由预算受控的 runner 执行。
 
 ### 首次 3 次（Prompt 6.0 / validation-7）
 
